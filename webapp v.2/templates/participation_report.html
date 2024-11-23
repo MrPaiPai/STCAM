@@ -1,0 +1,15 @@
+<h1>Participation Report</h1>
+<table>
+    <tr>
+        <th>Activity</th>
+        <th>Student</th>
+        <th>Participated</th>
+    </tr>
+    {% for participation in participations %}
+    <tr>
+        <td>{{ participation.activity.name }}</td>
+        <td>{{ participation.student.username }}</td>
+        <td>{{ participation.participated }}</td>
+    </tr>
+    {% endfor %}
+</table>
