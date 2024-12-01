@@ -1,6 +1,7 @@
 from django import forms
-from .models import CustomUser
+from .models import CustomUser, Activity, ActivityImage
 
+# ฟอร์มสำหรับนักศึกษาลงทะเบียน
 class StudentRegisterForm(forms.ModelForm):
     class Meta:
         model = CustomUser
@@ -9,6 +10,7 @@ class StudentRegisterForm(forms.ModelForm):
             'password': forms.PasswordInput(),
         }
 
+# ฟอร์มสำหรับแอดมินลงทะเบียน
 class AdminRegisterForm(forms.ModelForm):
     class Meta:
         model = CustomUser
@@ -16,3 +18,15 @@ class AdminRegisterForm(forms.ModelForm):
         widgets = {
             'password': forms.PasswordInput(),
         }
+
+# ฟอร์มสำหรับเพิ่มกิจกรรม
+class ActivityForm(forms.ModelForm):
+    class Meta:
+        model = Activity
+        fields = ['name', 'description', 'date']  # ชื่อ, รายละเอียด, และวันที่ของกิจกรรม
+
+# ฟอร์มสำหรับอัปโหลดรูปภาพกิจกรรม
+class ActivityImageForm(forms.ModelForm):
+    class Meta:
+        model = ActivityImage
+        fields = ['image']  # ฟิลด์สำหรับรูปภาพ

@@ -1,11 +1,19 @@
-<h1>Add Activity</h1>
-<form method="post">
+<h1>เพิ่มกิจกรรม</h1>
+<form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
-    <label for="name">Name:</label>
-    <input type="text" name="name" id="name"><br>
-    <label for="description">Description:</label>
-    <textarea name="description" id="description"></textarea><br>
-    <label for="date">Date:</label>
-    <input type="date" name="date" id="date"><br>
-    <button type="submit">Add Activity</button>
+    
+    <!-- ใช้ฟอร์ม Django แสดงข้อมูล -->
+    {{ activity_form.as_p }}
+    
+    <!-- เพิ่มส่วนสำหรับอัปโหลดรูปภาพ -->
+    <label for="images">อัปโหลดรูปภาพ (เลือกหลายรูป):</label>
+    <input type="file" name="images" id="images" multiple><br><br>
+    
+    <!-- ปุ่มบันทึก -->
+    <button type="submit">บันทึกกิจกรรม</button>
+    
+    <!-- แสดงข้อความแจ้งเตือนหากมีข้อผิดพลาด -->
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
 </form>

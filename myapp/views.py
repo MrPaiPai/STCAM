@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .forms import StudentRegisterForm, AdminRegisterForm
-from .models import Activity, Participation
+from .forms import StudentRegisterForm, AdminRegisterForm, ActivityForm
+from .models import Activity, ActivityImage, Participation
 
 # ฟังก์ชันตรวจสอบว่าเป็น admin หรือไม่
 def is_admin(user):
@@ -47,22 +47,23 @@ def login_view(request):
 @user_passes_test(is_admin)
 def add_activity(request):
     if request.method == 'POST':
-        name = request.POST.get('name')  # ชื่อกิจกรรม
-        description = request.POST.get('description')  # คำอธิบายกิจกรรม
-        date = request.POST.get('date')  # วันที่จัดกิจกรรม
+        activity_form = ActivityForm(request.POST)
+        images = request.FILES.getlist('images')  # รับรูปภาพหลายรูป
+        if activity_form.is_valid():
+            activity = activity_form.save(commit=False)
+            activity.created_by = request.user  # เพิ่มผู้สร้าง
+            activity.save()
 
-        # ตรวจสอบว่าข้อมูลครบถ้วน
-        if name and description and date:
-            activity = Activity.objects.create(
-                name=name,
-                description=description,
-                date=date,
-                created_by=request.user
-            )
-            return redirect('index')  # กลับไปหน้าแรก
+            # บันทึกรูปภาพที่อัปโหลด
+            for image in images:
+                ActivityImage.objects.create(activity=activity, image=image)
+
+            return redirect('activity_list')  # กลับไปที่หน้ารายการกิจกรรม
         else:
-            return render(request, 'add_activity.html', {'error': 'กรุณากรอกข้อมูลให้ครบถ้วน'})
-    return render(request, 'add_activity.html')
+            return render(request, 'add_activity.html', {'activity_form': activity_form, 'error': 'กรุณากรอกข้อมูลให้ถูกต้อง'})
+    else:
+        activity_form = ActivityForm()
+    return render(request, 'add_activity.html', {'activity_form': activity_form})
 
 # ฟังก์ชันสำหรับนักเรียนเข้าร่วมกิจกรรม
 @login_required
