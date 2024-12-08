@@ -1,6 +1,32 @@
-<h1>Register</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Register</button>
-</form>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียน</title>
+    <!-- เชื่อมต่อไฟล์ CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="card">
+        <h3>ลงทะเบียน</h3>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_username">ชื่อผู้ใช้:</label>
+                {{ form.username }}
+            </div>
+            <div class="form-group">
+                <label for="id_email">ที่อยู่อีเมล:</label>
+                {{ form.email }}
+            </div>
+            <div class="form-group">
+                <label for="id_password">รหัสผ่าน:</label>
+                {{ form.password }}
+            </div>
+            <button type="submit" class="btn">ลงทะเบียน</button>
+        </form>
+    </div>
+</body>
+</html>

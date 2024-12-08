@@ -1,0 +1,73 @@
+/* style.css */
+
+/* ปรับพื้นหลังของหน้า */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* สไตล์ของกล่องฟอร์ม */
+.card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.card h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* สไตล์ของฟอร์ม */
+form {
+    width: 100%;
+}
+
+.form-group {
+    display: flex; 
+    flex-direction: column;
+    align-items: center; /* ทำให้ข้อความและ input อยู่ตรงกลาง */
+    width: 100%; /* ขยายให้ input ครอบคลุมพื้นที่ */
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    text-align: left;
+    width: 90%; /* ขยายความกว้างของ label */
+    margin-bottom: 5px; /* เพิ่มระยะห่างระหว่าง label กับ input */
+}
+
+.form-group input {
+    width: 90%; /* ขยาย input ให้กว้าง */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* ปรับขนาดให้รวม padding */
+}
+
+/* สไตล์ของปุ่ม */
+button.btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 20px;
+}
+
+button.btn:hover {
+    background-color: #0056b3;
+}

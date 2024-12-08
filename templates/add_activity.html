@@ -1,19 +1,10 @@
 <h1>เพิ่มกิจกรรม</h1>
-<form method="POST" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    
-    <!-- ใช้ฟอร์ม Django แสดงข้อมูล -->
     {{ activity_form.as_p }}
-    
-    <!-- เพิ่มส่วนสำหรับอัปโหลดรูปภาพ -->
-    <label for="images">อัปโหลดรูปภาพ (เลือกหลายรูป):</label>
-    <input type="file" name="images" id="images" multiple><br><br>
-    
-    <!-- ปุ่มบันทึก -->
-    <button type="submit">บันทึกกิจกรรม</button>
-    
-    <!-- แสดงข้อความแจ้งเตือนหากมีข้อผิดพลาด -->
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
+    {{ formset.management_form }}
+    {% for form in formset %}
+        {{ form.as_p }}
+    {% endfor %}
+    <button type="submit">เพิ่มกิจกรรม</button>
 </form>

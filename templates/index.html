@@ -4,11 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>หน้าเเรก</title>
+    <style>
+        /* สไตล์สำหรับปุ่ม */
+        .btn {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50; /* สีพื้นหลัง */
+            color: white; /* สีตัวอักษร */
+            text-decoration: none; /* ลบเส้นใต้ */
+            border-radius: 5px; /* มุมปุ่มโค้งมน */
+            font-size: 16px; /* ขนาดตัวอักษร */
+            text-align: center; /* จัดข้อความให้อยู่ตรงกลาง */
+        }
+        .btn:hover {
+            background-color: #45a049; /* สีพื้นหลังเมื่อชี้เมาส์ */
+        }
+    </style>
 </head>
 <body>
     <h1>ยินดีต้อนรับผู้ใช้งาน</h1>
     
     <!-- เพิ่มลิงก์สำหรับไปยังหน้ารายการกิจกรรม -->
-<a href="{% url 'activity_list' %}" class="btn">ดูรายการกิจกรรม</a>
+    <a href="{% url 'activity_list' %}" class="btn">ดูรายการกิจกรรม</a>
+
+    <!-- ปุ่มเชื่อมโยงไปยังหน้าต่างๆ -->
+    <a href="{% url 'register' %}" class="btn">สมัครสมาชิก</a>
+    <a href="{% url 'login' %}" class="btn">เข้าสู่ระบบ</a>
+    <a href="{% url 'activity_list' %}" class="btn">กิจกรรมทั้งหมด</a>
+    <a href="{% url 'add_activity' %}" class="btn">เพิ่มกิจกรรม</a>
+    <a href="{% url 'participation_report' %}" class="btn">รายงานการเข้าร่วม</a>
 </body>
 </html>

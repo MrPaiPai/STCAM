@@ -5,10 +5,17 @@ from .models import CustomUser, Activity, ActivityImage
 class StudentRegisterForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'email', 'password']  
         widgets = {
             'password': forms.PasswordInput(),
         }
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.user_type = 'student'  # ตั้งค่า user_type เป็น student
+        if commit:
+            user.save()
+        return user
 
 # ฟอร์มสำหรับแอดมินลงทะเบียน
 class AdminRegisterForm(forms.ModelForm):
@@ -23,10 +30,10 @@ class AdminRegisterForm(forms.ModelForm):
 class ActivityForm(forms.ModelForm):
     class Meta:
         model = Activity
-        fields = ['name', 'description', 'date']  # ชื่อ, รายละเอียด, และวันที่ของกิจกรรม
+        fields = ['name', 'description', 'date']
 
 # ฟอร์มสำหรับอัปโหลดรูปภาพกิจกรรม
 class ActivityImageForm(forms.ModelForm):
     class Meta:
         model = ActivityImage
-        fields = ['image']  # ฟิลด์สำหรับรูปภาพ
+        fields = ['image']
