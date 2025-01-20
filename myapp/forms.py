@@ -1,5 +1,7 @@
 from django import forms
 from .models import CustomUser, Activity, ActivityImage
+from .models import MyUser
+from django.contrib.auth.forms import UserCreationForm
 
 # ฟอร์มสำหรับนักศึกษาลงทะเบียน
 class StudentRegisterForm(forms.ModelForm):
@@ -37,3 +39,18 @@ class ActivityImageForm(forms.ModelForm):
     class Meta:
         model = ActivityImage
         fields = ['image']
+
+class MyUserForm(forms.ModelForm):
+    class Meta:
+        model = MyUser
+        fields = ['username', 'email', 'role']  # กำหนดให้แสดงเฉพาะฟิลด์เหล่านี้
+
+    # สามารถเพิ่มฟิลด์หรือการปรับแต่งเพิ่มเติมได้ เช่น ถ้าต้องการให้เลือก role เป็น dropdown
+    role = forms.ChoiceField(choices=[('user', 'User'), ('teacher', 'Teacher')])
+
+class MyUserCreationForm(UserCreationForm):
+    class Meta:
+        model = MyUser
+        fields = ['username', 'email', 'role']
+
+    role = forms.ChoiceField(choices=MyUser.ROLE_CHOICES, required=True)

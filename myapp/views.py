@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import StudentRegisterForm, AdminRegisterForm, ActivityForm, ActivityImageForm
 from .models import Activity, ActivityImage, Participation
 from django.forms import modelformset_factory
+from .models import MyUser
+from .forms import MyUserForm
 
 # ฟังก์ชันตรวจสอบว่าเป็น admin หรือไม่
 def is_admin(user):
@@ -68,6 +70,7 @@ def add_activity(request):
 def join_activity(request, activity_id):
     activity = get_object_or_404(Activity, id=activity_id)
     if request.user.user_type == 'student':
+        # ตรวจสอบว่าผู้ใช้เข้าร่วมกิจกรรมแล้วหรือไม่
         participation, created = Participation.objects.get_or_create(
             activity=activity,
             student=request.user,
@@ -95,3 +98,22 @@ def participation_report(request):
 def my_activities(request):
     activities = Participation.objects.filter(student=request.user)
     return render(request, 'my_activities.html', {'activities': activities})
+
+# ตรวจสอบว่า user เป็น teacher หรือไม่
+def is_teacher(user):
+    return user.role == 'teacher'
+
+@user_passes_test(is_teacher)
+def teacher_view(request):
+    return render(request, 'teacher_dashboard.html')
+
+def edit_user(request, user_id):
+    user = get_object_or_404(MyUser, pk=user_id)  # ค้นหาผู้ใช้จาก ID
+    if request.method == 'POST':
+        form = MyUserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()  # บันทึกการเปลี่ยนแปลง
+            return redirect('admin:myuser_changelist')  # เปลี่ยนเส้นทางไปที่หน้า User List ใน Admin
+    else:
+        form = MyUserForm(instance=user)  # โหลดข้อมูลของผู้ใช้ในฟอร์ม
+    return render(request, 'myapp/user_form.html', {'form': form})
