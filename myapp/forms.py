@@ -54,3 +54,10 @@ class MyUserCreationForm(UserCreationForm):
         fields = ['username', 'email', 'role']
 
     role = forms.ChoiceField(choices=MyUser.ROLE_CHOICES, required=True)
+
+#เก็บสาขา กับ ชั้นปี
+class RegisterForm(forms.Form):
+    username = forms.CharField(max_length=100)
+    password = forms.CharField(widget=forms.PasswordInput)
+    branch = forms.CharField(max_length=100)
+    year = forms.ChoiceField(choices=[(1, 'ปี 1'), (2, 'ปี 2'), (3, 'ปี 3'), (4, 'ปี 4')])

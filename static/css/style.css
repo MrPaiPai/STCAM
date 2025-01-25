@@ -9,6 +9,24 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
+    flex-direction: column; /* ให้เนื้อหาทั้งหมดแสดงในคอลัมน์ */
+}
+
+/* สำหรับจัดกล่องลงทะเบียนและกล่องวิธีการลงทะเบียน */
+.container {
+    display: flex;
+    flex-direction: row;  /* จัดเรียงกล่องข้างกัน (แนวนอน) */
+    gap: 20px;  /* ระยะห่างระหว่างกล่อง */
+    justify-content: center;
+    align-items: flex-start;  /* จัดให้กล่องอยู่ที่ด้านบน */
+    width: 100%;
+    max-width: 1000px; /* กำหนดขนาดสูงสุด */
+}
+
+/* ปรับขนาดของกล่อง */
+.card {
+    width: 45%; /* ทำให้กล่องแต่ละกล่องมีขนาดประมาณครึ่งหนึ่งของพื้นที่ */
+    max-width: 500px; /* กำหนดความกว้างสูงสุด */
 }
 
 /* สไตล์ของกล่องฟอร์ม */
@@ -70,4 +88,24 @@ button.btn {
 
 button.btn:hover {
     background-color: #0056b3;
+}
+
+/* สไตล์ของกล่องวิธีการลงทะเบียน */
+.instructions {
+    text-align: left; /* ให้ข้อความในกล่องวิธีการลงทะเบียนชิดซ้าย */
+    padding-left: 20px; /* เพิ่มระยะห่างทางซ้ายในกล่องวิธีการลงทะเบียน */
+    width: 100%; /* ขยายพื้นที่ให้เหมาะสม */
+    box-sizing: border-box; /* ให้ padding ถูกรวมในการคำนวณขนาด */
+}
+
+.instructions ul {
+    padding-left: 20px; /* เพิ่มระยะห่างในรายการ */
+}
+
+.instructions li {
+    margin-bottom: 10px; /* เพิ่มระยะห่างระหว่างรายการ */
+}
+
+.boxbox {
+    text-align: left;
 }
