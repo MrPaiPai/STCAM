@@ -3,6 +3,7 @@ from .models import CustomUser, Activity, Participation, ActivityImage
 from django.contrib.auth.admin import UserAdmin
 from .models import MyUser
 from .forms import MyUserForm
+from myapp.models import CustomUser  
 
 # Inline class สำหรับจัดการรูปภาพในหน้ากิจกรรม
 class ActivityImageInline(admin.TabularInline):
@@ -13,16 +14,39 @@ class ActivityImageInline(admin.TabularInline):
 
 # การจัดการ CustomUser
 @admin.register(CustomUser)
-class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'user_type')
-    list_filter = ('user_type',)  # เพิ่มตัวกรองตามประเภทผู้ใช้
+class CustomUserAdmin(UserAdmin):
+    form = MyUserForm  # ถ้าต้องการใช้ฟอร์มที่กำหนดเอง
+    model = CustomUser
+    list_display = ('username', 'email', 'user_type', 'year', 'branch', 'is_active', 'is_staff')  # เพิ่ม field ใหม่
+    list_filter = ('user_type', 'year', 'branch', 'is_active', 'is_staff')  # เพิ่มตัวกรองชั้นปีและสาขา
+    search_fields = ('username', 'email', 'year', 'branch')  # สามารถค้นหาตามชั้นปีและสาขา
+
+    # การจัดการฟอร์มการเพิ่มผู้ใช้
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'password1', 'password2', 'user_type', 'year', 'branch'),
+        }),
+    )
+
+    # การจัดการฟอร์มการแก้ไขผู้ใช้
+    fieldsets = (
+        (None, {
+            'fields': ('username', 'email', 'password', 'user_type', 'year', 'branch', 'is_active', 'is_staff', 'groups', 'user_permissions'),
+        }),
+    )
+
+    # แสดงผลตามประเภทผู้ใช้
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset
 
 # การจัดการ Activity พร้อม Inline สำหรับรูปภาพ
 @admin.register(Activity)
 class ActivityAdmin(admin.ModelAdmin):
-    list_display = ('name', 'date', 'created_by')
-    list_filter = ('date', 'created_by')
-    inlines = [ActivityImageInline]  # เพิ่ม ActivityImageInline
+    list_display = ('name', 'start_date', 'end_date', 'created_by')
+    list_filter = ('start_date', 'end_date', 'created_by')
+    inlines = [ActivityImageInline]
 
     # จำกัดการแสดงผลตามประเภทผู้ใช้
     def get_queryset(self, request):
@@ -58,4 +82,3 @@ class MyUserAdmin(UserAdmin):
     )
 
 admin.site.register(MyUser, MyUserAdmin)
-

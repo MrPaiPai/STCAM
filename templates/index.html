@@ -1,38 +1,151 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>หน้าเเรก</title>
-    <style>
-        /* สไตล์สำหรับปุ่ม */
-        .btn {
-            display: inline-block;
-            margin: 10px;
-            padding: 10px 20px;
-            background-color: #4CAF50; /* สีพื้นหลัง */
-            color: white; /* สีตัวอักษร */
-            text-decoration: none; /* ลบเส้นใต้ */
-            border-radius: 5px; /* มุมปุ่มโค้งมน */
-            font-size: 16px; /* ขนาดตัวอักษร */
-            text-align: center; /* จัดข้อความให้อยู่ตรงกลาง */
-        }
-        .btn:hover {
-            background-color: #45a049; /* สีพื้นหลังเมื่อชี้เมาส์ */
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>หน้าเเรก</title>
+  <!-- เพิ่ม CSS ตรงนี้ -->
+  <style>
+    /* Styling สำหรับ navbar */
+    .navbar {
+    background-color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .left-side .menu {
+    font-size: 18px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 12px;
+  }
+
+  .right-side {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+
+  /* ตกแต่งข้อความต้อนรับ */
+  .right-side span {
+    font-size: 16px;
+    color: #fff;
+    font-weight: bold;
+  }
+
+  .right-side a {
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    transition: background-color 0.3s ease;
+  }
+
+  .right-side a:hover {
+    background-color: #45a049;
+  }
+
+   /* เพิ่มการจัดการ spacing ของเมนู */
+   .navbar a {
+    font-size: 16px;
+    color: #fff;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+
+  .navbar a:hover {
+    background-color: #45a049;
+  }
+
+    /* สไตล์เพิ่มเติมสำหรับลิงก์ */
+    .navbar a {
+      text-decoration: none;
+      padding: 5px 10px;
+    }
+
+    /* Styling สำหรับปุ่มเมนู */
+    .btn {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .btn:hover {
+      background-color: #45a049;
+    }
+
+    /* ตารางกิจกรรม */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    table, th, td {
+      border: 1px solid black;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+
+    h1 {
+      text-align: center;
+    }
+    
+  </style>
 </head>
 <body>
-    <h1>ยินดีต้อนรับผู้ใช้งาน</h1>
-    
-    <!-- เพิ่มลิงก์สำหรับไปยังหน้ารายการกิจกรรม -->
-    <a href="{% url 'activity_list' %}" class="btn">ดูรายการกิจกรรม</a>
+  <!-- Navbar -->
+  <div class="navbar">
+    <div class="left-side">
+        <a href="#" class="menu">Menu</a>
+    </div>
+    <div class="right-side">
+      {% if user.is_authenticated %}
+        <span>ยินดีต้อนรับ, {{ user.username }}</span>
+        <form method="post" action="{% url 'logout' %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="logout-btn">ออกจากระบบ</button>
+      </form>      
+      {% else %}
+        <a href="{% url 'login' %}">เข้าสู่ระบบ</a>
+        <a href="{% url 'register' %}">สมัครสมาชิก</a>
+      {% endif %}
+    </div>
+  </div>
 
-    <!-- ปุ่มเชื่อมโยงไปยังหน้าต่างๆ -->
-    <a href="{% url 'register' %}" class="btn">สมัครสมาชิก</a>
-    <a href="{% url 'login' %}" class="btn">เข้าสู่ระบบ</a>
-    <a href="{% url 'activity_list' %}" class="btn">กิจกรรมทั้งหมด</a>
-    <a href="{% url 'add_activity' %}" class="btn">เพิ่มกิจกรรม</a>
-    <a href="{% url 'participation_report' %}" class="btn">รายงานการเข้าร่วม</a>
+  <h1>ยินดีต้อนรับผู้ใช้งาน</h1>
+
+  <a href="{% url 'activity_list' %}" class="btn">ดูรายการกิจกรรม</a>
+  <a href="{% url 'activity_list' %}" class="btn">กิจกรรมทั้งหมด</a>
+  <a href="{% url 'add_activity' %}" class="btn">เพิ่มกิจกรรม</a>
+  <a href="{% url 'participation_report' %}" class="btn">รายงานการเข้าร่วม</a>
+
+  <!-- แสดงการ์ดกิจกรรมทั้งหมด -->
+  <h1>กิจกรรมทั้งหมด</h1>
+  <div class="activity-card-container">
+    {% for activity in activities %}
+    <div class="activity-card">
+      <h3>{{ activity.name }}</h3>
+      <p>วันที่: {{ activity.date }}</p>
+      <form method="post" action="{% url 'join_activity' activity.id %}">
+        {% csrf_token %}
+        <button type="submit">เข้าร่วม</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
 </body>
 </html>

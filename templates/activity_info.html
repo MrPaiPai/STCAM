@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หน้าหลัก</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <!-- เมนูนำทาง -->
+    <nav>
+        <ul>
+            <li><a href="{% url 'home' %}">หน้าหลัก</a></li>
+            <li><a href="{% url 'logout' %}" class="btn btn-logout">ออกจากระบบ</a></li>
+        </ul>
+    </nav>
+    
+    <!-- รายการกิจกรรม -->
+    <div class="container">
+        <h2>รายการกิจกรรม</h2>
+        <div class="activity-list">
+            {% for activity in activities %}
+                <div class="activity-card">
+                    <h3>{{ activity.name }}</h3>
+                    <p>{{ activity.description }}</p>
+                    <a href="{% url 'edit_activity' activity.id %}" class="btn btn-edit">แก้ไข</a>
+                    <a href="{% url 'delete_activity' activity.id %}" class="btn btn-delete">ลบ</a>
+                </div>
+            {% endfor %}
+        </div>
+        <a href="{% url 'add_activity' %}" class="btn btn-add">เพิ่มกิจกรรม +</a>
+    </div>
+</body>
+</html>

@@ -121,3 +121,6 @@ MEDIA_URL = '/media/'
 
 # ตัวแปร MEDIA_ROOT ใช้สำหรับเก็บไฟล์ที่ถูกอัปโหลด
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+LOGOUT_REDIRECT_URL = '/'

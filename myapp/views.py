@@ -7,6 +7,12 @@ from .models import Activity, ActivityImage, Participation
 from django.forms import modelformset_factory
 from .models import MyUser
 from .forms import MyUserForm
+from django.shortcuts import render
+from django.urls import reverse
+from django.shortcuts import redirect
+
+def some_view(request):
+    return redirect(reverse('home'))  # ใช้ชื่อ URL 'home' ที่กำหนดใน urls.py
 
 # ฟังก์ชันตรวจสอบว่าเป็น admin หรือไม่
 def is_admin(user):
@@ -25,7 +31,7 @@ def register(request):
             user.user_type = 'student'
             user.save()
             login(request, user)
-            return redirect('index')
+            return redirect('home')
     else:
         form = StudentRegisterForm()
     return render(request, 'register.html', {'form': form})
@@ -37,7 +43,7 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('index')
+            return redirect('home')
     else:
         form = AuthenticationForm()
     return render(request, 'login.html', {'form': form})
@@ -117,3 +123,6 @@ def edit_user(request, user_id):
     else:
         form = MyUserForm(instance=user)  # โหลดข้อมูลของผู้ใช้ในฟอร์ม
     return render(request, 'myapp/user_form.html', {'form': form})
+
+def activity_info(request):
+    return render(request, 'activity_info.html')

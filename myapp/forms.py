@@ -2,14 +2,31 @@ from django import forms
 from .models import CustomUser, Activity, ActivityImage
 from .models import MyUser
 from django.contrib.auth.forms import UserCreationForm
+from .models import BRANCH_CHOICES
 
 # ฟอร์มสำหรับนักศึกษาลงทะเบียน
 class StudentRegisterForm(forms.ModelForm):
+    branch = forms.ChoiceField(
+        choices=BRANCH_CHOICES,
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control'})  # ใช้ dropdown สำหรับสาขา
+    )
+    year = forms.ChoiceField(
+        choices=[
+            (1, 'ชั้นปีที่ 1'),
+            (2, 'ชั้นปีที่ 2'),
+            (3, 'ชั้นปีที่ 3'),
+            (4, 'ชั้นปีที่ 4'),
+        ],
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control'})  # ใช้ dropdown สำหรับชั้นปี
+    )
+
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password']  
+        fields = ['username', 'email', 'password', 'branch', 'year']  # ระบุฟิลด์ที่ต้องการใช้
         widgets = {
-            'password': forms.PasswordInput(),
+            'password': forms.PasswordInput(attrs={'class': 'form-control'}),
         }
 
     def save(self, commit=True):
@@ -23,16 +40,18 @@ class StudentRegisterForm(forms.ModelForm):
 class AdminRegisterForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password', 'user_type']
+        fields = ['username', 'email', 'password', 'branch', 'year', 'user_type']  # เพิ่ม branch และ year
         widgets = {
             'password': forms.PasswordInput(),
+            'year': forms.Select(attrs={'class': 'form-control'}),
+            'branch': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
 # ฟอร์มสำหรับเพิ่มกิจกรรม
 class ActivityForm(forms.ModelForm):
     class Meta:
         model = Activity
-        fields = ['name', 'description', 'date']
+        fields = ['name', 'description', 'start_date', 'end_date']
 
 # ฟอร์มสำหรับอัปโหลดรูปภาพกิจกรรม
 class ActivityImageForm(forms.ModelForm):
