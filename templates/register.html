@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ลงทะเบียน</title>
-    <!-- เชื่อมต่อไฟล์ CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
@@ -15,32 +14,26 @@
             <h3>ลงทะเบียน</h3>
             <form method="post">
                 {% csrf_token %}
-                <!-- ชื่อผู้ใช้ -->
                 <div class="form-group">
                     <label for="id_username">ชื่อผู้ใช้:</label>
                     {{ form.username }}
                 </div>
-                <!-- รหัสผ่าน -->
                 <div class="form-group">
                     <label for="id_password">รหัสผ่าน:</label>
                     {{ form.password }}
                 </div>
-                <!-- สาขา -->
                 <div class="form-group">
                     <label for="id_branch">สาขา:</label>
                     {{ form.branch }}
                 </div>
-                <!-- ชั้นปี -->
                 <div class="form-group">
                     <label for="id_year">ชั้นปี:</label>
                     {{ form.year }}
                 </div>
-                <!-- ปุ่มลงทะเบียน -->
                 <button type="submit" class="btn">ลงทะเบียน</button>
             </form>
         </div>
-    </div>
-    
+        
         <!-- กล่องวิธีการลงทะเบียน -->
         <div class="card instructions">
             <h3>วิธีการลงทะเบียน</h3>
@@ -67,6 +60,5 @@
             </ol>
         </div>
     </div>
-        
 </body>
 </html>

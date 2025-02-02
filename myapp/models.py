@@ -165,3 +165,11 @@ class Activity(models.Model):
     def __str__(self):
         return self.name
 
+#โมเดลสำหรับการเพื่มประกาศที่หน้า home (index.html)
+class Announcement(models.Model):
+    title = models.CharField(max_length=200)  # หัวข้อประกาศ
+    content = models.TextField()  # เนื้อหาประกาศ
+    created_at = models.DateTimeField(auto_now_add=True)  # เวลาประกาศอัตโนมัติ
+
+    def __str__(self):
+        return self.title

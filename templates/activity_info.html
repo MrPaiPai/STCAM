@@ -1,35 +1,76 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>หน้าหลัก</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <title>{{ activity.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        p {
+            font-size: 18px;
+            color: #555;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-    <!-- เมนูนำทาง -->
-    <nav>
-        <ul>
-            <li><a href="{% url 'home' %}">หน้าหลัก</a></li>
-            <li><a href="{% url 'logout' %}" class="btn btn-logout">ออกจากระบบ</a></li>
-        </ul>
-    </nav>
-    
-    <!-- รายการกิจกรรม -->
-    <div class="container">
-        <h2>รายการกิจกรรม</h2>
-        <div class="activity-list">
-            {% for activity in activities %}
-                <div class="activity-card">
-                    <h3>{{ activity.name }}</h3>
-                    <p>{{ activity.description }}</p>
-                    <a href="{% url 'edit_activity' activity.id %}" class="btn btn-edit">แก้ไข</a>
-                    <a href="{% url 'delete_activity' activity.id %}" class="btn btn-delete">ลบ</a>
-                </div>
-            {% endfor %}
-        </div>
-        <a href="{% url 'add_activity' %}" class="btn btn-add">เพิ่มกิจกรรม +</a>
-    </div>
+
+<nav>
+    <ul>
+        <li><a href="{% url 'home' %}">หน้าหลัก</a></li>
+        <li><a href="{% url 'logout' %}" class="btn btn-logout">ออกจากระบบ</a></li>
+    </ul>
+</nav>
+
+<div class="container">
+    <h1>{{ activity.name }}</h1>
+    <p><strong>รายละเอียด:</strong> {{ activity.description }}</p>
+    <p><strong>วันที่เริ่ม:</strong> {{ activity.start_date }}</p>
+    <p><strong>วันที่สิ้นสุด:</strong> {{ activity.end_date }}</p>
+
+    <!-- ปุ่มกลับไปหน้าหลัก -->
+    <a href="{% url 'home' %}" class="btn">กลับไปหน้าหลัก</a>
+
+    <!-- ปุ่มเข้าร่วมกิจกรรม -->
+    <form method="post" action="{% url 'join_activity' activity.id %}" style="margin-top: 10px;">
+        {% csrf_token %}
+        <button type="submit" class="btn">เข้าร่วมกิจกรรม</button>
+    </form>
+</div>
+
 </body>
 </html>

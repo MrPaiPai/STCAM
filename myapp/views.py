@@ -10,6 +10,14 @@ from .forms import MyUserForm
 from django.shortcuts import render
 from django.urls import reverse
 from django.shortcuts import redirect
+from .models import Announcement
+from django.views.decorators.csrf import csrf_exempt  # ใช้ในกรณีที่ไม่ต้องการ CSRF error
+from django.contrib import messages
+from django.contrib.auth import logout
+
+
+# views.py
+
 
 def some_view(request):
     return redirect(reverse('home'))  # ใช้ชื่อ URL 'home' ที่กำหนดใน urls.py
@@ -22,6 +30,8 @@ def is_admin(user):
 def index(request):
     return render(request, 'index.html')
 
+
+
 # ฟังก์ชันสำหรับการลงทะเบียนผู้ใช้
 def register(request):
     if request.method == 'POST':
@@ -29,9 +39,18 @@ def register(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.user_type = 'student'
+            user.set_password(form.cleaned_data["password"])
+            user.is_active = True  # ✅ ตั้งค่าให้ user สามารถใช้งานได้ทันที
             user.save()
-            login(request, user)
-            return redirect('home')
+            
+            # ทำการ login หลังจากลงทะเบียนสำเร็จ
+            user = authenticate(request,
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password']
+            )
+            if user:
+                login(request, user)
+                return redirect('home')
     else:
         form = StudentRegisterForm()
     return render(request, 'register.html', {'form': form})
@@ -39,14 +58,25 @@ def register(request):
 # ฟังก์ชันสำหรับการเข้าสู่ระบบ
 def login_view(request):
     if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            return redirect('home')
-    else:
-        form = AuthenticationForm()
-    return render(request, 'login.html', {'form': form})
+        username = request.POST.get('username')  # ✅ ใช้ get() เพื่อป้องกัน KeyError
+        password = request.POST.get('password')
+        
+        if username and password:  # ✅ ตรวจสอบว่ามีการกรอกข้อมูลครบ
+            user = authenticate(request, username=username, password=password)
+            
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return redirect('home')
+                else:
+                    messages.error(request, "บัญชีผู้ใช้นี้ถูกปิดการใช้งาน")
+            else:
+                messages.error(request, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
+        else:
+            messages.error(request, "กรุณากรอกชื่อผู้ใช้และรหัสผ่าน")
+    
+    return render(request, 'login.html')
+
 
 # ฟังก์ชันสำหรับ admin เพิ่มกิจกรรม
 @user_passes_test(is_admin)
@@ -124,5 +154,41 @@ def edit_user(request, user_id):
         form = MyUserForm(instance=user)  # โหลดข้อมูลของผู้ใช้ในฟอร์ม
     return render(request, 'myapp/user_form.html', {'form': form})
 
-def activity_info(request):
-    return render(request, 'activity_info.html')
+def track_participation(request):
+    return render(request, 'track_participation.html')
+
+def upload_proof(request):
+    return render(request, 'upload_proof.html')
+
+def index(request):
+    activities = Activity.objects.all()  
+    return render(request, 'index.html', {'activities': activities})
+
+
+
+@csrf_exempt
+def add_announcement(request):
+    if request.method == 'POST':
+        title = request.POST.get('title', 'ประกาศใหม่')  # ถ้าไม่กรอกจะใช้ "ประกาศใหม่"
+        content = request.POST.get('announcement_text')
+
+        if content:
+            Announcement.objects.create(title=title, content=content)
+
+        return redirect('/')  # กลับไปหน้าแรกหลังโพสต์
+
+    return render(request, 'add_announcement.html')  # ถ้าหลุดมา GET, ให้แสดงฟอร์มเพิ่มประกาศ
+
+def home(request):
+    activities = Activity.objects.all()
+    announcements = Announcement.objects.order_by('-created_at')  # เรียงจากใหม่ไปเก่า
+    return render(request, 'home.html', {'activities': activities, 'announcements': announcements})
+
+def activity_info(request, activity_id):
+    activity = get_object_or_404(Activity, id=activity_id)  # ดึงกิจกรรมที่ตรงกับ activity_id
+    return render(request, 'activity_info.html', {'activity': activity})  # ส่งข้อมูลไปยังเทมเพลต
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')  # เปลี่ยนเส้นทางไปหน้า login
+

@@ -1,6 +1,4 @@
 /* style.css */
-
-/* ปรับพื้นหลังของหน้า */
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f9;
@@ -9,73 +7,67 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    flex-direction: column; /* ให้เนื้อหาทั้งหมดแสดงในคอลัมน์ */
+    padding: 20px;
 }
 
-/* สำหรับจัดกล่องลงทะเบียนและกล่องวิธีการลงทะเบียน */
 .container {
     display: flex;
-    flex-direction: row;  /* จัดเรียงกล่องข้างกัน (แนวนอน) */
-    gap: 20px;  /* ระยะห่างระหว่างกล่อง */
+    flex-direction: row;
+    gap: 30px;
     justify-content: center;
-    align-items: flex-start;  /* จัดให้กล่องอยู่ที่ด้านบน */
+    align-items: flex-start;
     width: 100%;
-    max-width: 1000px; /* กำหนดขนาดสูงสุด */
+    max-width: 1200px;
 }
 
-/* ปรับขนาดของกล่อง */
-.card {
-    width: 45%; /* ทำให้กล่องแต่ละกล่องมีขนาดประมาณครึ่งหนึ่งของพื้นที่ */
-    max-width: 500px; /* กำหนดความกว้างสูงสุด */
-}
-
-/* สไตล์ของกล่องฟอร์ม */
 .card {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    max-width: 400px;
-    width: 100%;
-    text-align: center;
+    flex: 1;
+    min-width: 300px;
+}
+
+.instructions {
+    flex: 1.2;
 }
 
 .card h3 {
     font-size: 1.5rem;
     color: #333;
     margin-bottom: 20px;
+    text-align: center;
 }
 
-/* สไตล์ของฟอร์ม */
 form {
     width: 100%;
 }
 
 .form-group {
-    display: flex; 
+    display: flex;
     flex-direction: column;
-    align-items: center; /* ทำให้ข้อความและ input อยู่ตรงกลาง */
-    width: 100%; /* ขยายให้ input ครอบคลุมพื้นที่ */
+    align-items: center;
+    width: 100%;
     margin-bottom: 15px;
 }
 
 .form-group label {
     text-align: left;
-    width: 90%; /* ขยายความกว้างของ label */
-    margin-bottom: 5px; /* เพิ่มระยะห่างระหว่าง label กับ input */
+    width: 90%;
+    margin-bottom: 5px;
 }
 
 .form-group input {
-    width: 90%; /* ขยาย input ให้กว้าง */
+    width: 90%;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    box-sizing: border-box; /* ปรับขนาดให้รวม padding */
+    box-sizing: border-box;
 }
 
-/* สไตล์ของปุ่ม */
 button.btn {
-    width: 100%;
+    width: 90%;
     padding: 10px;
     background-color: #007bff;
     color: #fff;
@@ -90,24 +82,22 @@ button.btn:hover {
     background-color: #0056b3;
 }
 
-/* สไตล์ของกล่องวิธีการลงทะเบียน */
 .instructions {
-    text-align: left; /* ให้ข้อความในกล่องวิธีการลงทะเบียนชิดซ้าย */
-    padding-left: 20px; /* เพิ่มระยะห่างทางซ้ายในกล่องวิธีการลงทะเบียน */
-    width: 100%; /* ขยายพื้นที่ให้เหมาะสม */
-    box-sizing: border-box; /* ให้ padding ถูกรวมในการคำนวณขนาด */
+    text-align: left;
+}
+
+.instructions ol {
+    padding-left: 20px;
 }
 
 .instructions ul {
-    padding-left: 20px; /* เพิ่มระยะห่างในรายการ */
+    padding-left: 20px;
 }
 
 .instructions li {
-    margin-bottom: 10px; /* เพิ่มระยะห่างระหว่างรายการ */
+    margin-bottom: 10px;
 }
 
 .boxbox {
     text-align: left;
 }
-
-

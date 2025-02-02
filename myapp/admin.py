@@ -4,6 +4,8 @@ from django.contrib.auth.admin import UserAdmin
 from .models import MyUser
 from .forms import MyUserForm
 from myapp.models import CustomUser  
+from .models import Announcement
+
 
 # Inline class สำหรับจัดการรูปภาพในหน้ากิจกรรม
 class ActivityImageInline(admin.TabularInline):
@@ -82,3 +84,8 @@ class MyUserAdmin(UserAdmin):
     )
 
 admin.site.register(MyUser, MyUserAdmin)
+
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at')
+    search_fields = ('title', 'content')

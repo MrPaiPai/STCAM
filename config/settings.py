@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+#settings.py
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -124,3 +126,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 LOGOUT_REDIRECT_URL = '/'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+SESSION_COOKIE_AGE = 3600  # อายุ session เป็น 1 ชั่วโมง (กำหนดเวลาที่จะหมดอายุ session)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # เมื่อปิดเบราว์เซอร์ session จะหมดอายุ
+

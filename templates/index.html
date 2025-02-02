@@ -9,108 +9,190 @@
   <style>
     /* Styling สำหรับ navbar */
     .navbar {
-    background-color: #333;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .left-side .menu {
-    font-size: 18px;
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
-    padding: 8px 12px;
-  }
-
-  .right-side {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-  }
-
-  /* ตกแต่งข้อความต้อนรับ */
-  .right-side span {
-    font-size: 16px;
-    color: #fff;
-    font-weight: bold;
-  }
-
-  .right-side a {
-    color: #fff;
-    text-decoration: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    background-color: #4CAF50;
-    transition: background-color 0.3s ease;
-  }
-
-  .right-side a:hover {
-    background-color: #45a049;
-  }
-
-   /* เพิ่มการจัดการ spacing ของเมนู */
-   .navbar a {
-    font-size: 16px;
-    color: #fff;
-    padding: 8px 15px;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-  }
-
-  .navbar a:hover {
-    background-color: #45a049;
-  }
-
-    /* สไตล์เพิ่มเติมสำหรับลิงก์ */
-    .navbar a {
-      text-decoration: none;
-      padding: 5px 10px;
-    }
-
-    /* Styling สำหรับปุ่มเมนู */
-    .btn {
+      background-color: lightskyblue;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      text-decoration: none;
-      border-radius: 5px;
+      box-shadow: 0 4px 8px lightblue;
     }
 
-    .btn:hover {
+    .left-side {
+      position: relative;
+    }
+
+    /* ปุ่มเมนูหลัก */
+    .menu {
+      font-size: 18px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 8px 12px;
+      background-color: lightgreen;
+      border-radius: 5px;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .menu:hover {
+      background-color: #2980b9;
+    }
+
+    /* Dropdown menu */
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: 40px;
+      left: 0;
+      background-color: white;
+      min-width: 200px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      overflow: hidden;
+      z-index: 100;
+    }
+
+    .dropdown a {
+      display: block;
+      padding: 12px;
+      text-decoration: none;
+      color: #333;
+      font-size: 14px;
+      transition: background 0.3s ease;
+    }
+
+    .dropdown a:hover {
+      background-color: #f1f1f1;
+    }
+
+    /* แสดง dropdown เมื่อ active */
+    .menu-container.active .dropdown {
+      display: block;
+    }
+
+    .right-side {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .right-side span {
+      font-size: 16px;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .right-side a {
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      background-color: #4CAF50;
+      transition: background-color 0.3s ease;
+    }
+
+    .right-side a:hover {
       background-color: #45a049;
     }
 
-    /* ตารางกิจกรรม */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
+    /* ปุ่ม logout */
+    .logout-btn {
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      cursor: pointer;
+      border-radius: 5px;
     }
 
-    table, th, td {
-      border: 1px solid black;
+    .logout-btn:hover {
+      background-color: darkred;
     }
 
-    th, td {
-      padding: 10px;
-      text-align: left;
+
+    /* สไตล์สำหรับ container */
+    .activity-card-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center; /* จัดให้อยู่ตรงกลาง */
+        padding: 20px;
     }
 
-    h1 {
-      text-align: center;
+    /* สไตล์การ์ด */
+    .activity-card {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        width: 300px; /* กำหนดความกว้าง */
+        text-align: center;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    /* เพิ่มเอฟเฟกต์ hover */
+    .activity-card:hover {
+        transform: translateY(-5px);
+    }
+
+    /* ปรับสไตล์ปุ่ม */
+    .activity-card form button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .activity-card form button:hover {
+        background-color: #45a049;
     }
     
+    /* h1 จัดตรงกลาง */
+    .center-container {
+    justify-items: center;
+}
+
+
+    /* ปรับ layout ให้กิจกรรมและประกาศอยู่ในบรรทัดเดียวกัน */
+    .content-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px; /* ระยะห่างระหว่างสองกล่อง */
+        padding: 20px;
+    }
+
+    /* กำหนดความกว้างให้แต่ละส่วน */
+    .activity-section {
+        flex: 2; /* ให้กินพื้นที่มากกว่า */
+    }
+
+    .announcement-box {
+        flex: 1; /* ให้เล็กกว่ากิจกรรม */
+        background: #fff;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-width: 350px;
+}
+
+
   </style>
 </head>
 <body>
   <!-- Navbar -->
   <div class="navbar">
     <div class="left-side">
+      <div class="menu-container">
         <a href="#" class="menu">Menu</a>
+        <div class="dropdown">
+          <a href="{% url 'track_participation' %}">📊 ติดตามสถานะการเข้าร่วม</a>
+          <a href="{% url 'upload_proof' %}">📎 เพิ่มหลักฐานการเข้าร่วม</a>
+        </div>
+      </div>
     </div>
     <div class="right-side">
       {% if user.is_authenticated %}
@@ -126,26 +208,82 @@
     </div>
   </div>
 
-  <h1>ยินดีต้อนรับผู้ใช้งาน</h1>
+  <div class="center-container">
+    <h1>ยินดีต้อนรับผู้ใช้งาน</h1>
+  </div>
 
   <a href="{% url 'activity_list' %}" class="btn">ดูรายการกิจกรรม</a>
   <a href="{% url 'activity_list' %}" class="btn">กิจกรรมทั้งหมด</a>
   <a href="{% url 'add_activity' %}" class="btn">เพิ่มกิจกรรม</a>
   <a href="{% url 'participation_report' %}" class="btn">รายงานการเข้าร่วม</a>
 
-  <!-- แสดงการ์ดกิจกรรมทั้งหมด -->
-  <h1>กิจกรรมทั้งหมด</h1>
-  <div class="activity-card-container">
-    {% for activity in activities %}
-    <div class="activity-card">
-      <h3>{{ activity.name }}</h3>
-      <p>วันที่: {{ activity.date }}</p>
-      <form method="post" action="{% url 'join_activity' activity.id %}">
-        {% csrf_token %}
-        <button type="submit">เข้าร่วม</button>
+  <div class="content-wrapper">
+    <!-- กล่องกิจกรรม -->
+    <div class="activity-section">
+        <div class="center-container">
+            <h1>กิจกรรมทั้งหมด</h1>
+        </div>
+        
+        <div class="activity-card-container">
+          {% for activity in activities %}
+              <div class="activity-card">
+                  <h3>{{ activity.name }}</h3>
+                  <p><strong>รายละเอียด:</strong> {{ activity.description }}</p> 
+                  <p><strong>วันที่เริ่ม:</strong> {{ activity.start_date }}</p>
+                  <p><strong>วันที่สิ้นสุด:</strong> {{ activity.end_date }}</p>
+      
+                  {% if activity.images.all %}
+                      {% for image in activity.images.all %}
+                          <img src="{{ image.image.url }}" alt="รูปกิจกรรม" style="width: 100%; border-radius: 5px;">
+                      {% endfor %}
+                  {% else %}
+                      <p style="color: red;">ไม่มีรูปภาพ</p>
+                  {% endif %}
+      
+                  <a href="{% url 'activity_info' activity.id %}" class="btn">เข้าร่วม</a>
+              </div>
+          {% empty %}
+              <p>ไม่มีข้อมูลกิจกรรม</p> 
+          {% endfor %}
+      </div>
+      
+    </div>
+
+    <!-- กล่องเพิ่มประกาศ -->
+    <div class="announcement-box">
+      <h2>เพิ่มประกาศ</h2>
+      <form method="post" action="{% url 'add_announcement' %}">
+          {% csrf_token %}
+          <!-- <input type="text" name="title" placeholder="หัวข้อประกาศ" required>
+          <textarea name="announcement_text" placeholder="เขียนประกาศที่นี่..." required></textarea>
+          <button type="submit">โพสต์</button> -->
       </form>
     </div>
-    {% endfor %}
+
   </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const menuContainer = document.querySelector(".menu-container");
+      const menuButton = document.querySelector(".menu");
+      const dropdown = menuContainer.querySelector(".dropdown");
+  
+      // เปิด/ปิด dropdown เมื่อคลิกที่ปุ่ม Menu
+      menuButton.addEventListener("click", function (event) {
+          event.stopPropagation(); // หยุดการกระจายเหตุการณ์
+          menuContainer.classList.toggle("active");
+      });
+  
+      // ปิด dropdown เมื่อคลิกที่อื่น
+      document.addEventListener("click", function () {
+          menuContainer.classList.remove("active");
+      });
+  
+      // ป้องกัน dropdown ปิดเมื่อกดข้างใน
+      dropdown.addEventListener("click", function (event) {
+          event.stopPropagation(); // หยุดการกระจายเหตุการณ์
+      });
+  });
+  </script>
+
 </body>
 </html>

@@ -18,7 +18,11 @@ urlpatterns = [
     path('my-activities/', views.my_activities, name='my_activities'),  # หน้ากิจกรรมที่ผู้ใช้เข้าร่วม
     # path('menu/', views.menu, name='menu'),
     path('activity_info/', views.activity_info, name='activity_info'),
-]
+    path('track-participation/', views.track_participation, name='track_participation'),
+    path('upload-proof/', views.upload_proof, name='upload_proof'),
+    path('add_announcement/', views.add_announcement, name='add_announcement'),
+    path('activity/<int:activity_id>/', views.activity_info, name='activity_info'),  # เส้นทางไปยัง activity_info
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # เพิ่มบรรทัดนี้ใน urls.py เพื่อให้สามารถเข้าถึงไฟล์ที่อัปโหลด (เช่น รูปภาพ)
 if settings.DEBUG:
