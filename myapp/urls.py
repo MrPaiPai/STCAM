@@ -3,6 +3,10 @@ from django.conf.urls.static import static
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from .views import join_activity
+from .views import get_participants
+from .views import edit_profile
+from .views import edit_userprofile
 
 urlpatterns = [
     path('', views.index, name='home'),  # หน้าแรก
@@ -22,6 +26,13 @@ urlpatterns = [
     path('upload-proof/', views.upload_proof, name='upload_proof'),
     path('add_announcement/', views.add_announcement, name='add_announcement'),
     path('activity/<int:activity_id>/', views.activity_info, name='activity_info'),  # เส้นทางไปยัง activity_info
+    path('join-activity/<int:activity_id>/', join_activity, name='join_activity'),
+    path('activity/<int:activity_id>/', views.activity_detail, name='activity_detail'),
+    path('participants/<int:activity_id>/', get_participants, name='get_participants'),
+    path("edit-profile/", edit_profile, name="edit_profile"),
+    path('edit-userprofile/', views.edit_userprofile, name='edit_userprofile'),
+    
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # เพิ่มบรรทัดนี้ใน urls.py เพื่อให้สามารถเข้าถึงไฟล์ที่อัปโหลด (เช่น รูปภาพ)

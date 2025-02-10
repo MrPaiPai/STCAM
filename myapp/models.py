@@ -2,6 +2,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 import datetime
+from django.utils import timezone
+
 
 BRANCH_CHOICES = [
     ('CS', 'วิทยาการคอมพิวเตอร์'),
@@ -18,16 +20,26 @@ BRANCH_CHOICES = [
 # โมเดลสำหรับ Custom User
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
-        ('student', 'นักศึกษา'),  # นักศึกษา
-        ('teacher', 'อาจารย์'),   # อาจารย์
-        ('admin', 'ผู้ดูแลระบบ'),  # ผู้ดูแลระบบ
+        ('student', 'นักศึกษา'),
+        ('teacher', 'อาจารย์'),
+        ('admin', 'ผู้ดูแลระบบ'),
     )
+
     user_type = models.CharField(
-        max_length=10, 
-        choices=USER_TYPE_CHOICES, 
+        max_length=10,
+        choices=USER_TYPE_CHOICES,
         default='student',
         verbose_name='ประเภทผู้ใช้'
     )
+
+    student_id = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name='รหัสนักศึกษา'
+    )
+
     year = models.IntegerField(
         choices=[
             (1, 'ชั้นปีที่ 1'),
@@ -35,34 +47,34 @@ class CustomUser(AbstractUser):
             (3, 'ชั้นปีที่ 3'),
             (4, 'ชั้นปีที่ 4'),
         ],
-        null=True,  # อนุญาตให้เป็นค่าว่าง
+        null=True,
         blank=True,
         verbose_name='ชั้นปี'
     )
+
     branch = models.CharField(
         max_length=255,
-        choices=BRANCH_CHOICES,  # ใช้ตัวเลือกใหม่
-        null=True,  # อนุญาตให้เป็นค่าว่าง
+        choices=BRANCH_CHOICES,
+        null=True,
         blank=True,
         verbose_name='สาขา'
     )
 
     # กำหนด related_name ให้กับ groups และ user_permissions
     groups = models.ManyToManyField(
-        Group, 
-        related_name="customuser_groups",  # กำหนดชื่อที่ไม่ซ้ำกัน
+        Group,
+        related_name="customuser_groups",
         blank=True
     )
     user_permissions = models.ManyToManyField(
-        Permission, 
-        related_name="customuser_permissions",  # กำหนดชื่อที่ไม่ซ้ำกัน
+        Permission,
+        related_name="customuser_permissions",
         blank=True
     )
 
     class Meta:
         verbose_name = 'ผู้ใช้'
         verbose_name_plural = 'ผู้ใช้ทั้งหมด'
-        
 
 
 # โมเดลสำหรับ MyUser
@@ -109,29 +121,28 @@ class ActivityImage(models.Model):
     def __str__(self):
         return f"รูปภาพสำหรับ {self.activity.name}"
 
-## โมเดลสำหรับการเข้าร่วมกิจกรรม
+# โมเดลสำหรับการเข้าร่วมกิจกรรม
 class Participation(models.Model):
     activity = models.ForeignKey(
         'Activity',  
         on_delete=models.CASCADE, 
-        verbose_name='กิจกรรม'  # กิจกรรมที่เข้าร่วม
+        verbose_name='กิจกรรม'
     )
     student = models.ForeignKey(
         CustomUser, 
         on_delete=models.CASCADE, 
-        verbose_name='นักศึกษา'  # นักศึกษาที่เข้าร่วม
+        verbose_name='นักศึกษา'
     )
-    participated = models.BooleanField(
-        default=False, 
-        verbose_name='สถานะการเข้าร่วม'  # สถานะการเข้าร่วม (เข้าร่วมหรือไม่)
-    )
+    joined_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         verbose_name = 'การเข้าร่วมกิจกรรม'
         verbose_name_plural = 'การเข้าร่วมกิจกรรมทั้งหมด'
+        unique_together = ('activity', 'student')  # ป้องกันการสมัครซ้ำ
 
     def __str__(self):
-        return f"{self.student.username} - {self.activity.name}"
+        return f"{self.student.username} เข้าร่วม {self.activity.name}"
+
 
 
 # โมเดลสำหรับกิจกรรม

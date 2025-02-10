@@ -14,10 +14,11 @@ from .models import Announcement
 from django.views.decorators.csrf import csrf_exempt  # ใช้ในกรณีที่ไม่ต้องการ CSRF error
 from django.contrib import messages
 from django.contrib.auth import logout
-
+from django.http import JsonResponse
+from .forms import ProfileEditForm
+from .forms import UserProfileForm
 
 # views.py
-
 
 def some_view(request):
     return redirect(reverse('home'))  # ใช้ชื่อ URL 'home' ที่กำหนดใน urls.py
@@ -30,30 +31,39 @@ def is_admin(user):
 def index(request):
     return render(request, 'index.html')
 
-
-
 # ฟังก์ชันสำหรับการลงทะเบียนผู้ใช้
 def register(request):
     if request.method == 'POST':
         form = StudentRegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.user_type = 'student'
-            user.set_password(form.cleaned_data["password"])
+            user.user_type = 'student'  # กำหนดประเภทเป็น student
             user.is_active = True  # ✅ ตั้งค่าให้ user สามารถใช้งานได้ทันที
             user.save()
-            
+
             # ทำการ login หลังจากลงทะเบียนสำเร็จ
-            user = authenticate(request,
-                username=form.cleaned_data['username'],
-                password=form.cleaned_data['password']
-            )
+            user = authenticate(request, username=form.cleaned_data['username'], password=form.cleaned_data['password1'])
             if user:
                 login(request, user)
-                return redirect('home')
+                return redirect('home')  # เปลี่ยนให้ไปที่หน้า home หลังจาก login สำเร็จ
     else:
         form = StudentRegisterForm()
     return render(request, 'register.html', {'form': form})
+
+
+
+@login_required
+def edit_profile(request):
+    if request.method == "POST":
+        form = ProfileEditForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect("home")  # ✅ กลับไปหน้าแรกหลังจากแก้ไขสำเร็จ
+    else:
+        form = ProfileEditForm(instance=request.user)
+    return render(request, "edit_profile.html", {"form": form})
+
+
 
 # ฟังก์ชันสำหรับการเข้าสู่ระบบ
 def login_view(request):
@@ -105,17 +115,20 @@ def add_activity(request):
 @login_required
 def join_activity(request, activity_id):
     activity = get_object_or_404(Activity, id=activity_id)
-    if request.user.user_type == 'student':
-        # ตรวจสอบว่าผู้ใช้เข้าร่วมกิจกรรมแล้วหรือไม่
-        participation, created = Participation.objects.get_or_create(
-            activity=activity,
-            student=request.user,
-        )
-        if not participation.participated:
-            participation.participated = True
-            participation.save()
-        return redirect('activity_list')
-    return redirect('index')
+    
+    # ตรวจสอบว่าผู้ใช้เคยเข้าร่วมกิจกรรมนี้แล้วหรือไม่
+    participation, created = Participation.objects.get_or_create(
+        activity=activity,
+        student=request.user  # ใช้ user ที่ล็อกอินอยู่
+    )
+
+    if created:
+        messages.success(request, f"คุณได้เข้าร่วมกิจกรรม {activity.name} เรียบร้อยแล้ว!")
+    else:
+        messages.warning(request, f"คุณเคยเข้าร่วมกิจกรรม {activity.name} แล้ว")
+
+    return redirect('activity_detail', activity_id=activity.id)
+
 
 # ฟังก์ชันแสดงรายการกิจกรรมทั้งหมด
 @login_required
@@ -192,3 +205,60 @@ def logout_view(request):
     logout(request)
     return redirect('login')  # เปลี่ยนเส้นทางไปหน้า login
 
+
+
+def activity_detail(request, activity_id):
+    # ดึงข้อมูลกิจกรรมจากฐานข้อมูลโดยใช้ activity_id
+    activity = get_object_or_404(Activity, id=activity_id)
+    
+    # ส่งข้อมูลกิจกรรมไปยังเทมเพลต
+    context = {
+        'activity': activity,
+    }
+    
+    # เรนเดอร์เทมเพลตและส่ง context ไปด้วย
+    return render(request, 'myapp/activity_detail.html', context)
+
+
+def get_participants(request, activity_id):
+    try:
+        activity = get_object_or_404(Activity, id=activity_id)
+        participants = Participation.objects.filter(activity=activity)
+        data = [
+            {
+                "username": p.student.username, 
+                "full_name": f"{p.student.first_name} {p.student.last_name}",
+                "year": p.student.year,  
+                "branch": p.student.get_branch_display(),
+                "joined_at": p.joined_at.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            for p in participants
+        ]
+        return JsonResponse({"participants": data})
+    except Activity.DoesNotExist:
+        return JsonResponse({"error": "กิจกรรมไม่พบ"}, status=404)
+
+
+#ไปยังหน้าเเก้ไขข้อมูลส่วนตัว
+@login_required
+def edit_userprofile(request):
+    user = request.user  # ดึงข้อมูลผู้ใช้ที่ล็อกอินอยู่
+
+    # ดึงข้อมูลกิจกรรมที่ผู้ใช้เข้าร่วม
+    participations = Participation.objects.filter(student=user)
+    activities = [participation.activity for participation in participations]
+
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('edit_userprofile')  # รีเฟรชหน้าหลังจากบันทึกสำเร็จ
+    else:
+        form = UserProfileForm(instance=user)
+
+    # ส่งข้อมูล activities ไปยัง template
+    return render(request, 'edit_userprofile.html', {
+        'form': form,
+        'user': user,
+        'activities': activities  # ส่งข้อมูลกิจกรรมที่ผู้ใช้เข้าร่วม
+    })

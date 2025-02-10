@@ -3,38 +3,45 @@ from .models import CustomUser, Activity, ActivityImage
 from .models import MyUser
 from django.contrib.auth.forms import UserCreationForm
 from .models import BRANCH_CHOICES
+from django.contrib.auth.models import User
+
 
 # ฟอร์มสำหรับนักศึกษาลงทะเบียน
-class StudentRegisterForm(forms.ModelForm):
+class StudentRegisterForm(UserCreationForm):
+    first_name = forms.CharField(max_length=100, required=True, label="ชื่อจริง")
+    last_name = forms.CharField(max_length=100, required=True, label="นามสกุล")
+    student_id = forms.CharField(max_length=20, required=True, label="รหัสนักศึกษา")
     branch = forms.ChoiceField(
         choices=BRANCH_CHOICES,
         required=True,
-        widget=forms.Select(attrs={'class': 'form-control'})  # ใช้ dropdown สำหรับสาขา
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label="สาขา"
     )
     year = forms.ChoiceField(
-        choices=[
-            (1, 'ชั้นปีที่ 1'),
-            (2, 'ชั้นปีที่ 2'),
-            (3, 'ชั้นปีที่ 3'),
-            (4, 'ชั้นปีที่ 4'),
-        ],
+        choices=[(1, 'ชั้นปีที่ 1'), (2, 'ชั้นปีที่ 2'), (3, 'ชั้นปีที่ 3'), (4, 'ชั้นปีที่ 4')],
         required=True,
-        widget=forms.Select(attrs={'class': 'form-control'})  # ใช้ dropdown สำหรับชั้นปี
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label="ชั้นปี"
     )
+    password1 = forms.CharField(widget=forms.PasswordInput, required=True, label="รหัสผ่าน")
+    password2 = forms.CharField(widget=forms.PasswordInput, required=True, label="ยืนยันรหัสผ่าน")
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password', 'branch', 'year']  # ระบุฟิลด์ที่ต้องการใช้
-        widgets = {
-            'password': forms.PasswordInput(attrs={'class': 'form-control'}),
-        }
-
+        fields = ['username', 'email', 'password1', 'password2', 'first_name', 'last_name', 'student_id', 'branch', 'year']
+    
     def save(self, commit=True):
         user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password1"])  # ตั้งค่ารหัสผ่าน
+        user.student_id = self.cleaned_data["student_id"]  # บันทึกรหัสนักศึกษา
+        user.branch = self.cleaned_data["branch"]  # บันทึกสาขา
+        user.year = self.cleaned_data["year"]  # บันทึกชั้นปี
         user.user_type = 'student'  # ตั้งค่า user_type เป็น student
         if commit:
             user.save()
         return user
+
+
 
 # ฟอร์มสำหรับแอดมินลงทะเบียน
 class AdminRegisterForm(forms.ModelForm):
@@ -80,3 +87,20 @@ class RegisterForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput)
     branch = forms.CharField(max_length=100)
     year = forms.ChoiceField(choices=[(1, 'ปี 1'), (2, 'ปี 2'), (3, 'ปี 3'), (4, 'ปี 4')])
+
+#เเก้ไขข้อมูลส่วนตัว
+class ProfileEditForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=100, required=True, label="ชื่อจริง")
+    last_name = forms.CharField(max_length=100, required=True, label="นามสกุล")
+    student_id = forms.CharField(max_length=20, required=True, label="รหัสนักศึกษา")
+
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'student_id']
+
+
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']

@@ -14,34 +14,38 @@ class ActivityImageInline(admin.TabularInline):
     verbose_name = 'รูปภาพ'
     verbose_name_plural = 'รูปภาพทั้งหมด'
 
-# การจัดการ CustomUser
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from .models import CustomUser
+
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
-    form = MyUserForm  # ถ้าต้องการใช้ฟอร์มที่กำหนดเอง
     model = CustomUser
-    list_display = ('username', 'email', 'user_type', 'year', 'branch', 'is_active', 'is_staff')  # เพิ่ม field ใหม่
-    list_filter = ('user_type', 'year', 'branch', 'is_active', 'is_staff')  # เพิ่มตัวกรองชั้นปีและสาขา
-    search_fields = ('username', 'email', 'year', 'branch')  # สามารถค้นหาตามชั้นปีและสาขา
 
-    # การจัดการฟอร์มการเพิ่มผู้ใช้
+    # แสดงฟิลด์เพิ่มเติมในหน้ารายการผู้ใช้
+    list_display = ('username', 'email', 'first_name', 'last_name', 'user_type', 'student_id', 'year', 'branch', 'is_active', 'is_staff')
+    list_filter = ('user_type', 'year', 'branch', 'is_active', 'is_staff')
+    search_fields = ('username', 'email', 'first_name', 'last_name', 'student_id', 'year', 'branch')
+
+    # ฟอร์มเพิ่มผู้ใช้ใหม่
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', 'password1', 'password2', 'user_type', 'year', 'branch'),
+            'fields': ('username', 'email', 'first_name', 'last_name', 'password1', 'password2', 'user_type', 'student_id', 'year', 'branch'),
         }),
     )
 
-    # การจัดการฟอร์มการแก้ไขผู้ใช้
+    # ฟอร์มแก้ไขผู้ใช้
     fieldsets = (
         (None, {
-            'fields': ('username', 'email', 'password', 'user_type', 'year', 'branch', 'is_active', 'is_staff', 'groups', 'user_permissions'),
+            'fields': ('username', 'email', 'first_name', 'last_name', 'password', 'user_type', 'student_id', 'year', 'branch', 'is_active', 'is_staff', 'groups', 'user_permissions'),
         }),
     )
 
     # แสดงผลตามประเภทผู้ใช้
     def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        return queryset
+        return super().get_queryset(request)
+
 
 # การจัดการ Activity พร้อม Inline สำหรับรูปภาพ
 @admin.register(Activity)
@@ -62,17 +66,30 @@ class ActivityAdmin(admin.ModelAdmin):
             return obj.created_by == request.user  # อนุญาตเฉพาะกิจกรรมที่สร้างโดยอาจารย์นั้น
         return super().has_change_permission(request, obj)
 
+
+
+# เช็คก่อนว่า Participation ถูก register ไปแล้วหรือยัง
+if admin.site.is_registered(Participation):
+    admin.site.unregister(Participation)
+
 @admin.register(Participation)
 class ParticipationAdmin(admin.ModelAdmin):
-    list_display = ('activity', 'student', 'participated')
-    list_filter = ('participated', 'activity')  # เพิ่มตัวกรองตามกิจกรรม
+    list_display = ('activity', 'student', 'participated')  # ใช้ method แทน field
+    list_filter = ('activity',)  # ลบ 'participated'
+    search_fields = ('student__username', 'activity__name')
+    ordering = ('activity', 'student')
 
-    # จำกัดการแสดงผลตามประเภทผู้ใช้
+    def participated(self, obj):
+        return True  # หรือใช้เงื่อนไขที่เหมาะสม เช่น obj.date_joined ไม่เป็น null
+    participated.short_description = "เข้าร่วมแล้ว"  # เปลี่ยนชื่อคอลัมน์ใน Django Admin
+
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        if request.user.user_type == 'teacher':
+        if hasattr(request.user, 'user_type') and request.user.user_type == 'teacher':
             return queryset.filter(activity__created_by=request.user)
         return queryset
+
+
 
 class MyUserAdmin(UserAdmin):
     form = MyUserForm
@@ -89,3 +106,7 @@ admin.site.register(MyUser, MyUserAdmin)
 class AnnouncementAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_at')
     search_fields = ('title', 'content')
+
+
+
+

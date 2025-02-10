@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ระบบจัดการกิจกรรม{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>
+    .navbar {
+      background-color: #3498db;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .menu-container {
+      position: relative;
+    }
+
+    .menu {
+      font-size: 18px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 10px 15px;
+      background-color: #2ecc71;
+      border-radius: 5px;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .menu:hover {
+      background-color: #27ae60;
+    }
+
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background-color: white;
+      min-width: 200px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      overflow: hidden;
+      z-index: 100;
+    }
+
+    .dropdown a {
+      display: block;
+      padding: 12px 15px;
+      text-decoration: none;
+      color: #333;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+
+    .dropdown a:hover {
+      background-color: #f1f1f1;
+    }
+
+    .menu-container:hover .dropdown {
+      display: block;
+    }
+
+    .right-side {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .right-side span {
+      color: white;
+      font-size: 16px;
+    }
+
+    .right-side a, .logout-btn {
+      color: white;
+      text-decoration: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      background-color: #e67e22;
+      transition: background-color 0.3s ease;
+    }
+
+    .right-side a:hover {
+      background-color: #d35400;
+    }
+
+    .logout-btn {
+      background-color: #c0392b;
+      border: none;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background-color: #a93226;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+      background: white;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .right-side {
+        margin-top: 10px;
+      }
+      .dropdown {
+        position: static;
+        width: 100%;
+      }
+      .menu-container:hover .dropdown {
+        display: none;
+      }
+      .menu-container:focus-within .dropdown {
+        display: block;
+      }
+      .container {
+        margin: 15px;
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="menu-container">
+      <a href="#" class="menu">เมนู</a>
+      <div class="dropdown">
+        <a href="{% url 'track_participation' %}">📊 ติดตามสถานะ</a>
+        <a href="{% url 'upload_proof' %}">📎 เพิ่มหลักฐาน</a>
+        <a href="{% url 'edit_userprofile' %}">📝 แก้ไขข้อมูลส่วนตัว</a>
+      </div>
+    </div>
+    <div class="right-side">
+      {% if user.is_authenticated %}
+        <span>ยินดีต้อนรับ, {{ user.username }}</span>
+        <form method="post" action="{% url 'logout' %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="logout-btn">ออกจากระบบ</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}">เข้าสู่ระบบ</a>
+        <a href="{% url 'register' %}">สมัครสมาชิก</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="container">
+    {% block content %}
+    {% endblock %}
+  </div>
+</body>
+</html>

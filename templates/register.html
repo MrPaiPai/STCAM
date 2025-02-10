@@ -14,13 +14,41 @@
             <h3>ลงทะเบียน</h3>
             <form method="post">
                 {% csrf_token %}
+                
+                <!-- แสดงข้อผิดพลาด -->
+                {% if form.errors %}
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
                 <div class="form-group">
                     <label for="id_username">ชื่อผู้ใช้:</label>
                     {{ form.username }}
                 </div>
                 <div class="form-group">
-                    <label for="id_password">รหัสผ่าน:</label>
-                    {{ form.password }}
+                    <label for="id_first_name">ชื่อจริง:</label>
+                    {{ form.first_name }}  <!-- เพิ่มฟิลด์ชื่อจริง -->
+                </div>
+                <div class="form-group">
+                    <label for="id_last_name">นามสกุล:</label>
+                    {{ form.last_name }}  <!-- เพิ่มฟิลด์นามสกุล -->
+                </div>
+                <div class="form-group">
+                    <label for="id_student_id">รหัสนักศึกษา:</label>
+                    {{ form.student_id }}  <!-- เพิ่มฟิลด์รหัสนักศึกษา -->
+                </div>
+                <div class="form-group">
+                    <label for="id_password1">รหัสผ่าน:</label>
+                    {{ form.password1 }}
+                </div>
+                <div class="form-group">
+                    <label for="id_password2">ยืนยันรหัสผ่าน:</label>
+                    {{ form.password2 }}
                 </div>
                 <div class="form-group">
                     <label for="id_branch">สาขา:</label>
@@ -33,6 +61,7 @@
                 <button type="submit" class="btn">ลงทะเบียน</button>
             </form>
         </div>
+
         
         <!-- กล่องวิธีการลงทะเบียน -->
         <div class="card instructions">
