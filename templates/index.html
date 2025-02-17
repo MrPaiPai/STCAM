@@ -4,128 +4,152 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>หน้าเเรก</title>
-  <!-- เพิ่ม CSS ตรงนี้ -->
+  <title>หน้าแรก</title>
+  
   <style>
+    body {
+      padding-top: 60px; /* ปรับตามความสูงของ navbar */
+    }
+
     /* Styling สำหรับ navbar */
-    .navbar {
-      background-color: lightskyblue;
+    .base-navbar {
+      background-color: #3498db;
+      width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 20px;
-      box-shadow: 0 4px 8px lightblue;
+      padding: 12px 20px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
     }
 
-    .left-side {
+    .base-menu-container {
       position: relative;
     }
 
-    /* ปุ่มเมนูหลัก */
-    .menu {
+    .base-menu {
       font-size: 18px;
-      color: #fff;
+      color: white;
       text-decoration: none;
       font-weight: bold;
-      padding: 8px 12px;
-      background-color: lightgreen;
+      padding: 10px 15px;
+      background-color: #2ecc71;
       border-radius: 5px;
       cursor: pointer;
       display: inline-block;
     }
 
-    .menu:hover {
-      background-color: #2980b9;
+    .base-menu:hover {
+      background-color: #27ae60;
     }
 
-    /* Dropdown menu */
-    .dropdown {
+    .base-dropdown {
       display: none;
       position: absolute;
-      top: 40px;
+      top: 100%;
       left: 0;
       background-color: white;
       min-width: 200px;
       box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
       border-radius: 5px;
-      overflow: hidden;
       z-index: 100;
     }
 
-    .dropdown a {
+    .base-dropdown a {
       display: block;
-      padding: 12px;
+      padding: 12px 15px;
       text-decoration: none;
       color: #333;
-      font-size: 14px;
+      font-size: 16px;
       transition: background 0.3s ease;
     }
 
-    .dropdown a:hover {
+    .base-dropdown a:hover {
       background-color: #f1f1f1;
     }
 
-    /* แสดง dropdown เมื่อ active */
-    .menu-container.active .dropdown {
+    .base-menu-container:hover .base-dropdown {
       display: block;
     }
 
-    .right-side {
+    .base-right-side {
       display: flex;
       gap: 15px;
       align-items: center;
     }
 
-    .right-side span {
+    .base-right-side span {
+      color: white;
       font-size: 16px;
-      color: #fff;
-      font-weight: bold;
     }
 
-    .right-side a {
-      color: #fff;
+    .base-right-side a, .base-logout-btn {
+      color: white;
       text-decoration: none;
       padding: 8px 15px;
       border-radius: 5px;
-      background-color: #4CAF50;
+      background-color: #e67e22;
       transition: background-color 0.3s ease;
     }
 
-    .right-side a:hover {
-      background-color: #45a049;
+    .base-right-side a:hover {
+      background-color: #d35400;
     }
 
-    /* ปุ่ม logout */
-    .logout-btn {
-      background-color: red;
-      color: white;
+    .base-logout-btn {
+      background-color: #c0392b;
       border: none;
-      padding: 8px 15px;
       cursor: pointer;
-      border-radius: 5px;
     }
 
-    .logout-btn:hover {
-      background-color: darkred;
+    .base-logout-btn:hover {
+      background-color: #a93226;
     }
 
+    @media (max-width: 768px) {
+      .base-navbar {
+        position: fixed;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .base-right-side {
+        margin-top: 10px;
+      }
+      .base-dropdown {
+        position: static;
+        width: 100%;
+      }
+      .base-menu-container:hover .base-dropdown {
+        display: none;
+      }
+      .base-menu-container:focus-within .base-dropdown {
+        display: block;
+      }
+    }
 
     /* สไตล์สำหรับ container */
     .activity-card-container {
         display: flex;
         flex-wrap: wrap;
         gap: 20px;
-        justify-content: center; /* จัดให้อยู่ตรงกลาง */
+        justify-content: flex-start; /* จัดการ์ดชิดซ้าย */
         padding: 20px;
+        background-color: transparent; /* ไม่มีพื้นหลัง */
+        width: 100%; /* กินพื้นที่เต็มหน้าจอ */
+        max-width: 100%; /* ไม่จำกัดความกว้าง */
+        margin: 0; /* ลบ margin */
     }
 
     /* สไตล์การ์ด */
     .activity-card {
-        background: #fff;
+        background: #fff; /* พื้นหลังการ์ดเป็นสีขาว */
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         padding: 15px;
-        width: 300px; /* กำหนดความกว้าง */
+        width: calc(33.33% - 20px); /* 3 การ์ดต่อแถว */
         text-align: center;
         transition: transform 0.3s ease-in-out;
     }
@@ -152,9 +176,9 @@
     
     /* h1 จัดตรงกลาง */
     .center-container {
-    justify-items: center;
-}
-
+        text-align: center;
+        padding: 20px 0; /* เพิ่ม padding บนและล่าง */
+    }
 
     /* ปรับ layout ให้กิจกรรมและประกาศอยู่ในบรรทัดเดียวกัน */
     .content-wrapper {
@@ -163,45 +187,68 @@
         align-items: flex-start;
         gap: 20px; /* ระยะห่างระหว่างสองกล่อง */
         padding: 20px;
+        width: 100%; /* กินพื้นที่เต็มหน้าจอ */
+        max-width: 100%; /* ไม่จำกัดความกว้าง */
+        margin: 0; /* ลบ margin */
+        background-color: transparent; /* ไม่มีพื้นหลัง */
     }
 
     /* กำหนดความกว้างให้แต่ละส่วน */
     .activity-section {
         flex: 2; /* ให้กินพื้นที่มากกว่า */
+        width: 100%; /* กินพื้นที่เต็มหน้าจอ */
+        background-color: transparent; /* ไม่มีพื้นหลัง */
     }
 
     .announcement-box {
         flex: 1; /* ให้เล็กกว่ากิจกรรม */
-        background: #fff;
+        background: #fff; /* พื้นหลังกล่องประกาศเป็นสีขาว */
         padding: 15px;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         max-width: 350px;
-}
+        height: fit-content; /* ปรับความสูงให้พอดีกับเนื้อหา */
+    }
 
+    /* ปรับการ์ดให้แสดง 3 การ์ดต่อแถว */
+    @media (max-width: 1200px) {
+        .activity-card {
+            width: calc(50% - 20px); /* 2 การ์ดต่อแถว */
+        }
+    }
 
-  </style>
+    @media (max-width: 768px) {
+        .activity-card {
+            width: 100%; /* 1 การ์ดต่อแถว */
+        }
+    }
+
+    /* ใช้ focus-within เพื่อเปิด dropdown บนมือถือ */
+    .base-menu-container:focus-within .base-dropdown {
+      display: block;
+    }
+</style>
+
 </head>
 <body>
   <!-- Navbar -->
-  <div class="navbar">
-    <div class="left-side">
-      <div class="menu-container">
-        <a href="#" class="menu">Menu</a>
-        <div class="dropdown">
-          <a href="{% url 'track_participation' %}">📊 ติดตามสถานะการเข้าร่วม</a>
-          <a href="{% url 'upload_proof' %}">📎 เพิ่มหลักฐานการเข้าร่วม</a>
-          <a href="{% url 'edit_userprofile' %}">ข้อมูลส่วนตัว</a>
-        </div>
+  <div class="base-navbar">
+    <div class="base-menu-container">
+      <a href="#" class="base-menu">เมนู</a>
+      <div class="base-dropdown">
+        <a href="{% url 'home' %}">🏠 กลับไปหน้าหลัก</a>
+        <a href="{% url 'track_participation' %}">📊 ติดตามสถานะ</a>
+        <a href="{% url 'upload_proof' %}">📎 เพิ่มหลักฐาน</a>
+        <a href="{% url 'edit_userprofile' %}">👤 ข้อมูลส่วนตัว</a>
       </div>
     </div>
-    <div class="right-side">
+    <div class="base-right-side">
       {% if user.is_authenticated %}
         <span>ยินดีต้อนรับ, {{ user.username }}</span>
         <form method="post" action="{% url 'logout' %}" style="display:inline;">
           {% csrf_token %}
-          <button type="submit" class="logout-btn">ออกจากระบบ</button>
-      </form>      
+          <button type="submit" class="base-logout-btn">ออกจากระบบ</button>
+        </form>
       {% else %}
         <a href="{% url 'login' %}">เข้าสู่ระบบ</a>
         <a href="{% url 'register' %}">สมัครสมาชิก</a>
@@ -213,11 +260,6 @@
     <h1>ยินดีต้อนรับผู้ใช้งาน</h1>
   </div>
 
-  <a href="{% url 'activity_list' %}" class="btn">ดูรายการกิจกรรม</a>
-  <a href="{% url 'activity_list' %}" class="btn">กิจกรรมทั้งหมด</a>
-  <a href="{% url 'add_activity' %}" class="btn">เพิ่มกิจกรรม</a>
-  <a href="{% url 'participation_report' %}" class="btn">รายงานการเข้าร่วม</a>
-
   <div class="content-wrapper">
     <!-- กล่องกิจกรรม -->
     <div class="activity-section">
@@ -226,65 +268,63 @@
         </div>
         
         <div class="activity-card-container">
-          {% for activity in activities %}
-              <div class="activity-card">
-                  <h3>{{ activity.name }}</h3>
-                  <p><strong>รายละเอียด:</strong> {{ activity.description }}</p> 
-                  <p><strong>วันที่เริ่ม:</strong> {{ activity.start_date }}</p>
-                  <p><strong>วันที่สิ้นสุด:</strong> {{ activity.end_date }}</p>
-      
-                  {% if activity.images.all %}
-                      {% for image in activity.images.all %}
-                          <img src="{{ image.image.url }}" alt="รูปกิจกรรม" style="width: 100%; border-radius: 5px;">
-                      {% endfor %}
-                  {% else %}
-                      <p style="color: red;">ไม่มีรูปภาพ</p>
-                  {% endif %}
-      
-                  <a href="{% url 'activity_info' activity.id %}" class="btn">รายละเอียดกิจกรรม</a>
-              </div>
-          {% empty %}
-              <p>ไม่มีข้อมูลกิจกรรม</p> 
-          {% endfor %}
-      </div>
-      
+            {% for activity in activities %}
+                <div class="activity-card">
+                    <h3>{{ activity.name }}</h3>
+                    <p><strong>รายละเอียด:</strong> {{ activity.description }}</p> 
+                    <p><strong>วันที่เริ่ม:</strong> {{ activity.start_date }}</p>
+                    <p><strong>วันที่สิ้นสุด:</strong> {{ activity.end_date }}</p>
+        
+                    {% if activity.images.all %}
+                        {% for image in activity.images.all %}
+                            <img src="{{ image.image.url }}" alt="รูปกิจกรรม" style="width: 100%; border-radius: 5px;">
+                        {% endfor %}
+                    {% else %}
+                        <p style="color: red;">ไม่มีรูปภาพ</p>
+                    {% endif %}
+        
+                    <a href="{% url 'activity_info' activity.id %}" class="btn">รายละเอียดกิจกรรม</a>
+                </div>
+            {% empty %}
+                <p>ไม่มีข้อมูลกิจกรรม</p> 
+            {% endfor %}
+        </div>
     </div>
 
     <!-- กล่องเพิ่มประกาศ -->
     <div class="announcement-box">
-      <h2>เพิ่มประกาศ</h2>
-      <form method="post" action="{% url 'add_announcement' %}">
-          {% csrf_token %}
-          <!-- <input type="text" name="title" placeholder="หัวข้อประกาศ" required>
-          <textarea name="announcement_text" placeholder="เขียนประกาศที่นี่..." required></textarea>
-          <button type="submit">โพสต์</button> -->
-      </form>
+        <h2>เพิ่มประกาศ</h2>
+        <form method="post" action="{% url 'add_announcement' %}">
+            {% csrf_token %}
+            <!-- <input type="text" name="title" placeholder="หัวข้อประกาศ" required>
+            <textarea name="announcement_text" placeholder="เขียนประกาศที่นี่..." required></textarea>
+            <button type="submit">โพสต์</button> -->
+        </form>
     </div>
-
   </div>
+
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      const menuContainer = document.querySelector(".menu-container");
-      const menuButton = document.querySelector(".menu");
-      const dropdown = menuContainer.querySelector(".dropdown");
-  
-      // เปิด/ปิด dropdown เมื่อคลิกที่ปุ่ม Menu
-      menuButton.addEventListener("click", function (event) {
-          event.stopPropagation(); // หยุดการกระจายเหตุการณ์
-          menuContainer.classList.toggle("active");
-      });
-  
-      // ปิด dropdown เมื่อคลิกที่อื่น
-      document.addEventListener("click", function () {
-          menuContainer.classList.remove("active");
-      });
-  
-      // ป้องกัน dropdown ปิดเมื่อกดข้างใน
-      dropdown.addEventListener("click", function (event) {
-          event.stopPropagation(); // หยุดการกระจายเหตุการณ์
-      });
-  });
-  </script>
+        const menuContainer = document.querySelector(".base-menu-container");
+        const menuButton = document.querySelector(".base-menu");
+        const dropdown = menuContainer.querySelector(".base-dropdown");
 
+        // เปิด/ปิด dropdown เมื่อคลิกที่ปุ่ม Menu
+        menuButton.addEventListener("click", function (event) {
+            event.stopPropagation(); // หยุดการกระจายเหตุการณ์
+            menuContainer.classList.toggle("active");
+        });
+
+        // ปิด dropdown เมื่อคลิกที่อื่น
+        document.addEventListener("click", function () {
+            menuContainer.classList.remove("active");
+        });
+
+        // ป้องกัน dropdown ปิดเมื่อกดข้างใน
+        dropdown.addEventListener("click", function (event) {
+            event.stopPropagation(); // หยุดการกระจายเหตุการณ์
+        });
+    });
+  </script>
 </body>
 </html>

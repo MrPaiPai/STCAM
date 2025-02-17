@@ -1,11 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>upload_proof</title>
-</head>
-<body>
-    <h1>upload_proof</h1>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>อัพโหลดหลักฐานกิจกรรม</h2>
+        <a href="{% url 'user_upload_proof_list' %}" class="btn btn-primary">ดูรายการที่อัพโหลดแล้ว</a>
+    </div>
+    
+    {% for registration in registrations %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">{{ registration.activity.name }}</h5>
+            <p class="card-text">วันที่ลงทะเบียน: {{ registration.registration_date|date:"d/m/Y H:i" }}</p>
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="activity_id" value="{{ registration.activity.id }}">
+                <div class="mb-3">
+                    <label for="proof_image" class="form-label">อัพโหลดรูปภาพ</label>
+                    <input type="file" class="form-control" id="proof_image" name="proof_image" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn btn-success">บันทึก</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

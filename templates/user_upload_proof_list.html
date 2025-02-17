@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>รายการหลักฐานที่อัพโหลดแล้ว</h2>
+        <a href="{% url 'upload_proof' %}" class="btn btn-primary">อัพโหลดหลักฐานเพิ่มเติม</a>
+    </div>
+    
+    <div class="row">
+        {% for activity in activities %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ activity.activity_name }}</h5>
+                    <p>วันที่ลงทะเบียน: {{ activity.registration_date|date:"d/m/Y H:i" }}</p>
+                    {% if activity.proof_image %}
+                        <img src="{{ activity.proof_image.url }}" class="img-fluid mb-2" alt="หลักฐานกิจกรรม">
+                        <p>วันที่อัพโหลด: {{ activity.proof_upload_date|date:"d/m/Y H:i" }}</p>
+                    {% else %}
+                        <p class="text-warning">ยังไม่ได้อัพโหลดหลักฐาน</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -7,9 +7,7 @@ from .models import Activity, ActivityImage, Participation
 from django.forms import modelformset_factory
 from .models import MyUser
 from .forms import MyUserForm
-from django.shortcuts import render
 from django.urls import reverse
-from django.shortcuts import redirect
 from .models import Announcement
 from django.views.decorators.csrf import csrf_exempt  # ใช้ในกรณีที่ไม่ต้องการ CSRF error
 from django.contrib import messages
@@ -17,6 +15,9 @@ from django.contrib.auth import logout
 from django.http import JsonResponse
 from .forms import ProfileEditForm
 from .forms import UserProfileForm
+from .models import ActivityRegistration
+from django.utils import timezone
+
 
 # views.py
 
@@ -167,8 +168,31 @@ def edit_user(request, user_id):
         form = MyUserForm(instance=user)  # โหลดข้อมูลของผู้ใช้ในฟอร์ม
     return render(request, 'myapp/user_form.html', {'form': form})
 
+#ติดตามสถานนะการลงทะเบียน
+@login_required
 def track_participation(request):
-    return render(request, 'track_participation.html')
+    # ดึงเฉพาะกิจกรรมที่ user เข้าร่วม
+    participations = Participation.objects.filter(student=request.user).select_related('activity')
+    
+    context = {
+        'participations': participations,
+    }
+    return render(request, 'track_participation.html', context)
+
+#อัพเดจสถานนะการลงทะเบียน
+@login_required
+def update_participation_status(request, participation_id):
+    if request.method == 'POST':
+        participation = get_object_or_404(Participation, id=participation_id)
+        new_status = request.POST.get('status')
+        if new_status in ['approved', 'rejected']:
+            participation.status = new_status
+            participation.save()
+            return JsonResponse({
+                'status': 'success',
+                'new_status': participation.get_status_display()
+            })
+    return JsonResponse({'status': 'error'}, status=400)
 
 def upload_proof(request):
     return render(request, 'upload_proof.html')
@@ -178,7 +202,7 @@ def index(request):
     return render(request, 'index.html', {'activities': activities})
 
 
-
+#เพื่มประกาศ
 @csrf_exempt
 def add_announcement(request):
     if request.method == 'POST':
@@ -262,3 +286,47 @@ def edit_userprofile(request):
         'user': user,
         'activities': activities  # ส่งข้อมูลกิจกรรมที่ผู้ใช้เข้าร่วม
     })
+
+#อัพโหลดหลักฐานการเข้าร่วม
+@login_required
+def upload_proof(request):
+    # ดึงกิจกรรมที่ผู้ใช้ลงทะเบียนและได้รับการอนุมัติแล้ว
+    participations = Participation.objects.filter(
+        student=request.user,
+        status='approved'
+    ).select_related('activity')
+    
+    print("Participations:", list(participations))  # Debug ดูว่ามีข้อมูลหรือไม่
+
+    if request.method == 'POST':
+        activity_id = request.POST.get('activity_id')
+        proof_image = request.FILES.get('proof_image')
+        
+        if activity_id and proof_image:
+            activity = Activity.objects.get(id=activity_id)
+            registration, created = ActivityRegistration.objects.get_or_create(
+                user=request.user,
+                activity=activity
+            )
+            registration.proof_image = proof_image
+            registration.proof_upload_date = timezone.now()
+            registration.save()
+            return redirect('user_upload_proof_list')
+    
+    # ดึงหรือสร้าง ActivityRegistration สำหรับแต่ละกิจกรรม
+    registrations = []
+    for participation in participations:
+        registration, created = ActivityRegistration.objects.get_or_create(
+            user=request.user,
+            activity=participation.activity
+        )
+        registrations.append(registration)
+    
+    return render(request, 'upload_proof.html', {
+        'registrations': registrations  # ส่งข้อมูลไปยังเทมเพลต
+    })
+
+@login_required
+def user_upload_proof_list(request):
+    activities = ActivityRegistration.objects.filter(user=request.user)
+    return render(request, 'user_upload_proof_list.html', {'activities': activities})

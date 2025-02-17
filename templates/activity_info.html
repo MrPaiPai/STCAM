@@ -1,186 +1,15 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
+
+{% block title %}{{ activity.name }}{% endblock %}
+
+{% block content %}
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ activity.name }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <style>
-        /* CSS เดิมที่คุณมี */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            text-align: center;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            color: #333;
-        }
-
-        p {
-            font-size: 18px;
-            color: #555;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-
-        .btn:hover {
-            background-color: #45a049;
-        }
-
-        /* เพิ่ม CSS สำหรับ navbar */
-        .navbar {
-            background-color: lightskyblue;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            box-shadow: 0 4px 8px lightblue;
-        }
-
-        .left-side {
-            position: relative;
-        }
-
-        .menu {
-            font-size: 18px;
-            color: #fff;
-            text-decoration: none;
-            font-weight: bold;
-            padding: 8px 12px;
-            background-color: #4CAF50;
-            border-radius: 5px;
-            cursor: pointer;
-            display: inline-block;
-        }
-
-        .menu:hover {
-            background-color: #2980b9;
-        }
-
-        .dropdown {
-            display: none;
-            position: absolute;
-            top: 40px;
-            left: 0;
-            background-color: white;
-            min-width: 200px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            overflow: hidden;
-            z-index: 100;
-        }
-
-        .dropdown a {
-            display: block;
-            padding: 12px;
-            text-decoration: none;
-            color: #333;
-            font-size: 14px;
-            transition: background 0.3s ease;
-        }
-
-        .dropdown a:hover {
-            background-color: #f1f1f1;
-        }
-
-        .menu-container.active .dropdown {
-            display: block;
-        }
-
-        .right-side {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .right-side span {
-            font-size: 16px;
-            color: #fff;
-            font-weight: bold;
-        }
-
-        .right-side a {
-            color: #fff;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            background-color: #4CAF50;
-            transition: background-color 0.3s ease;
-        }
-
-        .right-side a:hover {
-            background-color: #45a049;
-        }
-
-        .logout-btn {
-            background-color: red;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        .logout-btn:hover {
-            background-color: darkred;
-        }
-    </style>
 </head>
-<body>
-  <!-- Navbar -->
-<div class="navbar">
-    <div class="left-side">
-        <div class="menu-container" style="display: flex; align-items: center; gap: 10px;">
-          <a href="#" class="menu">Menu</a>
-          
-          <!-- ปุ่มกลับไปหน้าหลัก -->
-          <a href="{% url 'home' %}" class="menu">กลับไปหน้าหลัก</a>
-          
-          <div class="dropdown">
-            <a href="{% url 'track_participation' %}">📊 ติดตามสถานะการเข้าร่วม</a>
-            <a href="{% url 'upload_proof' %}">📎 เพิ่มหลักฐานการเข้าร่วม</a>
-          </div>
-        </div>
-    </div>
-  
-    <div class="right-side">
-      {% if user.is_authenticated %}
-        <span>ยินดีต้อนรับ, {{ user.username }}</span>
-        <form method="post" action="{% url 'logout' %}" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit" class="logout-btn">ออกจากระบบ</button>
-        </form>      
-      {% else %}
-        <a href="{% url 'login' %}">เข้าสู่ระบบ</a>
-        <a href="{% url 'register' %}">สมัครสมาชิก</a>
-      {% endif %}
-    </div>
-  </div>
 
-  <div class="container">
+<div class="activity-container">
     <h1>{{ activity.name }}</h1>
 
     {% if activity.images.all %}
@@ -203,40 +32,71 @@
         <button type="submit" class="btn">เข้าร่วมกิจกรรม</button>
     </form>
     <button onclick="fetchParticipants({{ activity.id }})">ดูรายชื่อนักศึกษา</button>
-  </div>
+</div>
 
-    <div id="participantModal" style="display:none; position:fixed; top:20%; left:50%; transform:translate(-50%, 0); padding:20px; background:white; border:1px solid #ccc;">
-        <h3>รายชื่อนักศึกษาที่เข้าร่วม</h3>
-        <ul id="participantList"></ul>
-        <button onclick="closeModal()">ปิด</button>
-    </div>
+<div id="participantModal" style="display:none; position:fixed; top:20%; left:50%; transform:translate(-50%, 0); padding:20px; background:white; border:1px solid #ccc;">
+    <h3>รายชื่อนักศึกษาที่เข้าร่วม</h3>
+    <ul id="participantList"></ul>
+    <button onclick="closeModal()">ปิด</button>
+</div>
 
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+        text-align: center;
+        padding-top: 70px; /* เพิ่ม padding-top ให้ body */
+    }
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const menuContainer = document.querySelector(".menu-container");
-      const menuButton = document.querySelector(".menu");
-      const dropdown = menuContainer.querySelector(".dropdown");
-  
-      // เปิด/ปิด dropdown เมื่อคลิกที่ปุ่ม Menu
-      menuButton.addEventListener("click", function (event) {
-          event.stopPropagation(); // หยุดการกระจายเหตุการณ์
-          menuContainer.classList.toggle("active");
-      });
-  
-      // ปิด dropdown เมื่อคลิกที่อื่น
-      document.addEventListener("click", function () {
-          menuContainer.classList.remove("active");
-      });
-  
-      // ป้องกัน dropdown ปิดเมื่อกดข้างใน
-      dropdown.addEventListener("click", function (event) {
-          event.stopPropagation(); // หยุดการกระจายเหตุการณ์
-      });
-    });
+    .activity-container {
+        max-width: 600px;
+        margin: 100px auto 20px; /* เพิ่ม margin-top เป็น 100px */
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        clear: both; /* เพิ่ม clear */
+        position: relative;
+        top: 20px; /* ปรับตำแหน่งลงมาอีกนิด */
+    }
 
-    
-    // ดึงข้อมูลนักศึกษา
+    /* Override container style จาก base.html */
+    .container {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    p {
+        font-size: 18px;
+        color: #555;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 15px;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+
+    .btn:hover {
+        background-color: #45a049;
+    }
+
+    #participantModal {
+        z-index: 1100;
+    }
+</style>
+
+<script>
     function fetchParticipants(activityId) {
         fetch(`/participants/${activityId}/`)
             .then(response => response.json())
@@ -256,6 +116,5 @@
     function closeModal() {
         document.getElementById("participantModal").style.display = "none";
     }
-  </script>
-</body>
-</html>
+</script>
+{% endblock %}

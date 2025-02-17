@@ -5,7 +5,7 @@ from .models import MyUser
 from .forms import MyUserForm
 from myapp.models import CustomUser  
 from .models import Announcement
-
+from django.utils.html import format_html
 
 # Inline class สำหรับจัดการรูปภาพในหน้ากิจกรรม
 class ActivityImageInline(admin.TabularInline):
@@ -13,10 +13,6 @@ class ActivityImageInline(admin.TabularInline):
     extra = 1  # เพิ่มช่องสำหรับอัปโหลดรูปภาพใหม่ 1 ช่อง
     verbose_name = 'รูปภาพ'
     verbose_name_plural = 'รูปภาพทั้งหมด'
-
-from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -72,24 +68,22 @@ class ActivityAdmin(admin.ModelAdmin):
 if admin.site.is_registered(Participation):
     admin.site.unregister(Participation)
 
-@admin.register(Participation)
-class ParticipationAdmin(admin.ModelAdmin):
-    list_display = ('activity', 'student', 'participated')  # ใช้ method แทน field
-    list_filter = ('activity',)  # ลบ 'participated'
-    search_fields = ('student__username', 'activity__name')
-    ordering = ('activity', 'student')
+# @admin.register(Participation)
+# class ParticipationAdmin(admin.ModelAdmin):
+#     list_display = ('activity', 'student', 'participated')  # ใช้ method แทน field
+#     list_filter = ('activity',)  # ลบ 'participated'
+#     search_fields = ('student__username', 'activity__name')
+#     ordering = ('activity', 'student')
 
-    def participated(self, obj):
-        return True  # หรือใช้เงื่อนไขที่เหมาะสม เช่น obj.date_joined ไม่เป็น null
-    participated.short_description = "เข้าร่วมแล้ว"  # เปลี่ยนชื่อคอลัมน์ใน Django Admin
+#     def participated(self, obj):
+#         return True  # หรือใช้เงื่อนไขที่เหมาะสม เช่น obj.date_joined ไม่เป็น null
+#     participated.short_description = "เข้าร่วมแล้ว"  # เปลี่ยนชื่อคอลัมน์ใน Django Admin
 
-    def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        if hasattr(request.user, 'user_type') and request.user.user_type == 'teacher':
-            return queryset.filter(activity__created_by=request.user)
-        return queryset
-
-
+#     def get_queryset(self, request):
+#         queryset = super().get_queryset(request)
+#         if hasattr(request.user, 'user_type') and request.user.user_type == 'teacher':
+#             return queryset.filter(activity__created_by=request.user)
+#         return queryset
 
 class MyUserAdmin(UserAdmin):
     form = MyUserForm
@@ -108,5 +102,51 @@ class AnnouncementAdmin(admin.ModelAdmin):
     search_fields = ('title', 'content')
 
 
+@admin.register(Participation)
+class ParticipationAdmin(admin.ModelAdmin):
+    list_display = ['student', 'activity', 'joined_at', 'status_badge', 'get_branch', 'get_year', 'participated']
+    list_filter = ['status', 'activity', 'student__branch', 'student__year']
+    search_fields = ['student__username', 'student__first_name', 'activity__name']
+    ordering = ('activity', 'student')
+    actions = ['approve_participations', 'reject_participations']
+    
+    def get_branch(self, obj):
+        return obj.student.get_branch_display()
+    get_branch.short_description = 'สาขา'
+    
+    def get_year(self, obj):
+        return f"ชั้นปีที่ {obj.student.year}"
+    get_year.short_description = 'ชั้นปี'
+    
+    def status_badge(self, obj):
+        colors = {
+            'pending': 'warning',
+            'approved': 'success',
+            'rejected': 'danger'
+        }
+        return format_html(
+            '<span style="color: white; background-color: {}; padding: 3px 10px; border-radius: 3px;">{}</span>',
+            {'warning': '#ffc107', 'success': '#28a745', 'danger': '#dc3545'}[colors[obj.status]],
+            obj.get_status_display()
+        )
+    status_badge.short_description = 'สถานะ'
 
+    def participated(self, obj):
+        return True  # หรือใช้เงื่อนไขที่เหมาะสม
+    participated.short_description = "เข้าร่วมแล้ว"
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        if hasattr(request.user, 'user_type') and request.user.user_type == 'teacher':
+            return queryset.filter(activity__created_by=request.user)
+        return queryset
+
+    @admin.action(description='อนุมัติการเข้าร่วมที่เลือก')
+    def approve_participations(self, request, queryset):
+        updated = queryset.update(status='approved')
+        self.message_user(request, f'อนุมัติการเข้าร่วมจำนวน {updated} รายการ')
+
+    @admin.action(description='ไม่อนุมัติการเข้าร่วมที่เลือก')
+    def reject_participations(self, request, queryset):
+        updated = queryset.update(status='rejected')
+        self.message_user(request, f'ไม่อนุมัติการเข้าร่วมจำนวน {updated} รายการ')

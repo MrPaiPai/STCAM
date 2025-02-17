@@ -31,7 +31,10 @@ urlpatterns = [
     path('participants/<int:activity_id>/', get_participants, name='get_participants'),
     path("edit-profile/", edit_profile, name="edit_profile"),
     path('edit-userprofile/', views.edit_userprofile, name='edit_userprofile'),
-    
+    path('track-participation/', views.track_participation, name='track_participation'),
+    path('update-participation-status/<int:participation_id>/',views.update_participation_status, name='update_participation_status'),
+    path('upload-proof/', views.upload_proof, name='upload_proof'),
+    path('proof-list/', views.user_upload_proof_list, name='user_upload_proof_list'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -134,3 +134,6 @@ AUTHENTICATION_BACKENDS = [
 SESSION_COOKIE_AGE = 3600  # อายุ session เป็น 1 ชั่วโมง (กำหนดเวลาที่จะหมดอายุ session)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # เมื่อปิดเบราว์เซอร์ session จะหมดอายุ
 
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

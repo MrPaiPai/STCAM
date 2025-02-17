@@ -3,7 +3,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 import datetime
 from django.utils import timezone
-
+from django.contrib.auth.models import User
+from django.conf import settings
 
 BRANCH_CHOICES = [
     ('CS', 'วิทยาการคอมพิวเตอร์'),
@@ -123,25 +124,29 @@ class ActivityImage(models.Model):
 
 # โมเดลสำหรับการเข้าร่วมกิจกรรม
 class Participation(models.Model):
-    activity = models.ForeignKey(
-        'Activity',  
-        on_delete=models.CASCADE, 
-        verbose_name='กิจกรรม'
-    )
-    student = models.ForeignKey(
-        CustomUser, 
-        on_delete=models.CASCADE, 
-        verbose_name='นักศึกษา'
-    )
+    STATUS_CHOICES = [
+        ('pending', 'ยังไม่อนุมัติ'),
+        ('approved', 'อนุมัติแล้ว'),
+        ('rejected', 'ไม่อนุมัติ')  # เพิ่มสถานะใหม่
+    ]
+    
+    activity = models.ForeignKey('Activity', on_delete=models.CASCADE, verbose_name='กิจกรรม')
+    student = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='นักศึกษา')
     joined_at = models.DateTimeField(default=timezone.now)
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='pending',
+        verbose_name='สถานะการลงทะเบียน'
+    )
 
     class Meta:
         verbose_name = 'การเข้าร่วมกิจกรรม'
         verbose_name_plural = 'การเข้าร่วมกิจกรรมทั้งหมด'
-        unique_together = ('activity', 'student')  # ป้องกันการสมัครซ้ำ
+        unique_together = ('activity', 'student')
 
     def __str__(self):
-        return f"{self.student.username} เข้าร่วม {self.activity.name}"
+        return f"{self.student.username} เข้าร่วม {self.activity.name} - {self.get_status_display()}"
 
 
 
@@ -184,3 +189,18 @@ class Announcement(models.Model):
 
     def __str__(self):
         return self.title
+
+
+
+class ActivityRegistration(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, null=True, blank=True)  # เพิ่ม null=True, blank=True
+    activity_name = models.CharField(max_length=200)  # คงไว้ชั่วคราวเพื่อเก็บข้อมูลเดิม
+    registration_date = models.DateTimeField(auto_now_add=True)
+    proof_image = models.ImageField(upload_to='proofs/', null=True, blank=True)
+    proof_upload_date = models.DateTimeField(null=True, blank=True)
+    
+    def __str__(self):
+        if self.activity:
+            return f"{self.user.username} - {self.activity.name}"
+        return f"{self.user.username} - {self.activity_name}"
