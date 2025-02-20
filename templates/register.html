@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียน</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- กล่องลงทะเบียน -->
+        <div class="card">
+            <h3>ลงทะเบียน</h3>
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- แสดงข้อผิดพลาด -->
+                {% if form.errors %}
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                <div class="form-group">
+                    <label for="id_username">ชื่อผู้ใช้:</label>
+                    {{ form.username }}
+                </div>
+                <div class="form-group">
+                    <label for="id_first_name">ชื่อจริง:</label>
+                    {{ form.first_name }}  <!-- เพิ่มฟิลด์ชื่อจริง -->
+                </div>
+                <div class="form-group">
+                    <label for="id_last_name">นามสกุล:</label>
+                    {{ form.last_name }}  <!-- เพิ่มฟิลด์นามสกุล -->
+                </div>
+                <div class="form-group">
+                    <label for="id_student_id">รหัสนักศึกษา:</label>
+                    {{ form.student_id }}  <!-- เพิ่มฟิลด์รหัสนักศึกษา -->
+                </div>
+                <div class="form-group">
+                    <label for="id_password1">รหัสผ่าน:</label>
+                    {{ form.password1 }}
+                </div>
+                <div class="form-group">
+                    <label for="id_password2">ยืนยันรหัสผ่าน:</label>
+                    {{ form.password2 }}
+                </div>
+                <div class="form-group">
+                    <label for="id_branch">สาขา:</label>
+                    {{ form.branch }}
+                </div>
+                <div class="form-group">
+                    <label for="id_year">ชั้นปี:</label>
+                    {{ form.year }}
+                </div>
+                <button type="submit" class="btn">ลงทะเบียน</button>
+            </form>
+        </div>
+
+        
+        <!-- กล่องวิธีการลงทะเบียน -->
+        <div class="card instructions">
+            <h3>วิธีการลงทะเบียน</h3>
+            <ol>
+                <div class="boxbox">
+                    <li>ชื่อผู้ใช้
+                        <ul>
+                            <li>สำหรับนักศึกษา: กรอกรหัสนักศึกษา 13 หลัก เช่น 65000000000</li>
+                            <li>สำหรับเจ้าหน้าที่: ใช้ชื่อภาษาอังกฤษ ตามด้วย "_" ตามด้วยนามสกุลภาษาอังกฤษ 3 ตัวแรก เช่น name_sur</li>
+                        </ul>
+                    </li>
+                    <li>รหัสผ่าน: ขอความร่วมมือให้ตั้งรหัสผ่านที่คาดเดายาก หลีกเลี่ยงรหัสเช่น 1234 หรือ abcd</li>
+                    <li>ขอความร่วมมือให้นักศึกษาต้องทำการลงทะเบียนด้วยตัวเองเท่านั้น</li>
+                    <li>ช่องทางติดต่อสอบถาม:
+                        <ul>
+                            <li>มหาวิทยาลัยสวนดุสิต 295 ถนนนครราชสีมา เขตดุสิต กรุงเทพฯ 10300 </li>
+                            <li>โทร.</li>
+                            <li>e-mail:</li>
+                            <li>เปิดบริการ วันจันทร์ – ศุกร์ เวลา 08.30 – 16.30 น.</li>
+                            <li>เว็บไซต์:</li>
+                        </ul>
+                    </li>
+                </div>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>

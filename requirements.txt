@@ -1,0 +1,23 @@
+python==3.10
+asgiref==3.8.1
+crispy-bootstrap5==2024.10
+Django==5.1.5
+django-crispy-forms==2.3
+pillow==11.1.0
+setuptools==65.5.0
+sqlparse==0.5.3
+typing_extensions==4.12.2
+tzdata==2025.1
+
+# ขั้นตอนเมื่อต้องการย้ายโปรเจกต์ไปยังเครื่องอื่น
+# ติดตั้ง Python และ Git Bash
+# เปิด Terminal Git Bash และพิมพ์คำสั่งด้านล่าง
+
+# สร้างและเปิดใช้งาน Virtual Environment : python -m venv venv
+# source venv/Scripts/activate  (Windows)
+
+# ติดตั้ง dependencies:
+# pip install -r requirements.txt
+
+# รันเซิร์ฟเวอร์เพื่อทดสอบ:
+# python manage.py runserver

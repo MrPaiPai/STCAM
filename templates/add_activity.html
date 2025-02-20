@@ -1,0 +1,10 @@
+<h1>เพิ่มกิจกรรม</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ activity_form.as_p }}
+    {{ formset.management_form }}
+    {% for form in formset %}
+        {{ form.as_p }}
+    {% endfor %}
+    <button type="submit">เพิ่มกิจกรรม</button>
+</form>

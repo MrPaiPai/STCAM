@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .container {
+        max-width: 1000px;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    h2 {
+        color: #333;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .btn-upload {
+        background-color: #28a745;
+        border: none;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 12px 20px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        color: #fff;
+    }
+
+    .btn-upload:hover {
+        background-color: #218838;
+        transform: scale(1.05);
+    }
+
+    .card {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    .card p {
+        color: #555;
+        font-size: 14px;
+    }
+
+    .img-fluid {
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        max-height: 250px;
+        object-fit: cover;
+    }
+
+    .text-warning {
+        font-weight: bold;
+        color: #ff9800 !important;
+    }
+</style>
+
+<div class="container mt-4">
+    <h2>รายการหลักฐานที่อัพโหลดแล้ว</h2>
+
+    <div class="text-center mb-4">
+        <a href="{% url 'upload_proof' %}" class="btn btn-upload">
+            อัพโหลดหลักฐานเพิ่มเติม
+        </a>
+    </div>
+    
+    <div class="row">
+        {% for activity in activities %}
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {% if activity.activity %}
+                            {{ activity.activity.activity_name }}
+                        {% else %}
+                            {{ activity.activity_name }}
+                        {% endif %}
+                    </h5>
+                    <p>วันที่ลงทะเบียน: {{ activity.registration_date|date:"d/m/Y H:i" }}</p>
+                    {% if activity.proof_image %}
+                        <img src="{{ activity.proof_image.url }}" class="img-fluid mb-2" alt="หลักฐานกิจกรรม">
+                        <p>วันที่อัพโหลด: {{ activity.proof_upload_date|date:"d/m/Y H:i" }}</p>
+                    {% else %}
+                        <p class="text-warning">ยังไม่ได้อัพโหลดหลักฐาน</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+<!-- templates/activity_list.html -->
+<h1>กิจกรรมทั้งหมด</h1>
+<table>
+    <tr>
+        <th>ชื่อกิจกรรม</th>
+        <th>วันที่</th>
+        <th>เข้าร่วม</th>
+    </tr>
+    {% for activity in activities %}
+    <tr>
+        <td>{{ activity.name }}</td>
+        <td>{{ activity.date }}</td>
+        <td>
+            <form method="post" action="{% url 'join_activity' activity.id %}">
+                {% csrf_token %}
+                <button type="submit">เข้าร่วม</button>
+            </form>
+
+            <a href="{% url 'home' %}" class="btn btn-primary">กลับหน้าหลัก</a>
+
+        </td>
+    </tr>
+    {% endfor %}
+</table>

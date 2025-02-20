@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ระบบจัดการกิจกรรม{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>
+    /* เพิ่ม prefix "base-" ให้ทุก class */
+    .base-navbar {
+      background-color: #3498db;
+      width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+
+    .base-container {
+      max-width: 900px;
+      margin: 100px auto 30px;
+      padding: 20px;
+      background: white;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+
+    .base-menu-container {
+      position: relative;
+    }
+
+    .base-menu {
+      font-size: 18px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 10px 15px;
+      background-color: #2ecc71;
+      border-radius: 5px;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .base-menu:hover {
+      background-color: #27ae60;
+    }
+
+    .base-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background-color: white;
+      min-width: 200px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      border-radius: 5px;
+      overflow: hidden;
+      z-index: 100;
+    }
+
+    .base-dropdown a {
+      display: block;
+      padding: 12px 15px;
+      text-decoration: none;
+      color: #333;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+
+    .base-dropdown a:hover {
+      background-color: #f1f1f1;
+    }
+
+    .base-menu-container:hover .base-dropdown {
+      display: block;
+    }
+
+    .base-right-side {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .base-right-side span {
+      color: white;
+      font-size: 16px;
+    }
+
+    .base-right-side a, .base-logout-btn {
+      color: white;
+      text-decoration: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      background-color: #e67e22;
+      transition: background-color 0.3s ease;
+    }
+
+    .base-right-side a:hover {
+      background-color: #d35400;
+    }
+
+    .base-logout-btn {
+      background-color: #c0392b;
+      border: none;
+      cursor: pointer;
+    }
+
+    .base-logout-btn:hover {
+      background-color: #a93226;
+    }
+
+    @media (max-width: 768px) {
+      .base-navbar {
+        position: fixed;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .base-right-side {
+        margin-top: 10px;
+      }
+      .base-dropdown {
+        position: static;
+        width: 100%;
+      }
+      .base-menu-container:hover .base-dropdown {
+        display: none;
+      }
+      .base-menu-container:focus-within .base-dropdown {
+        display: block;
+      }
+      .base-container {
+        margin: 150px 15px 15px;
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="base-navbar">
+    <div class="base-menu-container">
+      <a href="#" class="base-menu">เมนู</a>
+      <div class="base-dropdown">
+        <a href="{% url 'home' %}">🏠 กลับไปหน้าหลัก</a>
+        <a href="{% url 'track_participation' %}">📊 ติดตามสถานะ</a>
+        <a href="{% url 'upload_proof' %}">📎 เพิ่มหลักฐาน</a>
+        <a href="{% url 'edit_userprofile' %}">👤 ข้อมูลส่วนตัว</a>
+      </div>
+    </div>
+    <div class="base-right-side">
+      {% if user.is_authenticated %}
+        <span>ยินดีต้อนรับ, {{ user.username }}</span>
+        <form method="post" action="{% url 'logout' %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="base-logout-btn">ออกจากระบบ</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}">เข้าสู่ระบบ</a>
+        <a href="{% url 'register' %}">สมัครสมาชิก</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="base-container">
+    {% block content %}
+    {% endblock %}
+  </div>
+</body>
+</html>

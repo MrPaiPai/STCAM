@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>รายงานการเข้าร่วมกิจกรรม</title>
+</head>
+<body>
+    <h1>รายงานการเข้าร่วมกิจกรรม</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ชื่อกิจกรรม</th>
+                <th>นักศึกษา</th>
+                <th>สถานะการเข้าร่วม</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for participation in participations %}
+            <tr>
+                <td>{{ participation.activity.name }}</td>
+                <td>{{ participation.student.username }}</td>
+                <td>{{ "เข้าร่วม" if participation.participated else "ยังไม่เข้าร่วม" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

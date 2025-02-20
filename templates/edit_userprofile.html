@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ตรวจสอบและแก้ไขข้อมูลส่วนตัว{% endblock %}
+
+{% block content %}
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<div class="content-container">
+    <div class="profile-box">
+        <h2>ข้อมูลส่วนตัว</h2>
+        
+        <div class="profile-info">
+            <p><strong>ชื่อผู้ใช้:</strong> {{ user.username }}</p>
+            <p><strong>ชื่อจริง:</strong> {{ user.first_name }}</p>
+            <p><strong>นามสกุล:</strong> {{ user.last_name }}</p>
+            <p><strong>อีเมล:</strong> {{ user.email }}</p>
+        </div>
+      
+        <h3>แก้ไขข้อมูล</h3>
+        <form method="POST" action="{% url 'edit_userprofile' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">บันทึกข้อมูล</button>
+        </form>
+    </div>
+
+    <div class="activity-box">
+        <h2>กิจกรรมที่เข้าร่วม</h2>
+        <div class="activity-list">
+            {% if activities %}
+                {% for activity in activities %}
+                    <p>
+                        <strong>ชื่อกิจกรรม:</strong> {{ activity.name }} |
+                        <strong>วันที่เริ่ม:</strong> {{ activity.start_date|date:"d/m/Y" }} |
+                        <strong>วันที่สิ้นสุด:</strong> 
+                        {% if activity.end_date %}
+                            {{ activity.end_date|date:"d/m/Y" }}
+                        {% else %}
+                            ยังไม่กำหนด
+                        {% endif %}
+                    </p>
+                {% endfor %}
+            {% else %}
+                <p>คุณยังไม่ได้เข้าร่วมกิจกรรมใด ๆ</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+        text-align: center;
+        padding-top: 70px; /* เพิ่ม padding-top ให้ body */
+    }
+
+    .content-container {
+        max-width: 800px;
+        margin: 100px auto 20px; /* เพิ่ม margin-top เป็น 100px */
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-box, .activity-box {
+        margin-bottom: 30px;
+    }
+
+    h2 {
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    p {
+        font-size: 18px;
+        color: #555;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 15px;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 10px;
+    }
+
+    .btn:hover {
+        background-color: #45a049;
+    }
+</style>
+{% endblock %}
