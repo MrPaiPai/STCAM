@@ -191,16 +191,18 @@ class Announcement(models.Model):
         return self.title
 
 
-
 class ActivityRegistration(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, null=True, blank=True)  # เพิ่ม null=True, blank=True
-    activity_name = models.CharField(max_length=200)  # คงไว้ชั่วคราวเพื่อเก็บข้อมูลเดิม
+    activity = models.ForeignKey('Activity', on_delete=models.CASCADE)
     registration_date = models.DateTimeField(auto_now_add=True)
     proof_image = models.ImageField(upload_to='proofs/', null=True, blank=True)
-    proof_upload_date = models.DateTimeField(null=True, blank=True)
-    
+    # proof_upload_date = models.DateTimeField(null=True, blank=True)
+    proof_upload_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
     def __str__(self):
-        if self.activity:
-            return f"{self.user.username} - {self.activity.name}"
-        return f"{self.user.username} - {self.activity_name}"
+        return f"{self.user.username} - {self.activity.name}"
+
+    class Meta:
+        ordering = ['-registration_date']
+        verbose_name = 'รูปหลักฐานการลงทะเบียนทั้งหมด'
+        verbose_name_plural = 'รูปหลักฐานการลงทะเบียนทั้งหมด'

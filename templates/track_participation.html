@@ -1,6 +1,16 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+<!-- {% if participation %}
+    <a href="{% url 'manage_participation' participation.id %}" class="btn btn-primary">
+        <i class="fas fa-cogs me-1"></i> ไปยังหน้าจัดการการเข้าร่วมกิจกรรม
+    </a>
+{% else %}
+    <p>ยังไม่มีข้อมูลการเข้าร่วม</p>
+{% endif %} -->
+
+
 <div class="container mt-5">
     <div class="card shadow-sm">
         <div class="card-header bg-white">
@@ -14,9 +24,9 @@
                     <thead class="table-light">
                         <tr>
                             <th scope="col" class="fw-semibold">ชื่อกิจกรรม</th>
-                            <th scope="col" class="fw-semibold text-center">วันที่</th>
+                            <th scope="col" class="fw-semibold text-center">วันที่ลงทะเบียน</th>
                             <th scope="col" class="fw-semibold text-center">สถานะ</th>
-                            <th scope="col" class="fw-semibold text-center">การจัดการ</th>
+                            <!-- <th scope="col" class="fw-semibold text-center">การจัดการ</th> -->
                         </tr>
                     </thead>
                     <tbody>
@@ -25,7 +35,7 @@
                             <td class="align-middle">{{ participation.activity.name }}</td>
                             <td class="align-middle text-center">{{ participation.activity.start_date|date:"d M Y" }}</td>
                             <td class="align-middle text-center" id="status-{{ participation.id }}">
-                                {% if participation.status == 'pending' %}
+                                <!-- {% if participation.status == 'pending' %}
                                     <span class="badge rounded-pill text-bg-warning px-3 py-2">
                                         <i class="fas fa-clock me-1"></i>รอการอนุมัติ
                                     </span>
@@ -52,7 +62,7 @@
                                                 class="btn btn-outline-danger btn-sm ms-2">
                                             <i class="fas fa-times me-1"></i>ไม่อนุมัติ
                                         </button>
-                                    {% endif %}
+                                    {% endif %} -->
                                     <a href="{% url 'activity_detail' participation.activity.id %}" 
                                        class="btn btn-outline-primary btn-sm ms-2">
                                         <i class="fas fa-info-circle me-1"></i>รายละเอียด
@@ -134,13 +144,13 @@
 
 <script>
 function updateStatus(participationId, newStatus) {
-    fetch(`/update-participation-status/${participationId}/`, {
+    fetch(/update-participation-status/${participationId}/, {
         method: 'POST',
         headers: {
             'X-CSRFToken': '{{ csrf_token }}',
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `status=${newStatus}`
+        body: status=${newStatus}
     })
     .then(response => response.json())
     .then(data => {

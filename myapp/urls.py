@@ -7,9 +7,10 @@ from .views import join_activity
 from .views import get_participants
 from .views import edit_profile
 from .views import edit_userprofile
+from myapp.views import manage_participation
 
 urlpatterns = [
-    path('', views.index, name='home'),  # หน้าแรก
+    path('', views.home, name='home'),  # หน้าแรก
     path('register/', views.register, name='register'),  # ลงทะเบียน
     path('login/', views.login_view, name='login'),  # เข้าสู่ระบบ
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
@@ -18,13 +19,12 @@ urlpatterns = [
     path('activities/', views.activity_list, name='activity_list'),  # แสดงรายการกิจกรรมทั้งหมด
     path('participation-report/', views.participation_report, name='participation_report'),  # รายงานการเข้าร่วม
     path('edit_user/<int:user_id>/', views.edit_user, name='edit_user'),
-
     path('my-activities/', views.my_activities, name='my_activities'),  # หน้ากิจกรรมที่ผู้ใช้เข้าร่วม
     # path('menu/', views.menu, name='menu'),
     path('activity_info/', views.activity_info, name='activity_info'),
     path('track-participation/', views.track_participation, name='track_participation'),
     path('upload-proof/', views.upload_proof, name='upload_proof'),
-    path('add_announcement/', views.add_announcement, name='add_announcement'),
+    # path('add_announcement/', views.add_announcement, name='add_announcement'),
     path('activity/<int:activity_id>/', views.activity_info, name='activity_info'),  # เส้นทางไปยัง activity_info
     path('join-activity/<int:activity_id>/', join_activity, name='join_activity'),
     path('activity/<int:activity_id>/', views.activity_detail, name='activity_detail'),
@@ -35,6 +35,16 @@ urlpatterns = [
     path('update-participation-status/<int:participation_id>/',views.update_participation_status, name='update_participation_status'),
     path('upload-proof/', views.upload_proof, name='upload_proof'),
     path('proof-list/', views.user_upload_proof_list, name='user_upload_proof_list'),
+    path('delete-proof/<int:reg_id>/', views.delete_proof, name='delete_proof'),
+    path('show_all_proofs/', views.show_all_proofs, name='show_all_proofs'),
+    path('manage-participation/<int:participation_id>/', views.manage_participation, name='manage_participation'),
+    path('manage-participation/', views.manage_participation, name='manage_participation'),
+    path('manage-participation/<int:participation_id>/', manage_participation, name='manage_participation'),
+
+    path('activity/<int:activity_id>/info/', views.activity_info, name='activity_info'),
+    path('manage-participations/', views.manage_participations, name='manage_participations'),
+
+
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

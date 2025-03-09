@@ -1,13 +1,15 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}ระบบจัดการกิจกรรม{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-    /* เพิ่ม prefix "base-" ให้ทุก class */
+    /* คงสไตล์เดิมของคุณ */
     .base-navbar {
       background-color: #3498db;
       width: 100%;
@@ -21,7 +23,6 @@
       box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
       z-index: 1000;
     }
-
     .base-container {
       max-width: 900px;
       margin: 100px auto 30px;
@@ -30,11 +31,9 @@
       box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
       border-radius: 10px;
     }
-
     .base-menu-container {
       position: relative;
     }
-
     .base-menu {
       font-size: 18px;
       color: white;
@@ -46,11 +45,9 @@
       cursor: pointer;
       display: inline-block;
     }
-
     .base-menu:hover {
       background-color: #27ae60;
     }
-
     .base-dropdown {
       display: none;
       position: absolute;
@@ -63,7 +60,6 @@
       overflow: hidden;
       z-index: 100;
     }
-
     .base-dropdown a {
       display: block;
       padding: 12px 15px;
@@ -72,26 +68,21 @@
       font-size: 16px;
       transition: background 0.3s ease;
     }
-
     .base-dropdown a:hover {
       background-color: #f1f1f1;
     }
-
     .base-menu-container:hover .base-dropdown {
       display: block;
     }
-
     .base-right-side {
       display: flex;
       gap: 15px;
       align-items: center;
     }
-
     .base-right-side span {
       color: white;
       font-size: 16px;
     }
-
     .base-right-side a, .base-logout-btn {
       color: white;
       text-decoration: none;
@@ -100,21 +91,17 @@
       background-color: #e67e22;
       transition: background-color 0.3s ease;
     }
-
     .base-right-side a:hover {
       background-color: #d35400;
     }
-
     .base-logout-btn {
       background-color: #c0392b;
       border: none;
       cursor: pointer;
     }
-
     .base-logout-btn:hover {
       background-color: #a93226;
     }
-
     @media (max-width: 768px) {
       .base-navbar {
         position: fixed;
@@ -150,6 +137,7 @@
         <a href="{% url 'track_participation' %}">📊 ติดตามสถานะ</a>
         <a href="{% url 'upload_proof' %}">📎 เพิ่มหลักฐาน</a>
         <a href="{% url 'edit_userprofile' %}">👤 ข้อมูลส่วนตัว</a>
+        <a href="{% url 'manage_participations' %}">⚙️ จัดการการเข้าร่วม</a>
       </div>
     </div>
     <div class="base-right-side">
@@ -169,5 +157,7 @@
     {% block content %}
     {% endblock %}
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

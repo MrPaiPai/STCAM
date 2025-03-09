@@ -1,93 +1,154 @@
 {% load static %}
+{% load widget_tweaks %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ลงทะเบียน</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>ลงทะเบียน - ระบบจัดการกิจกรรม</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- เพิ่ม Font Awesome สำหรับไอคอน -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .bg-gradient-custom {
+            background: linear-gradient(135deg, #1e40af, #6b7280); /* เปลี่ยน gradient ให้สวยขึ้น */
+        }
+        .input-highlight {
+            @apply bg-gray-50 border-2 border-blue-400 rounded-xl p-3 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition duration-300 text-lg placeholder-gray-400;
+        }
+        .card-custom {
+            @apply bg-white rounded-xl shadow-2xl p-6 transform transition duration-300 hover:shadow-xl hover:scale-105;
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <!-- กล่องลงทะเบียน -->
-        <div class="card">
-            <h3>ลงทะเบียน</h3>
-            <form method="post">
-                {% csrf_token %}
-                
-                <!-- แสดงข้อผิดพลาด -->
-                {% if form.errors %}
-                <ul>
-                    {% for field in form %}
-                        {% for error in field.errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
-                </ul>
-                {% endif %}
-
-                <div class="form-group">
-                    <label for="id_username">ชื่อผู้ใช้:</label>
-                    {{ form.username }}
-                </div>
-                <div class="form-group">
-                    <label for="id_first_name">ชื่อจริง:</label>
-                    {{ form.first_name }}  <!-- เพิ่มฟิลด์ชื่อจริง -->
-                </div>
-                <div class="form-group">
-                    <label for="id_last_name">นามสกุล:</label>
-                    {{ form.last_name }}  <!-- เพิ่มฟิลด์นามสกุล -->
-                </div>
-                <div class="form-group">
-                    <label for="id_student_id">รหัสนักศึกษา:</label>
-                    {{ form.student_id }}  <!-- เพิ่มฟิลด์รหัสนักศึกษา -->
-                </div>
-                <div class="form-group">
-                    <label for="id_password1">รหัสผ่าน:</label>
-                    {{ form.password1 }}
-                </div>
-                <div class="form-group">
-                    <label for="id_password2">ยืนยันรหัสผ่าน:</label>
-                    {{ form.password2 }}
-                </div>
-                <div class="form-group">
-                    <label for="id_branch">สาขา:</label>
-                    {{ form.branch }}
-                </div>
-                <div class="form-group">
-                    <label for="id_year">ชั้นปี:</label>
-                    {{ form.year }}
-                </div>
-                <button type="submit" class="btn">ลงทะเบียน</button>
-            </form>
+<body class="bg-gradient-to-br from-gray-100 to-gray-200 font-sans min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-custom text-white py-6 shadow-lg">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <!-- โลโก้ -->
+                <i class="fas fa-graduation-cap text-4xl text-yellow-300"></i>
+                <h1 class="text-3xl font-bold">ระบบจัดการกิจกรรม ม.สวนดุสิต</h1>
+            </div>
+            <a href="{% url 'home' %}" class="bg-white text-blue-800 px-5 py-2 rounded-full hover:bg-gray-200 transition duration-300 flex items-center">
+                <i class="fas fa-home mr-2"></i> กลับหน้าแรก
+            </a>
         </div>
+    </header>
 
-        
-        <!-- กล่องวิธีการลงทะเบียน -->
-        <div class="card instructions">
-            <h3>วิธีการลงทะเบียน</h3>
-            <ol>
-                <div class="boxbox">
-                    <li>ชื่อผู้ใช้
-                        <ul>
-                            <li>สำหรับนักศึกษา: กรอกรหัสนักศึกษา 13 หลัก เช่น 65000000000</li>
-                            <li>สำหรับเจ้าหน้าที่: ใช้ชื่อภาษาอังกฤษ ตามด้วย "_" ตามด้วยนามสกุลภาษาอังกฤษ 3 ตัวแรก เช่น name_sur</li>
+    <div class="container mx-auto p-6 max-w-7xl">
+        <!-- ใช้ grid เพื่อจัดเลย์เอาต์สองคอลัมน์ -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- กล่องลงทะเบียน -->
+            <div class="card-custom">
+                <h3 class="text-3xl font-bold text-blue-800 mb-6 flex items-center">
+                    <i class="fas fa-user-plus mr-2 text-blue-600"></i> ลงทะเบียน
+                </h3>
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- แสดงข้อผิดพลาด -->
+                    {% if form.errors %}
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg" role="alert">
+                        <ul class="list-disc pl-5">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
                         </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="id_username" class="block text-base font-medium text-gray-700">ชื่อผู้ใช้:</label>
+                        {{ form.username|add_class:"input-highlight w-full" }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_first_name" class="block text-base font-medium text-gray-700">ชื่อจริง:</label>
+                        {{ form.first_name|add_class:"input-highlight w-full" }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_last_name" class="block text-base font-medium text-gray-700">นามสกุล:</label>
+                        {{ form.last_name|add_class:"input-highlight w-full" }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_student_id" class="block text-base font-medium text-gray-700">รหัสนักศึกษา:</label>
+                        {{ form.student_id|add_class:"input-highlight w-full" }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_password1" class="block text-base font-medium text-gray-700">รหัสผ่าน:</label>
+                        {{ form.password1|add_class:"input-highlight w-full" }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_password2" class="block text-base font-medium text-gray-700">ยืนยันรหัสผ่าน:</label>
+                        {{ form.password2|add_class:"input-highlight w-full" }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_branch" class="block text-base font-medium text-gray-700">สาขา:</label>
+                        {{ form.branch|add_class:"input-highlight w-full" }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_year" class="block text-base font-medium text-gray-700">ชั้นปี:</label>
+                        {{ form.year|add_class:"input-highlight w-full" }}
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-3 px-6 rounded-xl hover:bg-blue-700 transition duration-300 transform hover:scale-105 text-lg font-semibold">
+                        <i class="fas fa-check mr-2"></i> ลงทะเบียน
+                    </button>
+                </form>
+            </div>
+
+            <!-- กล่องวิธีการลงทะเบียน -->
+            <div class="card-custom">
+                <h3 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-info-circle mr-2 text-blue-600"></i> วิธีการลงทะเบียน
+                </h3>
+                <ol class="list-decimal pl-6 space-y-4 text-gray-700">
+                    <li class="flex items-start">
+                        <span class="text-blue-600 font-semibold mr-3">1.</span>
+                        <div>
+                            ชื่อผู้ใช้
+                            <ul class="list-disc pl-5 mt-1 text-gray-600">
+                                <li>สำหรับนักศึกษา: กรอกรหัสนักศึกษา 13 หลัก เช่น 65000000000</li>
+                                <li>สำหรับเจ้าหน้าที่: ใช้ชื่อภาษาอังกฤษ ตามด้วย "_" ตามด้วยนามสกุลภาษาอังกฤษ 3 ตัวแรก เช่น name_sur</li>
+                            </ul>
+                        </div>
                     </li>
-                    <li>รหัสผ่าน: ขอความร่วมมือให้ตั้งรหัสผ่านที่คาดเดายาก หลีกเลี่ยงรหัสเช่น 1234 หรือ abcd</li>
-                    <li>ขอความร่วมมือให้นักศึกษาต้องทำการลงทะเบียนด้วยตัวเองเท่านั้น</li>
-                    <li>ช่องทางติดต่อสอบถาม:
-                        <ul>
-                            <li>มหาวิทยาลัยสวนดุสิต 295 ถนนนครราชสีมา เขตดุสิต กรุงเทพฯ 10300 </li>
-                            <li>โทร.</li>
-                            <li>e-mail:</li>
-                            <li>เปิดบริการ วันจันทร์ – ศุกร์ เวลา 08.30 – 16.30 น.</li>
-                            <li>เว็บไซต์:</li>
-                        </ul>
+                    <li class="flex items-start">
+                        <span class="text-blue-600 font-semibold mr-3">2.</span>
+                        <div class="text-gray-600">
+                            รหัสผ่าน: ขอความร่วมมือให้ตั้งรหัสผ่านที่คาดเดายาก หลีกเลี่ยงรหัสเช่น 1234 หรือ abcd
+                        </div>
                     </li>
-                </div>
-            </ol>
+                    <li class="flex items-start">
+                        <span class="text-blue-600 font-semibold mr-3">3.</span>
+                        <div class="text-gray-600">
+                            ขอความร่วมมือให้นักศึกษาต้องทำการลงทะเบียนด้วยตัวเองเท่านั้น
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-blue-600 font-semibold mr-3">4.</span>
+                        <div class="text-gray-600">
+                            ช่องทางติดต่อสอบถาม:
+                            <ul class="list-disc pl-5 mt-1">
+                                <li>มหาวิทยาลัยสวนดุสิต 295 ถนนนครราชสีมา เขตดุสิต กรุงเทพฯ 10300</li>
+                                <li>โทร: [เพิ่มหมายเลขโทรศัพท์]</li>
+                                <li>e-mail: [เพิ่มอีเมล]</li>
+                                <li>เปิดบริการ วันจันทร์ – ศุกร์ เวลา 08.30 – 16.30 น.</li>
+                                <li>เว็บไซต์: [เพิ่มลิงก์เว็บไซต์]</li>
+                            </ul>
+                        </div>
+                    </li>
+                </ol>
+            </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-4 mt-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>© 2025 ระบบจัดการกิจกรรม มหาวิทยาลัยสวนดุสิต. สงวนลิขสิทธิ์.</p>
+        </div>
+    </footer>
 </body>
 </html>

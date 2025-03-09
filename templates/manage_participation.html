@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}จัดการการเข้าร่วมกิจกรรม{% endblock %}
+
+{% block content %}
+<style>
+    .manage-container {
+        max-width: 1200px;
+        margin: 100px auto 30px;
+        padding: 20px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .manage-card-header {
+        background: #fff;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+    .manage-card-header h2 {
+        margin: 0;
+        color: #3498db;
+        font-size: 24px;
+    }
+    .manage-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    .manage-table th, .manage-table td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+    }
+    .manage-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+    .manage-table tr:hover {
+        background: #f1f1f1;
+    }
+    .manage-btn-group {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+    .manage-btn {
+        padding: 8px 15px;
+        border-radius: 5px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .manage-btn-success {
+        background: #28a745;
+        color: #fff;
+        border: none;
+    }
+    .manage-btn-success:hover {
+        background: #218838;
+    }
+    .manage-btn-danger {
+        background: #dc3545;
+        color: #fff;
+        border: none;
+    }
+    .manage-btn-danger:hover {
+        background: #c82333;
+    }
+    .manage-badge {
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+    }
+    .manage-badge-warning {
+        background: #ffc107;
+        color: #212529;
+    }
+    .manage-badge-success {
+        background: #28a745;
+        color: #fff;
+    }
+    .manage-badge-danger {
+        background: #dc3545;
+        color: #fff;
+    }
+</style>
+
+<div class="manage-container">
+    <div class="manage-card-header">
+        <h2><i class="fas fa-cogs me-2"></i>การจัดการการเข้าร่วมกิจกรรม</h2>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="manage-table">
+                <thead>
+                    <tr>
+                        <th>ชื่อผู้ลงทะเบียน</th>
+                        <th>ชื่อกิจกรรม</th>
+                        <th>วันที่ลงทะเบียน</th>
+                        <th>สถานะ</th>
+                        <th>การจัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if participations %}
+                        {% for participation in participations %}
+                        <tr>
+                            <td>{{ participation.student.username|default:"ไม่ระบุ" }}</td>
+                            <td>{{ participation.activity.name|default:"ไม่ระบุ" }}</td>
+                            <td>{{ participation.joined_at|date:"d M Y"|default:"ไม่ระบุ" }}</td>
+                            <td id="status-{{ participation.id }}">
+                                {% if participation.status == 'pending' %}
+                                    <span class="manage-badge manage-badge-warning">
+                                        <i class="fas fa-clock me-1"></i>รอการอนุมัติ
+                                    </span>
+                                {% elif participation.status == 'approved' %}
+                                    <span class="manage-badge manage-badge-success">
+                                        <i class="fas fa-check-circle me-1"></i>อนุมัติแล้ว
+                                    </span>
+                                {% else %}
+                                    <span class="manage-badge manage-badge-danger">
+                                        <i class="fas fa-times-circle me-1"></i>ไม่อนุมัติ
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="manage-btn-group">
+                                    {% if participation.status != 'approved' %}
+                                        <button onclick="updateStatus({{ participation.id }}, 'approved')" 
+                                                class="manage-btn manage-btn-success">
+                                            <i class="fas fa-check me-1"></i>อนุมัติ
+                                        </button>
+                                    {% endif %}
+                                    {% if participation.status != 'rejected' %}
+                                        <button onclick="updateStatus({{ participation.id }}, 'rejected')" 
+                                                class="manage-btn manage-btn-danger">
+                                            <i class="fas fa-times me-1"></i>ไม่อนุมัติ
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="5">ไม่มีข้อมูลการเข้าร่วม</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrfToken = getCookie('csrftoken');
+
+    function updateStatus(participationId, status) {
+        console.log("Sending request for ID:", participationId, "Status:", status);
+        console.log("CSRF Token:", csrfToken);
+        fetch(`/update-participation-status/${participationId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ status: status })
+        })
+        .then(response => {
+            console.log("Response status:", response.status);
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(`HTTP ${response.status}: ${text}`); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Response data:", data);
+            if (data.status === 'success') {
+                let statusElement = document.getElementById(`status-${participationId}`);
+                if (data.new_status === 'approved') {
+                    statusElement.innerHTML = '<span class="manage-badge manage-badge-success"><i class="fas fa-check-circle me-1"></i>อนุมัติแล้ว</span>';
+                } else if (data.new_status === 'rejected') {
+                    statusElement.innerHTML = '<span class="manage-badge manage-badge-danger"><i class="fas fa-times-circle me-1"></i>ไม่อนุมัติ</span>';
+                }
+                setTimeout(() => location.reload(), 500);
+            } else {
+                alert('เกิดข้อผิดพลาด: ' + (data.message || 'ไม่ทราบสาเหตุ'));
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message);
+        });
+    }
+</script>
+{% endblock %}

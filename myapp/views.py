@@ -24,6 +24,14 @@ from django.utils import timezone
 def some_view(request):
     return redirect(reverse('home'))  # ใช้ชื่อ URL 'home' ที่กำหนดใน urls.py
 
+# ฟังก์ชันตรวจสอบว่าเป็นนศหรือไม่
+def is_student(user):
+    return user.user_type == 'student'
+
+# ฟังก์ชันตรวจสอบว่าเป็นอาจารย์หรือไม่
+def is_teacher(user):
+    return user.user_type == 'teacher' or (hasattr(user, 'role') and user.role == 'teacher')
+
 # ฟังก์ชันตรวจสอบว่าเป็น admin หรือไม่
 def is_admin(user):
     return user.user_type == 'admin'
@@ -134,7 +142,10 @@ def join_activity(request, activity_id):
 # ฟังก์ชันแสดงรายการกิจกรรมทั้งหมด
 @login_required
 def activity_list(request):
-    activities = Activity.objects.all()
+    if is_student(request.user):
+        activities = Activity.objects.filter(participation__student=request.user).distinct()
+    else:
+        activities = Activity.objects.all()
     return render(request, 'activity_list.html', {'activities': activities})
 
 # ฟังก์ชันแสดงรายงานการเข้าร่วมกิจกรรม
@@ -173,9 +184,11 @@ def edit_user(request, user_id):
 def track_participation(request):
     # ดึงเฉพาะกิจกรรมที่ user เข้าร่วม
     participations = Participation.objects.filter(student=request.user).select_related('activity')
-    
+    participation = participations.first()  # ดึงแค่ตัวแรก ถ้ามี
+
     context = {
         'participations': participations,
+        'participation': participation,  # ส่งตัวเดียวไปด้วย
     }
     return render(request, 'track_participation.html', context)
 
@@ -184,15 +197,28 @@ def track_participation(request):
 def update_participation_status(request, participation_id):
     if request.method == 'POST':
         participation = get_object_or_404(Participation, id=participation_id)
-        new_status = request.POST.get('status')
+        try:
+            # ดึงข้อมูลจาก JSON body
+            import json
+            data = json.loads(request.body.decode('utf-8'))
+            new_status = data.get('status')
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f"Error decoding JSON: {e}")
+            return JsonResponse({'status': 'error', 'message': 'ข้อมูลที่ส่งมาไม่ถูกต้อง'}, status=400)
+
+        print(f"Received request to update participation {participation_id} to {new_status}")
         if new_status in ['approved', 'rejected']:
             participation.status = new_status
             participation.save()
+            print(f"Updated participation {participation_id} to {new_status}")
             return JsonResponse({
                 'status': 'success',
-                'new_status': participation.get_status_display()
+                'new_status': new_status
             })
-    return JsonResponse({'status': 'error'}, status=400)
+        print(f"Invalid status: {new_status}")
+        return JsonResponse({'status': 'error', 'message': 'สถานะไม่ถูกต้อง'}, status=400)
+    print("Method not allowed")
+    return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
 
 def upload_proof(request):
     return render(request, 'upload_proof.html')
@@ -202,24 +228,11 @@ def index(request):
     return render(request, 'index.html', {'activities': activities})
 
 
-#เพื่มประกาศ
-@csrf_exempt
-def add_announcement(request):
-    if request.method == 'POST':
-        title = request.POST.get('title', 'ประกาศใหม่')  # ถ้าไม่กรอกจะใช้ "ประกาศใหม่"
-        content = request.POST.get('announcement_text')
-
-        if content:
-            Announcement.objects.create(title=title, content=content)
-
-        return redirect('/')  # กลับไปหน้าแรกหลังโพสต์
-
-    return render(request, 'add_announcement.html')  # ถ้าหลุดมา GET, ให้แสดงฟอร์มเพิ่มประกาศ
-
+# ฟังก์ชันแสดงประกาศในหน้าแรก
 def home(request):
     activities = Activity.objects.all()
     announcements = Announcement.objects.order_by('-created_at')  # เรียงจากใหม่ไปเก่า
-    return render(request, 'home.html', {'activities': activities, 'announcements': announcements})
+    return render(request, 'index.html', {'activities': activities, 'announcements': announcements})
 
 def activity_info(request, activity_id):
     activity = get_object_or_404(Activity, id=activity_id)  # ดึงกิจกรรมที่ตรงกับ activity_id
@@ -296,8 +309,8 @@ def upload_proof(request):
         student=request.user,
         status='approved'
     ).select_related('activity')
-    
-    print("Participations:", list(participations))  # Debug
+
+    print("Participations:", list(participations))
 
     if request.method == 'POST':
         try:
@@ -306,36 +319,106 @@ def upload_proof(request):
             activity_id = 0
 
         proof_image = request.FILES.get('proof_image')
-        
+
         if activity_id and proof_image:
             activity = get_object_or_404(Activity, id=activity_id)
-            
+
             registration, created = ActivityRegistration.objects.update_or_create(
                 user=request.user,
                 activity=activity,
-                defaults={'proof_image': proof_image, 'proof_upload_date': timezone.now()}
+                defaults={
+                    'proof_image': proof_image,
+                    'proof_upload_date': timezone.now(),  # ตรวจสอบและตั้งค่า proof_upload_date
+                }
             )
-            
+
             return redirect('user_upload_proof_list')
-    
+
     registrations = [
         ActivityRegistration.objects.get_or_create(
             user=request.user,
             activity=participation.activity
         )[0]
-        for participation in participations
+        for participation in participations if participation.activity
     ]
-    
+
     return render(request, 'upload_proof.html', {
         'registrations': registrations
     })
 
 @login_required
 def user_upload_proof_list(request):
-    activities = ActivityRegistration.objects.filter(user=request.user).select_related('activity')
+    # ดึงข้อมูลการลงทะเบียนทั้งหมดของผู้ใช้ พร้อมข้อมูลกิจกรรมที่เกี่ยวข้อง
+    registrations = ActivityRegistration.objects.filter(
+        user=request.user
+    ).select_related('activity')
+
+    # Debug ข้อมูล
+    for reg in registrations:
+        print("=== Debug ข้อมูล ===")
+        print(f"Registration ID: {reg.id}")
+        print(f"Activity ID: {reg.activity_id}")
+        print(f"Activity Name: {reg.activity.name if reg.activity else 'ไม่มีชื่อกิจกรรม'}")
+        print(f"Image: {reg.proof_image}")
+        print(f"Proof Upload Date: {reg.proof_upload_date}")
+        print("-------------------")
+
+    # ตรวจสอบและตั้งค่า proof_upload_date ถ้ายังไม่มี
+    for reg in registrations:
+        if reg.proof_upload_date is None:
+            reg.proof_upload_date = timezone.now()
+            reg.save()
+
+    return render(request, 'user_upload_proof_list.html', {
+        'registrations': registrations
+    })
+
+
+#ลบรูปหลักฐานการเข้าร่วม
+@login_required
+def delete_proof(request, reg_id):
+    registration = get_object_or_404(ActivityRegistration, id=reg_id, user=request.user)
     
-    # Debug ข้อมูลที่ได้
-    print("Activities:", list(activities.values("id", "activity_id")))
+    # ลบไฟล์ภาพก่อน
+    if registration.proof_image:
+        registration.proof_image.delete(save=False)  # ลบจากระบบไฟล์
+    
+    # ลบข้อมูลออกจากฐานข้อมูล
+    registration.delete()
 
-    return render(request, 'user_upload_proof_list.html', {'activities': activities})
+    return redirect('user_upload_proof_list')  # กลับไปยังหน้ารายการหลักฐาน
 
+
+
+# def add_announcement(request):
+#     return render(request, 'add_announcement.html')
+
+@login_required
+def show_all_proofs(request):
+    if is_student(request.user):
+        registrations = ActivityRegistration.objects.filter(user=request.user).select_related('activity').order_by('-proof_upload_date')
+    else:
+        registrations = ActivityRegistration.objects.select_related('activity').order_by('-proof_upload_date')
+
+    for reg in registrations:
+        if reg.proof_upload_date is None:
+            reg.proof_upload_date = timezone.now()
+            reg.save()
+
+    return render(request, 'show_all_proofs.html', {'registrations': registrations})
+
+
+
+@user_passes_test(is_admin)
+def manage_participations(request):
+    participations = Participation.objects.select_related('activity', 'student').all()
+    return render(request, 'manage_participation.html', {'participations': participations})
+
+# เดิม: แสดงการเข้าร่วมเดี่ยว (เปลี่ยนชื่อให้ชัดเจน)
+@user_passes_test(is_admin)
+def manage_participation(request, participation_id=None):
+    if participation_id:
+        participation = get_object_or_404(Participation, id=participation_id)
+        return render(request, 'manage_participation.html', {'participation': participation})
+    else:
+        return redirect('manage_participations')

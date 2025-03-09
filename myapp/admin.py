@@ -6,6 +6,7 @@ from .forms import MyUserForm
 from myapp.models import CustomUser  
 from .models import Announcement
 from django.utils.html import format_html
+from .models import ActivityRegistration
 
 # Inline class สำหรับจัดการรูปภาพในหน้ากิจกรรม
 class ActivityImageInline(admin.TabularInline):
@@ -150,3 +151,14 @@ class ParticipationAdmin(admin.ModelAdmin):
     def reject_participations(self, request, queryset):
         updated = queryset.update(status='rejected')
         self.message_user(request, f'ไม่อนุมัติการเข้าร่วมจำนวน {updated} รายการ')
+
+
+class ActivityRegistrationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'activity', 'proof_image', 'proof_upload_date')
+    list_filter = ('activity', 'proof_upload_date')
+    search_fields = ('user__username', 'activity__name')
+
+admin.site.register(ActivityRegistration, ActivityRegistrationAdmin)
+
+
+

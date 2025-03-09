@@ -1,4 +1,18 @@
-python==3.10
+# ขั้นตอนเมื่อต้องการย้ายโปรเจกต์ไปยังเครื่องอื่น หรือ ต้องการเปิดโปรเจกต์ที่เครื่องอื่น
+# 1. ตรวจสอบว่าใช้ Python 3.10 (แนะนำ)
+# 2. ติดตั้ง Python และ Git Bash
+# 3. เปิด Terminal Git Bash และพิมพ์คำสั่งด้านล่าง
+
+# สร้างและเปิดใช้งาน Virtual Environment:
+# python -m venv venv
+# source venv/Scripts/activate  (Windows) หรือ source venv/bin/activate  (Mac/Linux)
+
+# ติดตั้ง dependencies:
+# pip install -r requirements.txt
+
+# รันเซิร์ฟเวอร์เพื่อทดสอบ:
+# python manage.py runserver
+
 asgiref==3.8.1
 crispy-bootstrap5==2024.10
 Django==5.1.5
@@ -8,16 +22,4 @@ setuptools==65.5.0
 sqlparse==0.5.3
 typing_extensions==4.12.2
 tzdata==2025.1
-
-# ขั้นตอนเมื่อต้องการย้ายโปรเจกต์ไปยังเครื่องอื่น
-# ติดตั้ง Python และ Git Bash
-# เปิด Terminal Git Bash และพิมพ์คำสั่งด้านล่าง
-
-# สร้างและเปิดใช้งาน Virtual Environment : python -m venv venv
-# source venv/Scripts/activate  (Windows)
-
-# ติดตั้ง dependencies:
-# pip install -r requirements.txt
-
-# รันเซิร์ฟเวอร์เพื่อทดสอบ:
-# python manage.py runserver
+django-widget-tweaks==1.5.0

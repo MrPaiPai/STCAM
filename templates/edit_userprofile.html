@@ -4,98 +4,247 @@
 {% block title %}ตรวจสอบและแก้ไขข้อมูลส่วนตัว{% endblock %}
 
 {% block content %}
-<head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-
 <div class="content-container">
     <div class="profile-box">
-        <h2>ข้อมูลส่วนตัว</h2>
+        <h2><i class="fas fa-user me-2"></i>ข้อมูลส่วนตัว</h2>
         
         <div class="profile-info">
-            <p><strong>ชื่อผู้ใช้:</strong> {{ user.username }}</p>
-            <p><strong>ชื่อจริง:</strong> {{ user.first_name }}</p>
-            <p><strong>นามสกุล:</strong> {{ user.last_name }}</p>
-            <p><strong>อีเมล:</strong> {{ user.email }}</p>
+            <div class="info-item">
+                <span class="info-label">ชื่อผู้ใช้:</span>
+                <span class="info-value">{{ user.username }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">ชื่อจริง:</span>
+                <span class="info-value">{{ user.first_name }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">นามสกุล:</span>
+                <span class="info-value">{{ user.last_name }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">อีเมล:</span>
+                <span class="info-value">{{ user.email }}</span>
+            </div>
         </div>
       
-        <h3>แก้ไขข้อมูล</h3>
-        <form method="POST" action="{% url 'edit_userprofile' %}">
+        <h3><i class="fas fa-edit me-2"></i>แก้ไขข้อมูล</h3>
+        <form method="POST" action="{% url 'edit_userprofile' %}" class="edit-form">
             {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">บันทึกข้อมูล</button>
+            <div class="form-fields">
+                {{ form.as_p }}
+            </div>
+            <button type="submit" class="btn btn-save">บันทึกข้อมูล</button>
         </form>
     </div>
 
     <div class="activity-box">
-        <h2>กิจกรรมที่เข้าร่วม</h2>
+        <h2><i class="fas fa-calendar-check me-2"></i>กิจกรรมที่เข้าร่วม</h2>
         <div class="activity-list">
             {% if activities %}
                 {% for activity in activities %}
-                    <p>
-                        <strong>ชื่อกิจกรรม:</strong> {{ activity.name }} |
-                        <strong>วันที่เริ่ม:</strong> {{ activity.start_date|date:"d/m/Y" }} |
-                        <strong>วันที่สิ้นสุด:</strong> 
-                        {% if activity.end_date %}
-                            {{ activity.end_date|date:"d/m/Y" }}
-                        {% else %}
-                            ยังไม่กำหนด
-                        {% endif %}
-                    </p>
+                    <div class="activity-card">
+                        <div class="activity-info">
+                            <span class="activity-label">ชื่อกิจกรรม:</span>
+                            <span class="activity-value">{{ activity.name }}</span>
+                        </div>
+                        <div class="activity-info">
+                            <span class="activity-label">วันที่เริ่ม:</span>
+                            <span class="activity-value">{{ activity.start_date|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="activity-info">
+                            <span class="activity-label">วันที่สิ้นสุด:</span>
+                            <span class="activity-value">
+                                {% if activity.end_date %}
+                                    {{ activity.end_date|date:"d/m/Y" }}
+                                {% else %}
+                                    ยังไม่กำหนด
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
                 {% endfor %}
             {% else %}
-                <p>คุณยังไม่ได้เข้าร่วมกิจกรรมใด ๆ</p>
+                <p class="no-activity">คุณยังไม่ได้เข้าร่วมกิจกรรมใด ๆ</p>
             {% endif %}
         </div>
     </div>
 </div>
 
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f4f4f4;
-        text-align: center;
-        padding-top: 70px; /* เพิ่ม padding-top ให้ body */
+    /* รีเซ็ตและปรับแต่งพื้นฐาน */
+    .content-container {
+        max-width: 900px;
+        margin: 100px auto 30px;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
     }
 
-    .content-container {
-        max-width: 800px;
-        margin: 100px auto 20px; /* เพิ่ม margin-top เป็น 100px */
-        background: white;
+    h2, h3 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* กล่องข้อมูลส่วนตัว */
+    .profile-box {
+        margin-bottom: 40px;
+    }
+
+    .profile-info {
+        background: #f8f9fa;
         padding: 20px;
         border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .profile-box, .activity-box {
-        margin-bottom: 30px;
-    }
-
-    h2 {
-        color: #333;
         margin-bottom: 20px;
     }
 
-    p {
-        font-size: 18px;
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 500;
+        color: #34495e;
+        flex: 1;
+    }
+
+    .info-value {
         color: #555;
+        flex: 2;
+        text-align: left;
     }
 
-    .btn {
-        display: inline-block;
-        padding: 10px 15px;
-        background-color: #4CAF50;
-        color: white;
-        text-decoration: none;
+    /* ฟอร์มแก้ไขข้อมูล */
+    .edit-form {
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-fields p {
+        margin-bottom: 15px;
+    }
+
+    .form-fields label {
+        display: block;
+        font-weight: 500;
+        color: #34495e;
+        margin-bottom: 5px;
+    }
+
+    .form-fields input,
+    .form-fields select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
         border-radius: 5px;
-        margin-top: 10px;
+        font-size: 16px;
+        transition: border-color 0.3s ease;
     }
 
-    .btn:hover {
-        background-color: #45a049;
+    .form-fields input:focus,
+    .form-fields select:focus {
+        border-color: #3498db;
+        outline: none;
+    }
+
+    .btn-save {
+        background-color: #3498db;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        font-size: 16px;
+    }
+
+    .btn-save:hover {
+        background-color: #2980b9;
+    }
+
+    /* กล่องกิจกรรม */
+    .activity-box {
+        margin-bottom: 30px;
+    }
+
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .activity-card {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .activity-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .activity-info {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+    }
+
+    .activity-label {
+        font-weight: 500;
+        color: #34495e;
+        flex: 1;
+    }
+
+    .activity-value {
+        color: #555;
+        flex: 2;
+        text-align: left;
+    }
+
+    .no-activity {
+        color: #7f8c8d;
+        font-style: italic;
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    /* การตอบสนองสำหรับหน้าจอเล็ก */
+    @media (max-width: 768px) {
+        .content-container {
+            margin: 120px 15px 15px;
+            padding: 15px;
+        }
+
+        .info-item,
+        .activity-info {
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-label,
+        .activity-label,
+        .info-value,
+        .activity-value {
+            text-align: left;
+            flex: none;
+        }
     }
 </style>
 {% endblock %}

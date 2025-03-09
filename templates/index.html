@@ -240,6 +240,7 @@
         <a href="{% url 'track_participation' %}">📊 ติดตามสถานะ</a>
         <a href="{% url 'upload_proof' %}">📎 เพิ่มหลักฐาน</a>
         <a href="{% url 'edit_userprofile' %}">👤 ข้อมูลส่วนตัว</a>
+        <a href="{% url 'manage_participations' %}">⚙️ จัดการการเข้าร่วม</a>
       </div>
     </div>
     <div class="base-right-side">
@@ -291,16 +292,20 @@
         </div>
     </div>
 
-    <!-- กล่องเพิ่มประกาศ -->
+    <!-- กล่องแสดงประกาศ -->
     <div class="announcement-box">
-        <h2>เพิ่มประกาศ</h2>
-        <form method="post" action="{% url 'add_announcement' %}">
-            {% csrf_token %}
-            <!-- <input type="text" name="title" placeholder="หัวข้อประกาศ" required>
-            <textarea name="announcement_text" placeholder="เขียนประกาศที่นี่..." required></textarea>
-            <button type="submit">โพสต์</button> -->
-        </form>
+      <h2>ประกาศ</h2>
+      {% for announcement in announcements %}
+          <div class="announcement-item">
+              <h3>{{ announcement.title }}</h3>
+              <p>{{ announcement.content }}</p>
+              <small>โพสต์เมื่อ: {{ announcement.created_at|date:"d/m/Y H:i" }}</small>
+          </div>
+      {% empty %}
+          <p>ยังไม่มีประกาศ</p>
+      {% endfor %}
     </div>
+
   </div>
 
   <script>

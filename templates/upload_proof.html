@@ -2,101 +2,240 @@
 
 {% block content %}
 <style>
-    .container {
-        max-width: 1000px;
+    /* เพิ่มความเฉพาะเจาะจงสูงสุด */
+    div.base-container div.upproof-container {
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ปรับแต่ง header */
+    div.base-container div.upproof-container div.upproof-header {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e0e0e0;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    div.base-container div.upproof-container div.upproof-header h2.upproof-header-title {
+        color: #2c3e50;
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1; /* ป้องกันการตัดบรรทัด */
+    }
+
+    div.base-container div.upproof-container div.upproof-header a.upproof-btn-view {
+        background-color: #3498db;
+        color: white;
+        padding: 8px 20px;
+        border: none;
+        border-radius: 20px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+        font-size: 0.9rem;
+        display: inline-block;
+        line-height: 1; /* ป้องกันการตัดบรรทัด */
+    }
+
+    div.base-container div.upproof-container div.upproof-header a.upproof-btn-view:hover {
+        background-color: #2980b9;
+    }
+
+    /* ปรับแต่งการ์ด */
+    div.base-container div.upproof-container div.row div.col-md-4 div.upproof-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
         background: #ffffff;
         padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    h2 {
-        color: #333;
-        font-weight: bold;
-    }
-
-    .card {
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        transition: transform 0.2s, box-shadow 0.2s;
         margin-bottom: 20px;
+        transition: all 0.3s ease;
+        height: auto;
+        width: 100%;
+        display: block;
+        overflow: hidden;
+        box-sizing: border-box; /* ป้องกันการล้น */
     }
 
-    .card:hover {
+    div.base-container div.upproof-container div.row div.col-md-4 div.upproof-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
     }
 
-    .card-title {
-        font-size: 18px;
-        font-weight: bold;
-        color: #007bff;
+    div.base-container div.upproof-container div.row div.col-md-4 div.upproof-card h5.upproof-card-title {
+        color: #2c3e50;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        word-wrap: break-word;
+        line-height: 1.4;
+        overflow-wrap: break-word;
     }
 
-    .card-text {
-        color: #555;
+    div.base-container div.upproof-container div.row div.col-md-4 div.upproof-card p.upproof-card-text {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
     }
 
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
-        transition: background 0.3s ease;
+    div.base-container div.upproof-container div.row div.col-md-4 div.upproof-card form div.mb-3 label.upproof-label {
+        color: #34495e;
+        font-weight: 500;
+        margin-bottom: 5px;
+        display: block;
     }
 
-    .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #004080;
-    }
-
-    .btn-success {
-        background-color: #28a745;
-        border-color: #28a745;
-        transition: background 0.3s ease;
-    }
-
-    .btn-success:hover {
-        background-color: #218838;
-        border-color: #1e7e34;
-    }
-
-    .form-control {
+    div.base-container div.upproof-container div.row div.col-md-4 div.upproof-card form div.mb-3 input.upproof-form-control {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
         border-radius: 5px;
-        padding: 10px;
+        margin-top: 5px;
+        transition: border-color 0.3s ease;
     }
 
-    .form-label {
-        font-weight: bold;
-        color: #444;
+    div.base-container div.upproof-container div.row div.col-md-4 div.upproof-card form div.mb-3 input.upproof-form-control:focus {
+        border-color: #3498db;
+        outline: none;
+    }
+
+    div.base-container div.upproof-container div.row div.col-md-4 div.upproof-card form button.upproof-btn-upload {
+        background-color: #27ae60;
+        color: white;
+        padding: 8px 20px;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    div.base-container div.upproof-container div.row div.col-md-4 div.upproof-card form button.upproof-btn-upload:hover {
+        background-color: #219653;
+    }
+
+    div.base-container div.upproof-container div.row div.col-md-4 div.upproof-card form p.upproof-upload-status {
+        color: #27ae60;
+        margin-top: 10px;
+        display: none;
+        font-weight: 500;
+    }
+
+    div.base-container div.upproof-container div.row div.col-md-4 div.upproof-card.upproof-uploaded {
+        background: #f8f9fa;
+        opacity: 0.9;
+        pointer-events: none;
+    }
+
+    div.base-container div.upproof-container div.row div.col-md-4 div.upproof-card p.upproof-uploaded-text {
+        color: #27ae60;
+        font-weight: 600;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    div.base-container div.upproof-container div.row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: -15px;
+        margin-left: -15px;
+    }
+
+    div.base-container div.upproof-container div.row div.col-md-4 {
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+        padding-right: 15px;
+        padding-left: 15px;
     }
 </style>
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>อัพโหลดหลักฐานกิจกรรม</h2>
-        <a href="{% url 'user_upload_proof_list' %}" class="btn btn-primary">ดูรายการที่อัพโหลดแล้ว</a>
+<div class="upproof-container">
+    <div class="upproof-header">
+        <h2 class="upproof-header-title">อัพโหลดหลักฐานกิจกรรม</h2>
+        <a href="{% url 'user_upload_proof_list' %}" class="upproof-btn-view">ดูรายการที่อัพโหลดแล้ว</a>
     </div>
 
     <div class="row">
         {% for registration in registrations %}
-        <div class="col-md-4">  {# แบ่งการ์ดเป็น 3 คอลัมน์ต่อแถว #}
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">{{ registration.activity.name }}</h5>
-                    <p class="card-text">วันที่ลงทะเบียน: {{ registration.registration_date|date:"d/m/Y H:i" }}</p>
+        <div class="col-md-4">
+            <div class="upproof-card {% if registration.has_proof %}upproof-uploaded{% endif %}">
+                <div class="upproof-card-body">
+                    <h5 class="upproof-card-title">{{ registration.activity.name }}</h5>
+                    <p class="upproof-card-text">วันที่ลงทะเบียน: {{ registration.registration_date|date:"d/m/Y H:i" }}</p>
 
-                    <form method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <input type="hidden" name="activity_id" value="{{ registration.activity.id }}">
-                        <div class="mb-3">
-                            <label for="proof_image" class="form-label">อัพโหลดรูปภาพ</label>
-                            <input type="file" class="form-control" id="proof_image" name="proof_image" accept="image/*" required>
-                        </div>
-                        <button type="submit" class="btn btn-success">บันทึก</button>
-                    </form>
+                    {% if registration.has_proof %}
+                        <p class="upproof-uploaded-text">
+                            <span>✓</span> อัพโหลดหลักฐานแล้ว
+                        </p>
+                    {% else %}
+                        <form method="POST" enctype="multipart/form-data" class="upproof-form-{{ registration.activity.id }}">
+                            {% csrf_token %}
+                            <input type="hidden" name="activity_id" value="{{ registration.activity.id }}">
+                            <div class="mb-3">
+                                <label for="proof_image_{{ registration.activity.id }}" class="upproof-label">อัพโหลดรูปภาพ</label>
+                                <input type="file" class="upproof-form-control" id="proof_image_{{ registration.activity.id }}" 
+                                       name="proof_image" accept="image/*" required>
+                            </div>
+                            <button type="submit" class="upproof-btn-upload">บันทึก</button>
+                            <p class="upproof-upload-status" id="status_{{ registration.activity.id }}">อัพโหลดหลักฐานเรียบร้อยแล้ว</p>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('[class^="upproof-form-"]');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const activityId = formData.get('activity_id');
+            const statusElement = document.getElementById(`status_${activityId}`);
+            const card = this.closest('.upproof-card');
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    statusElement.style.display = 'block';
+                    card.classList.add('upproof-uploaded');
+                    form.style.display = 'none';
+                    const uploadedText = document.createElement('p');
+                    uploadedText.className = 'upproof-uploaded-text';
+                    uploadedText.innerHTML = '<span>✓</span> อัพโหลดหลักฐานแล้ว';
+                    card.querySelector('.upproof-card-body').appendChild(uploadedText);
+
+                    card.style.backgroundColor = '#e8f5e9';
+                    setTimeout(() => {
+                        card.style.backgroundColor = '';
+                    }, 1000);
+                } else {
+                    alert('เกิดข้อผิดพลาดในการอัพโหลด: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('เกิดข้อผิดพลาดในการอัพโหลด');
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

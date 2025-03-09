@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .container {
+        max-width: 1000px;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .proof-card {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .activity-name {
+        font-size: 18px;
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 10px;
+    }
+
+    .upload-date {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    .user-name {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    .proof-image {
+        max-width: 250px;  /* จำกัดขนาดภาพ */
+        height: auto;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+
+    .proof-card-footer {
+        font-size: 14px;
+        color: #888;
+        margin-top: 10px;
+    }
+
+    .btn-delete {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-delete:hover {
+        background-color: #c82333;
+    }
+</style>
+
+<div class="container mt-4">
+    <h2 class="mb-4">รายการหลักฐานที่อัพโหลดแล้ว</h2>
+
+    {% if registrations %}
+        <div class="row">
+            {% for reg in registrations %}
+                <div class="col-md-6">
+                    <div class="proof-card">
+                        <div class="activity-name">
+                            {% if reg.activity %}
+                                {{ reg.activity.name }}
+                            {% else %}
+                                กิจกรรมไม่ระบุชื่อ
+                            {% endif %}
+                        </div>
+
+                        <div class="user-name">
+                            <strong>ผู้ใช้:</strong> {{ reg.user.username }}
+                        </div>
+                        
+                        <div class="upload-date">
+                            <strong>วันที่อัพโหลด:</strong> {{ reg.proof_upload_date|date:"d M Y H:i" }}
+                        </div>
+
+                        {% if reg.proof_image %}
+                            <img src="{{ reg.proof_image.url }}" alt="หลักฐานการเข้าร่วมกิจกรรม" class="proof-image mb-3">
+                        {% endif %}
+
+                        <div class="proof-card-footer">
+                            <form method="POST" action="{% url 'delete_proof' reg.id %}" class="mt-2">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-delete btn-sm">ลบหลักฐาน</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>ไม่พบข้อมูลการอัพโหลดหลักฐาน</p>
+    {% endif %}
+    
+    <div class="mt-4">
+        <a href="{% url 'upload_proof' %}" class="btn btn-primary">อัพโหลดหลักฐานเพิ่มเติม</a>
+    </div>
+</div>
+
+{% endblock %}
