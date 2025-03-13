@@ -4,117 +4,98 @@
 {% block title %}{{ activity.name }}{% endblock %}
 
 {% block content %}
-<head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</head>
+<div class="container mx-auto px-6 py-10">
+  <!-- Header Section -->
+  <div class="text-center mb-10">
+    <h1 class="text-4xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent drop-shadow-lg">
+      รายละเอียดกิจกรรม: {{ activity.name }}
+    </h1>
+    <div class="mt-2 w-16 h-1 bg-blue-500 mx-auto rounded-full"></div>
+  </div>
 
-<div class="activity-container">
-    <h1>{{ activity.name }}</h1>
-
+  <!-- Activity Details Card -->
+  <div class="bg-white rounded-xl shadow-2xl p-6 max-w-4xl mx-auto transform hover:scale-105 transition duration-300">
+    <!-- Images Section -->
     {% if activity.images.all %}
-        <div class="activity-images">
-            {% for image in activity.images.all %}
-                <img src="{{ image.image.url }}" alt="รูปกิจกรรม" style="width: 100%; border-radius: 5px;">
-            {% endfor %}
-        </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        {% for image in activity.images.all %}
+          <img src="{{ image.image.url }}" alt="รูปกิจกรรม" class="w-full h-64 object-cover rounded-lg shadow-md hover:shadow-lg transition duration-300">
+        {% endfor %}
+      </div>
     {% else %}
-        <p style="color: red;">ไม่มีรูปภาพ</p>
+      <p class="text-red-500 text-center mb-6">ไม่มีรูปภาพ</p>
     {% endif %}
 
-    <p><strong>รายละเอียด:</strong> {{ activity.description }}</p>
-    <p><strong>วันที่เริ่ม:</strong> {{ activity.start_date }}</p>
-    <p><strong>วันที่สิ้นสุด:</strong> {{ activity.end_date }}</p>
+    <!-- Details Section -->
+    <div class="space-y-4">
+      <div>
+        <h2 class="text-xl font-semibold text-gray-700">รายละเอียด:</h2>
+        <div class="text-gray-600 whitespace-pre-line leading-relaxed">{{ activity.description|safe }}</div>
+      </div>
+      <p class="text-gray-600"><strong class="text-gray-800">วันที่เริ่ม:</strong> {{ activity.start_date }}</p>
+      <p class="text-gray-600"><strong class="text-gray-800">วันที่สิ้นสุด:</strong> {{ activity.end_date }}</p>
+      <p class="text-gray-600"><strong class="text-gray-800">คณะ:</strong> {{ activity.get_faculty_display }}</p>
+    </div>
 
-    <!-- ปุ่มเข้าร่วมกิจกรรม -->
-    <form method="post" action="{% url 'join_activity' activity.id %}" style="margin-top: 10px;">
+    <!-- Action Buttons -->
+    <div class="mt-6 flex flex-col sm:flex-row gap-4">
+      <form method="post" action="{% url 'join_activity' activity.id %}" class="w-full sm:w-auto">
         {% csrf_token %}
-        <button type="submit" class="btn">เข้าร่วมกิจกรรม</button>
-    </form>
-    <button onclick="fetchParticipants({{ activity.id }})">ดูรายชื่อนักศึกษา</button>
+        <button type="submit" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">
+          เข้าร่วมกิจกรรม
+        </button>
+      </form>
+      <button onclick="fetchParticipants({{ activity.id }})" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">
+        ดูรายชื่อนักศึกษา
+      </button>
+    </div>
+  </div>
+
+  <!-- Participant Modal -->
+  <div id="participantModal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-xl shadow-2xl z-50 hidden" style="max-height: 80vh; overflow-y: auto;">
+    <h3 class="text-2xl font-bold text-gray-800 mb-4">รายชื่อนักศึกษาที่เข้าร่วม</h3>
+    <ul id="participantList" class="list-disc pl-5 space-y-2 text-gray-700"></ul>
+    <button onclick="closeModal()" class="mt-4 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+      ปิด
+    </button>
+  </div>
+
+  <!-- Overlay for Modal -->
+  <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" onclick="closeModal()"></div>
 </div>
-
-<div id="participantModal" style="display:none; position:fixed; top:20%; left:50%; transform:translate(-50%, 0); padding:20px; background:white; border:1px solid #ccc;">
-    <h3>รายชื่อนักศึกษาที่เข้าร่วม</h3>
-    <ul id="participantList"></ul>
-    <button onclick="closeModal()">ปิด</button>
-</div>
-
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f4f4f4;
-        text-align: center;
-        padding-top: 70px; /* เพิ่ม padding-top ให้ body */
-    }
-
-    .activity-container {
-        max-width: 600px;
-        margin: 100px auto 20px; /* เพิ่ม margin-top เป็น 100px */
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        clear: both; /* เพิ่ม clear */
-        position: relative;
-        top: 20px; /* ปรับตำแหน่งลงมาอีกนิด */
-    }
-
-    /* Override container style จาก base.html */
-    .container {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-
-    h1 {
-        color: #333;
-    }
-
-    p {
-        font-size: 18px;
-        color: #555;
-    }
-
-    .btn {
-        display: inline-block;
-        padding: 10px 15px;
-        background-color: #4CAF50;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        margin-top: 10px;
-    }
-
-    .btn:hover {
-        background-color: #45a049;
-    }
-
-    #participantModal {
-        z-index: 1100;
-    }
-</style>
 
 <script>
-    function fetchParticipants(activityId) {
-        fetch(`/participants/${activityId}/`)
-            .then(response => response.json())
-            .then(data => {
-                const list = document.getElementById('participantList');
-                list.innerHTML = "";
-                data.participants.forEach(student => {
-                    let li = document.createElement("li");
-                    li.textContent = `${student.full_name} - ปี ${student.year}, ${student.branch}`;
-                    list.appendChild(li);
-                });
-                document.getElementById("participantModal").style.display = "block";
-            })
-            .catch(error => console.error("Error fetching participants:", error));
-    }
+  function fetchParticipants(activityId) {
+    fetch(`/participants/${activityId}/`)
+      .then(response => response.json())
+      .then(data => {
+        const list = document.getElementById('participantList');
+        list.innerHTML = "";
+        if (data.participants.length === 0) {
+          list.innerHTML = "<li>ไม่มีนักศึกษาที่เข้าร่วม</li>";
+        } else {
+          data.participants.forEach(student => {
+            let li = document.createElement("li");
+            li.textContent = `${student.full_name} - ปี ${student.year}, ${student.branch}`;
+            list.appendChild(li);
+          });
+        }
+        document.getElementById("participantModal").classList.remove("hidden");
+        document.getElementById("modalOverlay").classList.remove("hidden");
+      })
+      .catch(error => console.error("Error fetching participants:", error));
+  }
 
-    function closeModal() {
-        document.getElementById("participantModal").style.display = "none";
+  function closeModal() {
+    document.getElementById("participantModal").classList.add("hidden");
+    document.getElementById("modalOverlay").classList.add("hidden");
+  }
+
+  // ปิดโมเดลเมื่อกด Esc
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      closeModal();
     }
+  });
 </script>
 {% endblock %}

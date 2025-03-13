@@ -5,330 +5,194 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>หน้าแรก</title>
-  
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* พื้นหลัง gradient และ animation */
     body {
-      padding-top: 60px; /* ปรับตามความสูงของ navbar */
-    }
-
-    /* Styling สำหรับ navbar */
-    .base-navbar {
-      background-color: #3498db;
-      width: 100%;
-      position: fixed;
-      top: 0;
-      left: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 20px;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-      z-index: 1000;
-    }
-
-    .base-menu-container {
+      margin: 0;
+      padding-top: 60px;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f0f4f8, #ffffff); /* Gradient สีอ่อน */
+      overflow-x: hidden; /* ป้องกันการเลื่อนแนวนอน */
       position: relative;
     }
 
-    .base-menu {
-      font-size: 18px;
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-      padding: 10px 15px;
-      background-color: #2ecc71;
-      border-radius: 5px;
-      cursor: pointer;
-      display: inline-block;
-    }
-
-    .base-menu:hover {
-      background-color: #27ae60;
-    }
-
-    .base-dropdown {
-      display: none;
+    /* Animation เส้นวิ่ง */
+    .moving-line {
       position: absolute;
-      top: 100%;
-      left: 0;
-      background-color: white;
-      min-width: 200px;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-      border-radius: 5px;
-      z-index: 100;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #4a90e2, transparent);
+      animation: moveLine 6s linear infinite;
+      z-index: 0;
     }
 
-    .base-dropdown a {
-      display: block;
-      padding: 12px 15px;
-      text-decoration: none;
-      color: #333;
-      font-size: 16px;
-      transition: background 0.3s ease;
+    .moving-line:nth-child(1) { top: 10%; }
+    .moving-line:nth-child(2) { top: 20%; animation-delay: 1s; }
+    .moving-line:nth-child(3) { top: 30%; animation-delay: 2s; }
+    .moving-line:nth-child(4) { top: 50%; animation-delay: 3s; }
+    .moving-line:nth-child(5) { top: 70%; animation-delay: 4s; }
+    .moving-line:nth-child(6) { top: 90%; animation-delay: 5s; }
+
+    @keyframes moveLine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
     }
 
-    .base-dropdown a:hover {
-      background-color: #f1f1f1;
+    /* เนื้อหาให้อยู่เหนือเส้น */
+    .content-wrapper, .center-container {
+      position: relative;
+      z-index: 10;
     }
 
-    .base-menu-container:hover .base-dropdown {
-      display: block;
-    }
-
-    .base-right-side {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-    }
-
-    .base-right-side span {
-      color: white;
-      font-size: 16px;
-    }
-
-    .base-right-side a, .base-logout-btn {
-      color: white;
-      text-decoration: none;
-      padding: 8px 15px;
-      border-radius: 5px;
-      background-color: #e67e22;
-      transition: background-color 0.3s ease;
-    }
-
-    .base-right-side a:hover {
-      background-color: #d35400;
-    }
-
-    .base-logout-btn {
-      background-color: #c0392b;
-      border: none;
-      cursor: pointer;
-    }
-
-    .base-logout-btn:hover {
-      background-color: #a93226;
-    }
-
-    @media (max-width: 768px) {
-      .base-navbar {
-        position: fixed;
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .base-right-side {
-        margin-top: 10px;
-      }
-      .base-dropdown {
-        position: static;
-        width: 100%;
-      }
-      .base-menu-container:hover .base-dropdown {
-        display: none;
-      }
-      .base-menu-container:focus-within .base-dropdown {
-        display: block;
-      }
-    }
-
-    /* สไตล์สำหรับ container */
-    .activity-card-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        justify-content: flex-start; /* จัดการ์ดชิดซ้าย */
-        padding: 20px;
-        background-color: transparent; /* ไม่มีพื้นหลัง */
-        width: 100%; /* กินพื้นที่เต็มหน้าจอ */
-        max-width: 100%; /* ไม่จำกัดความกว้าง */
-        margin: 0; /* ลบ margin */
-    }
-
-    /* สไตล์การ์ด */
+    /* กำหนดขนาดการ์ดให้คงที่ */
     .activity-card {
-        background: #fff; /* พื้นหลังการ์ดเป็นสีขาว */
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        padding: 15px;
-        width: calc(33.33% - 20px); /* 3 การ์ดต่อแถว */
-        text-align: center;
-        transition: transform 0.3s ease-in-out;
+      min-height: 400px; /* ความสูงขั้นต่ำ */
+      max-height: 400px; /* ความสูงสูงสุด */
+      overflow-y: auto; /* ถ้ามีเนื้อหาเยอะให้เลื่อนได้ */
     }
 
-    /* เพิ่มเอฟเฟกต์ hover */
-    .activity-card:hover {
-        transform: translateY(-5px);
+    .activity-card img {
+      height: 150px; /* กำหนดความสูงของรูปภาพ */
+      object-fit: cover; /* ป้องกันรูปภาพบิดเบี้ยว */
     }
-
-    /* ปรับสไตล์ปุ่ม */
-    .activity-card form button {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    .activity-card form button:hover {
-        background-color: #45a049;
-    }
-    
-    /* h1 จัดตรงกลาง */
-    .center-container {
-        text-align: center;
-        padding: 20px 0; /* เพิ่ม padding บนและล่าง */
-    }
-
-    /* ปรับ layout ให้กิจกรรมและประกาศอยู่ในบรรทัดเดียวกัน */
-    .content-wrapper {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 20px; /* ระยะห่างระหว่างสองกล่อง */
-        padding: 20px;
-        width: 100%; /* กินพื้นที่เต็มหน้าจอ */
-        max-width: 100%; /* ไม่จำกัดความกว้าง */
-        margin: 0; /* ลบ margin */
-        background-color: transparent; /* ไม่มีพื้นหลัง */
-    }
-
-    /* กำหนดความกว้างให้แต่ละส่วน */
-    .activity-section {
-        flex: 2; /* ให้กินพื้นที่มากกว่า */
-        width: 100%; /* กินพื้นที่เต็มหน้าจอ */
-        background-color: transparent; /* ไม่มีพื้นหลัง */
-    }
-
-    .announcement-box {
-        flex: 1; /* ให้เล็กกว่ากิจกรรม */
-        background: #fff; /* พื้นหลังกล่องประกาศเป็นสีขาว */
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        max-width: 350px;
-        height: fit-content; /* ปรับความสูงให้พอดีกับเนื้อหา */
-    }
-
-    /* ปรับการ์ดให้แสดง 3 การ์ดต่อแถว */
-    @media (max-width: 1200px) {
-        .activity-card {
-            width: calc(50% - 20px); /* 2 การ์ดต่อแถว */
-        }
-    }
-
-    @media (max-width: 768px) {
-        .activity-card {
-            width: 100%; /* 1 การ์ดต่อแถว */
-        }
-    }
-
-    /* ใช้ focus-within เพื่อเปิด dropdown บนมือถือ */
-    .base-menu-container:focus-within .base-dropdown {
-      display: block;
-    }
-</style>
-
+  </style>
 </head>
-<body>
+<body class="font-sans">
   <!-- Navbar -->
-  <div class="base-navbar">
+  <nav class="base-navbar fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 shadow-lg z-50 flex justify-between items-center">
     <div class="base-menu-container">
-      <a href="#" class="base-menu">เมนู</a>
-      <div class="base-dropdown">
-        <a href="{% url 'home' %}">🏠 กลับไปหน้าหลัก</a>
-        <a href="{% url 'track_participation' %}">📊 ติดตามสถานะ</a>
-        <a href="{% url 'upload_proof' %}">📎 เพิ่มหลักฐาน</a>
-        <a href="{% url 'edit_userprofile' %}">👤 ข้อมูลส่วนตัว</a>
-        <a href="{% url 'manage_participations' %}">⚙️ จัดการการเข้าร่วม</a>
+      <button class="base-menu bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400" id="menuButton">เมนู</button>
+      <div class="base-dropdown absolute top-full left-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl hidden" id="dropdown">
+        <a href="{% url 'home' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">🏠 กลับไปหน้าหลัก</a>
+        <a href="{% url 'track_participation' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">📊 ติดตามสถานะ</a>
+        <a href="{% url 'upload_proof' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">📎 เพิ่มหลักฐาน</a>
+        <a href="{% url 'edit_userprofile' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">👤 ข้อมูลส่วนตัว</a>
+        <a href="{% url 'manage_participations' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">⚙️ จัดการการเข้าร่วม</a>
       </div>
     </div>
-    <div class="base-right-side">
+    <div class="base-right-side flex items-center gap-4 mr-6">
       {% if user.is_authenticated %}
-        <span>ยินดีต้อนรับ, {{ user.username }}</span>
-        <form method="post" action="{% url 'logout' %}" style="display:inline;">
+        <span class="text-white font-medium">ยินดีต้อนรับ, {{ user.username }}</span>
+        <form method="post" action="{% url 'logout' %}" class="inline">
           {% csrf_token %}
-          <button type="submit" class="base-logout-btn">ออกจากระบบ</button>
+          <button type="submit" class="base-logout-btn bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">ออกจากระบบ</button>
         </form>
       {% else %}
-        <a href="{% url 'login' %}">เข้าสู่ระบบ</a>
-        <a href="{% url 'register' %}">สมัครสมาชิก</a>
+        <a href="{% url 'login' %}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">เข้าสู่ระบบ</a>
+        <a href="{% url 'register' %}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">สมัครสมาชิก</a>
       {% endif %}
     </div>
+  </nav>
+
+  <!-- เส้นวิ่ง (Moving Lines) -->
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+
+  <!-- ข้อความแจ้งเตือน -->
+  {% if messages %}
+    <div class="container mx-auto px-6 mt-4">
+      {% for message in messages %}
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-md relative mb-4">
+          <span class="block">{{ message }}</span>
+          <button type="button" class="absolute top-2 right-2 text-green-700 hover:text-green-900" onclick="this.parentElement.style.display='none'">✖</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- หัวข้อหลัก -->
+  <div class="center-container text-center py-6">
+    <h1 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent drop-shadow-lg">
+      แพลตฟอร์มสำหรับการบริหารจัดการข้อมูลกิจกรรมของสโมสร<br>คณะวิทยาศาสตร์และเทคโนโลยี
+    </h1>
   </div>
 
-  <div class="center-container">
-    <h1>ยินดีต้อนรับผู้ใช้งาน</h1>
-  </div>
-
-  <div class="content-wrapper">
+  <!-- เนื้อหาหลัก -->
+  <div class="content-wrapper flex flex-col lg:flex-row justify-between items-start gap-6 px-4 lg:px-6 py-6">
     <!-- กล่องกิจกรรม -->
-    <div class="activity-section">
-        <div class="center-container">
-            <h1>กิจกรรมทั้งหมด</h1>
-        </div>
-        
-        <div class="activity-card-container">
-            {% for activity in activities %}
-                <div class="activity-card">
-                    <h3>{{ activity.name }}</h3>
-                    <p><strong>รายละเอียด:</strong> {{ activity.description }}</p> 
-                    <p><strong>วันที่เริ่ม:</strong> {{ activity.start_date }}</p>
-                    <p><strong>วันที่สิ้นสุด:</strong> {{ activity.end_date }}</p>
-        
-                    {% if activity.images.all %}
-                        {% for image in activity.images.all %}
-                            <img src="{{ image.image.url }}" alt="รูปกิจกรรม" style="width: 100%; border-radius: 5px;">
-                        {% endfor %}
-                    {% else %}
-                        <p style="color: red;">ไม่มีรูปภาพ</p>
-                    {% endif %}
-        
-                    <a href="{% url 'activity_info' activity.id %}" class="btn">รายละเอียดกิจกรรม</a>
-                </div>
-            {% empty %}
-                <p>ไม่มีข้อมูลกิจกรรม</p> 
-            {% endfor %}
-        </div>
+    <div class="activity-section w-full lg:w-2/3 order-1">
+      <div class="center-container mb-6">
+        <h2 class="text-2xl font-semibold text-gray-700">รายการกิจกรรมทั้งหมด</h2>
+        {% if user.is_authenticated and user.user_type == 'admin' %}
+          <a href="{% url 'add_activity' %}" class="inline-block mt-4">
+            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">เพิ่มกิจกรรมใหม่</button>
+          </a>
+        {% endif %}
+      </div>
+      
+      <div class="activity-card-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for activity in activities %}
+          <div class="activity-card bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-2 p-4">
+            <h3 class="text-xl font-semibold text-gray-800">{{ activity.name }}</h3>
+            <p class="text-gray-600 mt-1"><strong>วันที่เริ่ม:</strong> {{ activity.start_date }}</p>
+            <p class="text-gray-600 mt-1"><strong>วันที่สิ้นสุด:</strong> {{ activity.end_date }}</p>
+            <p class="text-gray-600 mt-1"><strong>คณะ:</strong> {{ activity.get_faculty_display }}</p>
+            {% if activity.images.all %}
+              {% for image in activity.images.all %}
+                <img src="{{ image.image.url }}" alt="รูปกิจกรรม" class="mt-2 w-full h-150px object-cover rounded-lg">
+              {% endfor %}
+            {% else %}
+              <p class="text-red-500 mt-2">ไม่มีรูปภาพ</p>
+            {% endif %}
+            <a href="{% url 'activity_info' activity.id %}" class="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition duration-200">รายละเอียดกิจกรรม</a>
+          </div>
+        {% empty %}
+          <p class="text-gray-600">ไม่มีข้อมูลกิจกรรม</p>
+        {% endfor %}
+      </div>
     </div>
 
     <!-- กล่องแสดงประกาศ -->
-    <div class="announcement-box">
-      <h2>ประกาศ</h2>
+    <div class="announcement-box w-full lg:w-1/3 bg-white rounded-xl shadow-lg p-4 order-2">
+      <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b-2 border-gray-200 pb-2">ประกาศ</h2>
       {% for announcement in announcements %}
-          <div class="announcement-item">
-              <h3>{{ announcement.title }}</h3>
-              <p>{{ announcement.content }}</p>
-              <small>โพสต์เมื่อ: {{ announcement.created_at|date:"d/m/Y H:i" }}</small>
-          </div>
+        <div class="announcement-item mb-4 pb-4 border-b border-gray-100 last:border-b-0">
+          <h3 class="text-lg font-medium text-gray-800">{{ announcement.title }}</h3>
+          <p class="text-gray-600 mt-1">{{ announcement.content }}</p>
+          <small class="text-gray-500 block mt-1">{{ announcement.created_at|date:"d/m/Y H:i" }}</small>
+        </div>
       {% empty %}
-          <p>ยังไม่มีประกาศ</p>
+        <p class="text-gray-600">ยังไม่มีประกาศ</p>
       {% endfor %}
     </div>
-
   </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const menuContainer = document.querySelector(".base-menu-container");
-        const menuButton = document.querySelector(".base-menu");
-        const dropdown = menuContainer.querySelector(".base-dropdown");
+      const menuButton = document.getElementById("menuButton");
+      const dropdown = document.getElementById("dropdown");
+      let isOpen = false;
 
-        // เปิด/ปิด dropdown เมื่อคลิกที่ปุ่ม Menu
-        menuButton.addEventListener("click", function (event) {
-            event.stopPropagation(); // หยุดการกระจายเหตุการณ์
-            menuContainer.classList.toggle("active");
-        });
+      menuButton.addEventListener("click", function (event) {
+        event.stopPropagation();
+        isOpen = !isOpen;
+        dropdown.classList.toggle("hidden", !isOpen);
+      });
 
-        // ปิด dropdown เมื่อคลิกที่อื่น
-        document.addEventListener("click", function () {
-            menuContainer.classList.remove("active");
-        });
+      document.addEventListener("click", function (event) {
+        if (isOpen && !menuButton.contains(event.target) && !dropdown.contains(event.target)) {
+          dropdown.classList.add("hidden");
+          isOpen = false;
+        }
+      });
 
-        // ป้องกัน dropdown ปิดเมื่อกดข้างใน
-        dropdown.addEventListener("click", function (event) {
-            event.stopPropagation(); // หยุดการกระจายเหตุการณ์
-        });
+      dropdown.addEventListener("click", function (event) {
+        event.stopPropagation();
+      });
     });
   </script>
 </body>

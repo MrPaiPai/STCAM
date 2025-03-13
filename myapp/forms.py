@@ -4,7 +4,7 @@ from .models import MyUser
 from django.contrib.auth.forms import UserCreationForm
 from .models import BRANCH_CHOICES
 from django.contrib.auth.models import User
-
+from django.contrib.admin.widgets import AdminDateWidget
 
 # ฟอร์มสำหรับนักศึกษาลงทะเบียน
 class StudentRegisterForm(UserCreationForm):
@@ -32,22 +32,20 @@ class StudentRegisterForm(UserCreationForm):
     
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password1"])  # ตั้งค่ารหัสผ่าน
-        user.student_id = self.cleaned_data["student_id"]  # บันทึกรหัสนักศึกษา
-        user.branch = self.cleaned_data["branch"]  # บันทึกสาขา
-        user.year = self.cleaned_data["year"]  # บันทึกชั้นปี
-        user.user_type = 'student'  # ตั้งค่า user_type เป็น student
+        user.set_password(self.cleaned_data["password1"])
+        user.student_id = self.cleaned_data["student_id"]
+        user.branch = self.cleaned_data["branch"]
+        user.year = self.cleaned_data["year"]
+        user.user_type = 'student'
         if commit:
             user.save()
         return user
-
-
 
 # ฟอร์มสำหรับแอดมินลงทะเบียน
 class AdminRegisterForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password', 'branch', 'year', 'user_type']  # เพิ่ม branch และ year
+        fields = ['username', 'email', 'password', 'branch', 'year', 'user_type']
         widgets = {
             'password': forms.PasswordInput(),
             'year': forms.Select(attrs={'class': 'form-control'}),
@@ -58,37 +56,47 @@ class AdminRegisterForm(forms.ModelForm):
 class ActivityForm(forms.ModelForm):
     class Meta:
         model = Activity
-        fields = ['name', 'description', 'start_date', 'end_date']
+        fields = ['name', 'description', 'start_date', 'end_date', 'faculty']  # เพิ่ม faculty
+        widgets = {
+            'start_date': AdminDateWidget(),
+            'end_date': AdminDateWidget(),
+            'faculty': forms.Select(attrs={'class': 'form-control'}),  # เพิ่ม Dropdown สำหรับ faculty
+        }
+        labels = {
+            'name': 'ชื่อกิจกรรม',
+            'description': 'รายละเอียด',
+            'start_date': 'วันที่เริ่ม',
+            'end_date': 'วันที่สิ้นสุด',
+            'faculty': 'คณะที่จัดกิจกรรม',
+        }
 
 # ฟอร์มสำหรับอัปโหลดรูปภาพกิจกรรม
 class ActivityImageForm(forms.ModelForm):
     class Meta:
         model = ActivityImage
         fields = ['image']
+        labels = {
+            'image': 'รูปภาพ',
+        }
 
 class MyUserForm(forms.ModelForm):
     class Meta:
         model = MyUser
-        fields = ['username', 'email', 'role']  # กำหนดให้แสดงเฉพาะฟิลด์เหล่านี้
-
-    # สามารถเพิ่มฟิลด์หรือการปรับแต่งเพิ่มเติมได้ เช่น ถ้าต้องการให้เลือก role เป็น dropdown
+        fields = ['username', 'email', 'role']
     role = forms.ChoiceField(choices=[('user', 'User'), ('teacher', 'Teacher')])
 
 class MyUserCreationForm(UserCreationForm):
     class Meta:
         model = MyUser
         fields = ['username', 'email', 'role']
-
     role = forms.ChoiceField(choices=MyUser.ROLE_CHOICES, required=True)
 
-#เก็บสาขา กับ ชั้นปี
 class RegisterForm(forms.Form):
     username = forms.CharField(max_length=100)
     password = forms.CharField(widget=forms.PasswordInput)
     branch = forms.CharField(max_length=100)
     year = forms.ChoiceField(choices=[(1, 'ปี 1'), (2, 'ปี 2'), (3, 'ปี 3'), (4, 'ปี 4')])
 
-#เเก้ไขข้อมูลส่วนตัว
 class ProfileEditForm(forms.ModelForm):
     first_name = forms.CharField(max_length=100, required=True, label="ชื่อจริง")
     last_name = forms.CharField(max_length=100, required=True, label="นามสกุล")
@@ -97,8 +105,6 @@ class ProfileEditForm(forms.ModelForm):
     class Meta:
         model = CustomUser
         fields = ['first_name', 'last_name', 'student_id']
-
-
 
 class UserProfileForm(forms.ModelForm):
     class Meta:

@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.conf import settings
 
+
 BRANCH_CHOICES = [
     ('CS', 'วิทยาการคอมพิวเตอร์'),
     ('CCS', 'วิทยาศาสตร์เครื่องสำอาง'),
@@ -172,6 +173,25 @@ class Activity(models.Model):
         CustomUser,
         on_delete=models.CASCADE,
         verbose_name='ผู้สร้างกิจกรรม'
+    )
+    # เพิ่มฟิลด์ faculty
+    FACULTY_CHOICES = [
+        ('all', 'ทุกคนเข้าร่วมได้'),
+        ('CS', 'วิทยาการคอมพิวเตอร์'),
+        ('CCS', 'วิทยาศาสตร์เครื่องสำอาง'),
+        ('OHS', 'อาชีวอนามัยและความปลอดภัย'),
+        ('EHS', 'อนามัยสิ่งแวดล้อมและสาธารณภัย'),
+        ('MS', 'วิทยาศาสตร์การแพทย์'),
+        ('GS', 'วิทยาศาสตร์ทั่วไป'),
+        ('IT', 'เทคโนโลยีสารสนเทศ'),
+        ('BIB', 'อุตสาหกรรมชีวภาพเพื่อธุรกิจ'),
+        ('CYB', 'ความมั่นคงปลอดภัยไซเบอร์'),
+    ]
+    faculty = models.CharField(
+        max_length=10,
+        choices=FACULTY_CHOICES,
+        default='all',
+        verbose_name='คณะที่จัดกิจกรรม'
     )
 
     class Meta:

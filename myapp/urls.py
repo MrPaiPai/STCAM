@@ -3,10 +3,7 @@ from django.conf.urls.static import static
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
-from .views import join_activity
-from .views import get_participants
-from .views import edit_profile
-from .views import edit_userprofile
+from .views import join_activity, get_participants, edit_profile, edit_userprofile
 from myapp.views import manage_participation
 
 urlpatterns = [
@@ -20,11 +17,9 @@ urlpatterns = [
     path('participation-report/', views.participation_report, name='participation_report'),  # รายงานการเข้าร่วม
     path('edit_user/<int:user_id>/', views.edit_user, name='edit_user'),
     path('my-activities/', views.my_activities, name='my_activities'),  # หน้ากิจกรรมที่ผู้ใช้เข้าร่วม
-    # path('menu/', views.menu, name='menu'),
     path('activity_info/', views.activity_info, name='activity_info'),
     path('track-participation/', views.track_participation, name='track_participation'),
     path('upload-proof/', views.upload_proof, name='upload_proof'),
-    # path('add_announcement/', views.add_announcement, name='add_announcement'),
     path('activity/<int:activity_id>/', views.activity_info, name='activity_info'),  # เส้นทางไปยัง activity_info
     path('join-activity/<int:activity_id>/', join_activity, name='join_activity'),
     path('activity/<int:activity_id>/', views.activity_detail, name='activity_detail'),
@@ -32,22 +27,18 @@ urlpatterns = [
     path("edit-profile/", edit_profile, name="edit_profile"),
     path('edit-userprofile/', views.edit_userprofile, name='edit_userprofile'),
     path('track-participation/', views.track_participation, name='track_participation'),
-    path('update-participation-status/<int:participation_id>/',views.update_participation_status, name='update_participation_status'),
+    path('update-participation-status/<int:participation_id>/', views.update_participation_status, name='update_participation_status'),
     path('upload-proof/', views.upload_proof, name='upload_proof'),
     path('proof-list/', views.user_upload_proof_list, name='user_upload_proof_list'),
     path('delete-proof/<int:reg_id>/', views.delete_proof, name='delete_proof'),
     path('show_all_proofs/', views.show_all_proofs, name='show_all_proofs'),
     path('manage-participation/<int:participation_id>/', views.manage_participation, name='manage_participation'),
     path('manage-participation/', views.manage_participation, name='manage_participation'),
-    path('manage-participation/<int:participation_id>/', manage_participation, name='manage_participation'),
-
-    path('activity/<int:activity_id>/info/', views.activity_info, name='activity_info'),
     path('manage-participations/', views.manage_participations, name='manage_participations'),
+    path('activity/<int:activity_id>/info/', views.activity_info, name='activity_info'),
+]
 
-
-
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# เพิ่มบรรทัดนี้ใน urls.py เพื่อให้สามารถเข้าถึงไฟล์ที่อัปโหลด (เช่น รูปภาพ)
+# เพิ่มการเสิร์ฟไฟล์ media และ static ในโหมดพัฒนา
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -19,6 +19,7 @@ from .models import ActivityRegistration
 from django.utils import timezone
 
 
+
 # views.py
 
 def some_view(request):
@@ -54,6 +55,7 @@ def register(request):
             user = authenticate(request, username=form.cleaned_data['username'], password=form.cleaned_data['password1'])
             if user:
                 login(request, user)
+                messages.success(request, 'ลงทะเบียนสำเร็จ! ยินดีต้อนรับเข้าสู่ระบบ')  # ✅ เพิ่มข้อความสำเร็จ
                 return redirect('home')  # เปลี่ยนให้ไปที่หน้า home หลังจาก login สำเร็จ
     else:
         form = StudentRegisterForm()
@@ -114,7 +116,7 @@ def add_activity(request):
                     image = form['image']
                     ActivityImage.objects.create(activity=activity, image=image)
 
-            return redirect('activity_list')
+            return redirect('home')
     else:
         activity_form = ActivityForm()
         formset = ImageFormSet(queryset=ActivityImage.objects.none())
@@ -301,10 +303,11 @@ def edit_userprofile(request):
     })
 
 
-
 # อัพโหลดหลักฐานการเข้าร่วม
 @login_required
+@csrf_exempt  # เพิ่มเพื่อให้แน่ใจว่าไม่มีปัญหา CSRF (ถ้าไม่ใช้ก็ลบได้)
 def upload_proof(request):
+    # ดึงข้อมูล participation ที่สถานะ 'approved' สำหรับผู้ใช้ปัจจุบัน
     participations = Participation.objects.filter(
         student=request.user,
         status='approved'
@@ -316,24 +319,30 @@ def upload_proof(request):
         try:
             activity_id = int(request.POST.get('activity_id', 0))
         except ValueError:
-            activity_id = 0
+            return JsonResponse({"success": false, "error": "รหัสกิจกรรมไม่ถูกต้อง"})
 
         proof_image = request.FILES.get('proof_image')
 
-        if activity_id and proof_image:
-            activity = get_object_or_404(Activity, id=activity_id)
+        if not activity_id:
+            return JsonResponse({"success": false, "error": "กรุณาระบุรหัสกิจกรรม"})
+        if not proof_image:
+            return JsonResponse({"success": false, "error": "กรุณาเลือกไฟล์รูปภาพ"})
 
+        try:
+            activity = get_object_or_404(Activity, id=activity_id)
             registration, created = ActivityRegistration.objects.update_or_create(
                 user=request.user,
                 activity=activity,
                 defaults={
                     'proof_image': proof_image,
-                    'proof_upload_date': timezone.now(),  # ตรวจสอบและตั้งค่า proof_upload_date
+                    'proof_upload_date': timezone.now(),
                 }
             )
+            return JsonResponse({"success": true})  # ส่ง response เป็น JSON เมื่อสำเร็จ
+        except Exception as e:
+            return JsonResponse({"success": false, "error": f"เกิดข้อผิดพลาด: {str(e)}"})
 
-            return redirect('user_upload_proof_list')
-
+    # สำหรับ GET request: ดึงข้อมูลการลงทะเบียน
     registrations = [
         ActivityRegistration.objects.get_or_create(
             user=request.user,

@@ -43,13 +43,21 @@ class CustomUserAdmin(UserAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request)
 
-
 # การจัดการ Activity พร้อม Inline สำหรับรูปภาพ
 @admin.register(Activity)
 class ActivityAdmin(admin.ModelAdmin):
-    list_display = ('name', 'start_date', 'end_date', 'created_by')
-    list_filter = ('start_date', 'end_date', 'created_by')
+    list_display = ('name', 'start_date', 'end_date', 'faculty', 'created_by')  # เพิ่ม faculty
+    list_filter = ('start_date', 'end_date', 'faculty', 'created_by')  # เพิ่ม faculty ในตัวกรอง
     inlines = [ActivityImageInline]
+    search_fields = ('name', 'description')  # เพิ่มการค้นหา
+    date_hierarchy = 'start_date'  # ลำดับตามวันที่เริ่ม
+
+    # กำหนดฟิลด์ที่แสดงในฟอร์มเพิ่ม/แก้ไข
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'description', 'start_date', 'end_date', 'faculty', 'created_by')
+        }),
+    )
 
     # จำกัดการแสดงผลตามประเภทผู้ใช้
     def get_queryset(self, request):
@@ -63,45 +71,15 @@ class ActivityAdmin(admin.ModelAdmin):
             return obj.created_by == request.user  # อนุญาตเฉพาะกิจกรรมที่สร้างโดยอาจารย์นั้น
         return super().has_change_permission(request, obj)
 
-
+    # ทำให้ created_by เป็น read-only เมื่อแก้ไข
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # ถ้าเป็นการแก้ไข (ไม่ใช่เพิ่มใหม่)
+            return ('created_by',)
+        return ()
 
 # เช็คก่อนว่า Participation ถูก register ไปแล้วหรือยัง
 if admin.site.is_registered(Participation):
     admin.site.unregister(Participation)
-
-# @admin.register(Participation)
-# class ParticipationAdmin(admin.ModelAdmin):
-#     list_display = ('activity', 'student', 'participated')  # ใช้ method แทน field
-#     list_filter = ('activity',)  # ลบ 'participated'
-#     search_fields = ('student__username', 'activity__name')
-#     ordering = ('activity', 'student')
-
-#     def participated(self, obj):
-#         return True  # หรือใช้เงื่อนไขที่เหมาะสม เช่น obj.date_joined ไม่เป็น null
-#     participated.short_description = "เข้าร่วมแล้ว"  # เปลี่ยนชื่อคอลัมน์ใน Django Admin
-
-#     def get_queryset(self, request):
-#         queryset = super().get_queryset(request)
-#         if hasattr(request.user, 'user_type') and request.user.user_type == 'teacher':
-#             return queryset.filter(activity__created_by=request.user)
-#         return queryset
-
-class MyUserAdmin(UserAdmin):
-    form = MyUserForm
-    model = MyUser
-    list_display = ['username', 'email', 'role']
-    list_filter = ['role']
-    fieldsets = UserAdmin.fieldsets + (
-        (None, {'fields': ('role',)}),
-    )
-
-admin.site.register(MyUser, MyUserAdmin)
-
-@admin.register(Announcement)
-class AnnouncementAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_at')
-    search_fields = ('title', 'content')
-
 
 @admin.register(Participation)
 class ParticipationAdmin(admin.ModelAdmin):
@@ -152,6 +130,21 @@ class ParticipationAdmin(admin.ModelAdmin):
         updated = queryset.update(status='rejected')
         self.message_user(request, f'ไม่อนุมัติการเข้าร่วมจำนวน {updated} รายการ')
 
+class MyUserAdmin(UserAdmin):
+    form = MyUserForm
+    model = MyUser
+    list_display = ['username', 'email', 'role']
+    list_filter = ['role']
+    fieldsets = UserAdmin.fieldsets + (
+        (None, {'fields': ('role',)}),
+    )
+
+admin.site.register(MyUser, MyUserAdmin)
+
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at')
+    search_fields = ('title', 'content')
 
 class ActivityRegistrationAdmin(admin.ModelAdmin):
     list_display = ('user', 'activity', 'proof_image', 'proof_upload_date')
@@ -159,6 +152,3 @@ class ActivityRegistrationAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'activity__name')
 
 admin.site.register(ActivityRegistration, ActivityRegistrationAdmin)
-
-
-

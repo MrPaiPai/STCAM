@@ -1,10 +1,108 @@
-<h1>เพิ่มกิจกรรม</h1>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ activity_form.as_p }}
-    {{ formset.management_form }}
-    {% for form in formset %}
-        {{ form.as_p }}
-    {% endfor %}
-    <button type="submit">เพิ่มกิจกรรม</button>
-</form>
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เพิ่มกิจกรรมใหม่</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Admin Static Files -->
+    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
+    <!-- โหลด jQuery จาก CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- ถ้า CDN ล้มเหลว ให้โหลดจาก static -->
+    <script>window.jQuery || document.write('<script src="{% static 'admin/js/jquery.init.js' %}"><\/script>')</script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">เพิ่มกิจกรรมใหม่</h1>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- ฟอร์ม Activity -->
+            <div class="space-y-4">
+                {% for field in activity_form %}
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">{{ field.label }}</label>
+                        <div class="mt-1">
+                            {{ field|add_class:"w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" }}
+                            {% if field.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ field.errors }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- ฟอร์มอัปโหลดรูปภาพ -->
+            <div class="space-y-4" id="image-upload-section">
+                <h2 class="text-lg font-semibold text-gray-700">อัปโหลดรูปภาพ</h2>
+                {{ formset.management_form }}
+                <div id="image-forms">
+                    {% for form in formset %}
+                        <div class="image-form flex items-center space-x-4">
+                            {{ form.image|add_class:"w-full p-2 border border-gray-300 rounded-md" }}
+                            {% if form.image.errors %}
+                                <p class="text-red-500 text-sm">{{ form.image.errors }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="button" id="add-image" class="text-indigo-600 hover:text-indigo-800 hidden">เพิ่มรูปภาพ</button>
+            </div>
+
+            <!-- ปุ่ม -->
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'home' %}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">กลับไปหน้าแรก</a>
+                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">บันทึก</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- โหลดสคริปต์อื่นๆ หลังจาก jQuery -->
+    <script src="{% static 'admin/js/core.js' %}"></script>
+    <script src="{% static 'admin/js/calendar.js' %}"></script>
+    <script src="{% static 'admin/js/admin/DateTimeShortcuts.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof jQuery === 'undefined') {
+                console.error('jQuery is not loaded');
+            } else {
+                console.log('jQuery is loaded');
+                // ตรวจสอบปฏิทิน
+                if (typeof calendar === 'undefined') {
+                    console.error('Calendar is not loaded');
+                } else {
+                    console.log('Calendar is loaded');
+                }
+
+                // เพิ่มฟิลด์รูปภาพ
+                document.getElementById('add-image').addEventListener('click', function() {
+                    const formContainer = document.getElementById('image-forms');
+                    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+                    const formCount = parseInt(totalForms.value);
+
+                    const newForm = formContainer.children[0].cloneNode(true);
+                    newForm.innerHTML = newForm.innerHTML.replace(/form-\d+/g, `form-${formCount}`);
+                    newForm.querySelector('input').value = '';
+                    formContainer.appendChild(newForm);
+
+                    totalForms.value = formCount + 1;
+                });
+
+                const firstImageInput = document.querySelector('#image-forms .image-form input');
+                const addButton = document.getElementById('add-image');
+                addButton.style.display = 'none';
+
+                firstImageInput.addEventListener('change', function() {
+                    addButton.style.display = this.files.length > 0 ? 'block' : 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

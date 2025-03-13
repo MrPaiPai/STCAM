@@ -8,10 +8,55 @@
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* คงสไตล์เดิมของคุณ */
+    /* พื้นหลัง gradient และ animation */
+    body {
+      margin: 0;
+      padding-top: 60px;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f0f4f8, #ffffff); /* Gradient สีอ่อน */
+      overflow-x: hidden; /* ป้องกันการเลื่อนแนวนอน */
+      position: relative;
+    }
+
+    /* Animation เส้นวิ่ง */
+    .moving-line {
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #4a90e2, transparent);
+      animation: moveLine 6s linear infinite;
+      z-index: 0;
+    }
+
+    .moving-line:nth-child(1) { top: 10%; }
+    .moving-line:nth-child(2) { top: 20%; animation-delay: 1s; }
+    .moving-line:nth-child(3) { top: 30%; animation-delay: 2s; }
+    .moving-line:nth-child(4) { top: 50%; animation-delay: 3s; }
+    .moving-line:nth-child(5) { top: 70%; animation-delay: 4s; }
+    .moving-line:nth-child(6) { top: 90%; animation-delay: 5s; }
+
+    @keyframes moveLine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* เนื้อหาให้อยู่เหนือเส้น */
+    .base-container {
+      position: relative;
+      z-index: 10;
+      max-width: 900px;
+      margin: 100px auto 30px;
+      padding: 20px;
+      background: white;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+
+    /* ปรับ Navbar ให้เข้ากัน */
     .base-navbar {
-      background-color: #3498db;
+      background: linear-gradient(to right, #2563eb, #1e40af); /* ใช้ Gradient เดียวกับ home.html */
       width: 100%;
       position: fixed;
       top: 0;
@@ -23,31 +68,28 @@
       box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
       z-index: 1000;
     }
-    .base-container {
-      max-width: 900px;
-      margin: 100px auto 30px;
-      padding: 20px;
-      background: white;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-      border-radius: 10px;
-    }
+
     .base-menu-container {
       position: relative;
     }
+
     .base-menu {
       font-size: 18px;
       color: white;
       text-decoration: none;
       font-weight: bold;
       padding: 10px 15px;
-      background-color: #2ecc71;
+      background-color: #10b981; /* ปรับให้เป็นสีเขียวที่เข้ากับโทน */
       border-radius: 5px;
       cursor: pointer;
       display: inline-block;
+      transition: background-color 0.3s ease;
     }
+
     .base-menu:hover {
-      background-color: #27ae60;
+      background-color: #059669; /* สีเขียวเข้มขึ้นเมื่อ hover */
     }
+
     .base-dropdown {
       display: none;
       position: absolute;
@@ -60,6 +102,7 @@
       overflow: hidden;
       z-index: 100;
     }
+
     .base-dropdown a {
       display: block;
       padding: 12px 15px;
@@ -68,40 +111,50 @@
       font-size: 16px;
       transition: background 0.3s ease;
     }
+
     .base-dropdown a:hover {
       background-color: #f1f1f1;
     }
-    .base-menu-container:hover .base-dropdown {
+
+    .base-menu-container.active .base-dropdown {
       display: block;
     }
+
     .base-right-side {
       display: flex;
       gap: 15px;
       align-items: center;
+      margin-right: 20px; /* ระยะห่างจากขอบขวา */
     }
+
     .base-right-side span {
       color: white;
       font-size: 16px;
     }
+
     .base-right-side a, .base-logout-btn {
       color: white;
       text-decoration: none;
       padding: 8px 15px;
       border-radius: 5px;
-      background-color: #e67e22;
+      background-color: #f59e0b; /* ปรับให้เป็นสีเหลืองที่เข้ากับโทน */
       transition: background-color 0.3s ease;
     }
+
     .base-right-side a:hover {
-      background-color: #d35400;
+      background-color: #d97706; /* สีเหลืองเข้มขึ้นเมื่อ hover */
     }
+
     .base-logout-btn {
-      background-color: #c0392b;
+      background-color: #ef4444; /* ปรับให้เป็นสีแดงที่เข้ากับโทน */
       border: none;
       cursor: pointer;
     }
+
     .base-logout-btn:hover {
-      background-color: #a93226;
+      background-color: #dc2626; /* สีแดงเข้มขึ้นเมื่อ hover */
     }
+
     @media (max-width: 768px) {
       .base-navbar {
         position: fixed;
@@ -110,15 +163,13 @@
       }
       .base-right-side {
         margin-top: 10px;
+        margin-right: 0;
       }
       .base-dropdown {
         position: static;
         width: 100%;
       }
-      .base-menu-container:hover .base-dropdown {
-        display: none;
-      }
-      .base-menu-container:focus-within .base-dropdown {
+      .base-menu-container.active .base-dropdown {
         display: block;
       }
       .base-container {
@@ -129,10 +180,19 @@
   </style>
 </head>
 <body>
+  <!-- เส้นวิ่ง (Moving Lines) -->
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+  <div class="moving-line"></div>
+
+  <!-- Navbar -->
   <div class="base-navbar">
-    <div class="base-menu-container">
-      <a href="#" class="base-menu">เมนู</a>
-      <div class="base-dropdown">
+    <div class="base-menu-container" id="menuContainer">
+      <a href="#" class="base-menu" id="menuButton">เมนู</a>
+      <div class="base-dropdown" id="dropdown">
         <a href="{% url 'home' %}">🏠 กลับไปหน้าหลัก</a>
         <a href="{% url 'track_participation' %}">📊 ติดตามสถานะ</a>
         <a href="{% url 'upload_proof' %}">📎 เพิ่มหลักฐาน</a>
@@ -153,11 +213,39 @@
       {% endif %}
     </div>
   </div>
+
   <div class="base-container">
     {% block content %}
     {% endblock %}
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const menuContainer = document.getElementById("menuContainer");
+      const menuButton = document.getElementById("menuButton");
+      const dropdown = document.getElementById("dropdown");
+      let isOpen = false;
+
+      menuButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        isOpen = !isOpen;
+        menuContainer.classList.toggle("active", isOpen);
+      });
+
+      document.addEventListener("click", function (event) {
+        if (isOpen && !menuButton.contains(event.target) && !dropdown.contains(event.target)) {
+          menuContainer.classList.remove("active");
+          isOpen = false;
+        }
+      });
+
+      dropdown.addEventListener("click", function (event) {
+        event.stopPropagation();
+      });
+    });
+  </script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

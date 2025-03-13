@@ -1,18 +1,18 @@
 import os
 from pathlib import Path
 
-#settings.py
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+print("BASE_DIR:", BASE_DIR)
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
+# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-SECRET_KEY = 'your-secret-key'
-
+# Security settings
+SECRET_KEY = 'thepai2547007'  # ควรเป็นคีย์ที่ปลอดภัยใน production
 DEBUG = True
-
 ALLOWED_HOSTS = []
 
 # Application definition
@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     'myapp',
     'crispy_forms',
     'crispy_bootstrap5',
-    'widget_tweaks'
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -60,7 +60,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -69,7 +68,6 @@ DATABASES = {
 }
 
 # Password validation
-# https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -85,56 +83,64 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/4.0/topics/i18n/
 LANGUAGE_CODE = 'th'
 TIME_ZONE = 'Asia/Bangkok'
 
-USE_I18N = True
+# USE_I18N = True
+USE_I18N = False
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.0/howto/static-files/
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # ระบุว่าโฟลเดอร์ static อยู่ที่ไหน
-]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+print("STATIC_ROOT:", STATIC_ROOT)
 
 
 # Media files (สำหรับการอัปโหลดไฟล์สื่อ)
-MEDIA_URL = '/media/'  # URL สำหรับเข้าถึงไฟล์สื่อ
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # โฟลเดอร์ที่ใช้เก็บไฟล์สื่อที่อัปโหลด
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+print("MEDIA_ROOT:", MEDIA_ROOT)
 
+# Storage settings (สำหรับ Django 5.1.3)
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+DEBUG = True
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Custom user model
 AUTH_USER_MODEL = 'myapp.CustomUser'
 
+# Crispy Forms settings
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-
-# ตัวแปร MEDIA_URL ใช้สำหรับเข้าถึงไฟล์สื่อจาก URL
-MEDIA_URL = '/media/'
-
-# ตัวแปร MEDIA_ROOT ใช้สำหรับเก็บไฟล์ที่ถูกอัปโหลด
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
+# Logout redirect
 LOGOUT_REDIRECT_URL = '/'
 
+# Authentication backends
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-SESSION_COOKIE_AGE = 3600  # อายุ session เป็น 1 ชั่วโมง (กำหนดเวลาที่จะหมดอายุ session)
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # เมื่อปิดเบราว์เซอร์ session จะหมดอายุ
+# Session settings
+SESSION_COOKIE_AGE = 3600  # อายุ session เป็น 1 ชั่วโมง
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session หมดอายุเมื่อปิดเบราว์เซอร์
 
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# กำหนดเส้นทางสำหรับเก็บไฟล์แปลภาษา
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
