@@ -17,8 +17,10 @@ from .forms import ProfileEditForm
 from .forms import UserProfileForm
 from .models import ActivityRegistration
 from django.utils import timezone
-
-
+from .models import CustomUser
+from .models import BRANCH_CHOICES
+from datetime import datetime
+from django.db.models import Prefetch
 
 # views.py
 
@@ -144,11 +146,45 @@ def join_activity(request, activity_id):
 # ฟังก์ชันแสดงรายการกิจกรรมทั้งหมด
 @login_required
 def activity_list(request):
-    if is_student(request.user):
-        activities = Activity.objects.filter(participation__student=request.user).distinct()
-    else:
-        activities = Activity.objects.all()
-    return render(request, 'activity_list.html', {'activities': activities})
+    activities = Activity.objects.all()
+    
+    # Get filter parameters
+    year = request.GET.get('year')
+    month = request.GET.get('month')
+    day = request.GET.get('day')
+    
+    # Apply filters to start_date
+    if year:
+        activities = activities.filter(start_date__year=year)
+    if month:
+        activities = activities.filter(start_date__month=month)
+    if day:
+        activities = activities.filter(start_date__day=day)
+
+    # Generate choices for filters
+    current_year = datetime.now().year
+    years = range(current_year - 2, current_year + 2)
+    
+    months = [
+        (1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม'), (9, 'กันยายน'),
+        (10, 'ตุลาคม'), (11, 'พฤศจิกายน'), (12, 'ธันวาคม')
+    ]
+    
+    days = range(1, 32)
+
+    context = {
+        'activities': activities,
+        'years': years,
+        'months': months,
+        'days': days,
+        'selected_year': year,
+        'selected_month': month,
+        'selected_day': day
+    }
+    
+    return render(request, 'activity_list.html', context)
 
 # ฟังก์ชันแสดงรายงานการเข้าร่วมกิจกรรม
 @user_passes_test(is_admin)
@@ -431,3 +467,70 @@ def manage_participation(request, participation_id=None):
         return render(request, 'manage_participation.html', {'participation': participation})
     else:
         return redirect('manage_participations')
+    
+
+
+
+#เเสดงข้อมูลนักศึกษา
+@login_required
+def student_list(request):
+    # ดึงข้อมูลนักศึกษาพร้อม participations
+    students = CustomUser.objects.filter(user_type='student').prefetch_related(
+        Prefetch(
+            'participation_set',
+            queryset=Participation.objects.filter(status='approved').select_related('activity'),
+            to_attr='approved_participations'
+        )
+    )
+
+    # นับจำนวนกิจกรรมในแต่ละปี
+    year_counts = {}
+    current_year = datetime.now().year
+    activity_years = range(current_year - 2, current_year + 2)
+    for year in activity_years:
+        year_count = Participation.objects.filter(
+            status='approved',
+            activity__start_date__year=year
+        ).count()
+        year_counts[year] = year_count
+
+    # นับจำนวนกิจกรรมในแต่ละเดือน
+    month_counts = {}
+    MONTH_CHOICES = [
+        (1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม'), (9, 'กันยายน'),
+        (10, 'ตุลาคม'), (11, 'พฤศจิกายน'), (12, 'ธันวาคม')
+    ]
+    
+    for month_value, _ in MONTH_CHOICES:
+        month_count = Participation.objects.filter(
+            status='approved',
+            activity__start_date__month=month_value
+        ).count()
+        month_counts[month_value] = month_count
+
+    # Generate days range
+    days = range(1, 32)
+
+    context = {
+        'students': students,
+        'BRANCH_CHOICES': BRANCH_CHOICES,
+        'activity_years': activity_years,
+        'MONTH_CHOICES': MONTH_CHOICES,
+        'days': days,
+        'year_counts': year_counts,
+        'month_counts': month_counts,
+    }
+    
+    return render(request, 'student_list.html', context)
+
+# ตัวอย่างฟังก์ชัน home (เพื่อให้หน้า index ทำงานได้)
+def home(request):
+    activities = Activity.objects.all()
+    announcements = Announcement.objects.all()
+    context = {
+        'activities': activities,
+        'announcements': announcements,
+    }
+    return render(request, 'index.html', context)
