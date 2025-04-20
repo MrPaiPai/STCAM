@@ -13,7 +13,7 @@ print("BASE_DIR:", BASE_DIR)
 # Security settings
 SECRET_KEY = 'thepai2547007'  # ควรเป็นคีย์ที่ปลอดภัยใน production
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['stcam.onrender.com', 'localhost', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
