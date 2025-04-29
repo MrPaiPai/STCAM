@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ออกรายงานกิจกรรม{% endblock %}
+
+{% block content %}
+<div class="bg-white p-6 rounded-lg shadow-lg">
+    <div class="text-center mb-8">
+        <img src="{% static 'images/logo.png' %}" alt="Logo" class="mx-auto w-24 h-24 mb-4">
+        <h1 class="text-3xl font-bold text-blue-600">ออกรายงาน</h1>
+        <h2 class="text-2xl font-bold text-blue-800">เว็บแอพลิเคชั่นสำหรับการบริหารจัดการข้อมูลกิจกรรมสโมสรคณะวิทยาศาสตร์และเทคโนโลยี</h2>
+    </div>
+
+    <div class="border-2 border-blue-200 rounded-lg p-6 mb-6">
+        <table class="w-full">
+            <tr class="border-b border-blue-100">
+                <td class="py-2 px-4 text-gray-600 w-1/4">วันที่ออกรายงาน:</td>
+                <td class="py-2 px-4">{% now "d/m/Y H:i" %}</td>
+            </tr>
+            <tr class="border-b border-blue-100">
+                <td class="py-2 px-4 text-gray-600">ประเภทรายงาน:</td>
+                <td class="py-2 px-4">รายงานการเข้าร่วมกิจกรรมนักศึกษา</td>
+            </tr>
+            <tr>
+                <td class="py-2 px-4 text-gray-600">ผู้ออกรายงาน:</td>
+                <td class="py-2 px-4">{{ request.user.get_full_name }}</td>
+            </tr>
+        </table>
+    </div>
+    
+    <form method="get" action="{% url 'download_report' %}" class="space-y-4">
+        <div class="mb-4">
+            <label class="block text-gray-600 font-medium mb-2">เลือกกิจกรรมที่ต้องการออกรายงาน:</label>
+            <select name="activity" class="w-full p-2 border-2 border-blue-200 rounded-lg focus:border-blue-400 focus:ring-blue-400">
+                <option value="all">แสดงทุกกิจกรรม</option>
+                {% for activity in activities %}
+                    <option value="{{ activity.id }}">
+                        {{ activity.name }} ({{ activity.start_date|date:"d/m/Y" }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="flex justify-end">
+            <button type="submit" 
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                ดาวน์โหลดรายงาน PDF
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

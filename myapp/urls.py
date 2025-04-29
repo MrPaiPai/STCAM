@@ -37,6 +37,8 @@ urlpatterns = [
     path('manage-participations/', views.manage_participations, name='manage_participations'),
     path('activity/<int:activity_id>/info/', views.activity_info, name='activity_info'),
     path('students/', views.student_list, name='student_list'),
+    path('generate-report/', views.generate_report, name='generate_report'),
+    path('download-report/', views.download_report, name='download_report'),
 ]
 
 # เพิ่มการเสิร์ฟไฟล์ media และ static ในโหมดพัฒนา

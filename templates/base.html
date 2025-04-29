@@ -46,12 +46,30 @@
     .base-container {
       position: relative;
       z-index: 10;
-      max-width: 900px;
-      margin: 100px auto 30px;
+      max-width: 1400px; /* เพิ่มความกว้างสูงสุด */
+      width: 95%;
+      margin: 80px auto 30px;
       padding: 20px;
       background: white;
       box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
       border-radius: 10px;
+    }
+
+    /* เพิ่ม style สำหรับตาราง */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 0.75rem;
+      white-space: nowrap;
     }
 
     /* ปรับ Navbar ให้เข้ากัน */
@@ -197,8 +215,11 @@
         <a href="{% url 'track_participation' %}">📊 ติดตามสถานะ</a>
         <a href="{% url 'upload_proof' %}">📎 เพิ่มหลักฐาน</a>
         <a href="{% url 'edit_userprofile' %}">👤 ข้อมูลส่วนตัว</a>
-        <a href="{% url 'manage_participations' %}">⚙️ จัดการการเข้าร่วม</a>
-        <a href="{% url 'student_list' %}">👥 รายชื่อนักศึกษาทั้งหมด</a>
+        {% if user.is_staff or user.is_superuser %}
+            <a href="{% url 'manage_participations' %}">⚙️ จัดการการเข้าร่วม</a>
+            <a href="{% url 'student_list' %}">👥 รายชื่อนักศึกษาทั้งหมด</a>
+            <a href="{% url 'generate_report' %}">📄 ออกรายงานกิจกรรม</a>
+        {% endif %}
       </div>
     </div>
     <div class="base-right-side">

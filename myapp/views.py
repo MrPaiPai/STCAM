@@ -21,6 +21,17 @@ from .models import CustomUser
 from .models import BRANCH_CHOICES
 from datetime import datetime
 from django.db.models import Prefetch
+from django.contrib.admin.views.decorators import staff_member_required
+from django.http import HttpResponse
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from django.conf import settings
+from io import BytesIO
+import os
 
 # views.py
 
@@ -474,27 +485,73 @@ def manage_participation(request, participation_id=None):
 #เเสดงข้อมูลนักศึกษา
 @login_required
 def student_list(request):
-    # ดึงข้อมูลนักศึกษาพร้อม participations
-    students = CustomUser.objects.filter(user_type='student').prefetch_related(
+    # รับค่าพารามิเตอร์การกรอง
+    selected_branches = request.GET.getlist('branch')
+    selected_years = request.GET.getlist('year')
+    selected_year = request.GET.get('activity_year')
+    selected_month = request.GET.get('activity_month')
+    show_only_approved = request.GET.get('show_approved') == 'on'
+
+    # เริ่มต้น query
+    students = CustomUser.objects.filter(user_type='student')
+
+    # กรองตามสาขา
+    if selected_branches:
+        students = students.filter(branch__in=selected_branches)
+
+    # กรองตามชั้นปี
+    if selected_years:
+        students = students.filter(year__in=selected_years)
+
+    # สร้าง base query สำหรับ participation
+    participation_query = Participation.objects.select_related('activity')
+
+    # กรองตามปี
+    if selected_year:
+        participation_query = participation_query.filter(
+            activity__start_date__year=int(selected_year) - 543
+        )
+
+    # กรองตามเดือน
+    if selected_month:
+        participation_query = participation_query.filter(
+            activity__start_date__month=int(selected_month)
+        )
+
+    # กรองเฉพาะที่อนุมัติ
+    if show_only_approved:
+        participation_query = participation_query.filter(status='approved')
+
+    # ใช้ Prefetch เพื่อโหลดข้อมูล participations
+    students = students.prefetch_related(
         Prefetch(
             'participation_set',
-            queryset=Participation.objects.filter(status='approved').select_related('activity'),
-            to_attr='approved_participations'
+            queryset=participation_query.order_by('activity__start_date'),
+            to_attr='all_participations'
         )
     )
 
-    # นับจำนวนกิจกรรมในแต่ละปี
+    # นับจำนวนกิจกรรมในแต่ละปี (คงโค้ดเดิม)
     year_counts = {}
-    current_year = datetime.now().year
+    current_year = datetime.now().year + 543  # แปลงเป็นปี พ.ศ.
     activity_years = range(current_year - 2, current_year + 2)
+    
     for year in activity_years:
-        year_count = Participation.objects.filter(
-            status='approved',
-            activity__start_date__year=year
+        # นับทั้งหมด
+        total_count = Participation.objects.filter(
+            activity__start_date__year=year - 543
         ).count()
-        year_counts[year] = year_count
+        # นับที่อนุมัติแล้ว
+        approved_count = Participation.objects.filter(
+            status='approved',
+            activity__start_date__year=year - 543
+        ).count()
+        year_counts[year] = {
+            'total': total_count,
+            'approved': approved_count
+        }
 
-    # นับจำนวนกิจกรรมในแต่ละเดือน
+    # นับจำนวนกิจกรรมในแต่ละเดือน (คงโค้ดเดิม)
     month_counts = {}
     MONTH_CHOICES = [
         (1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
@@ -503,24 +560,38 @@ def student_list(request):
         (10, 'ตุลาคม'), (11, 'พฤศจิกายน'), (12, 'ธันวาคม')
     ]
     
-    for month_value, _ in MONTH_CHOICES:
-        month_count = Participation.objects.filter(
+    for month_value, month_name in MONTH_CHOICES:
+        # นับทั้งหมด
+        total_count = Participation.objects.filter(
+            activity__start_date__month=month_value
+        ).count()
+        # นับที่อนุมัติแล้ว
+        approved_count = Participation.objects.filter(
             status='approved',
             activity__start_date__month=month_value
         ).count()
-        month_counts[month_value] = month_count
+        month_counts[month_value] = {
+            'name': month_name,
+            'total': total_count,
+            'approved': approved_count
+        }
 
-    # Generate days range
-    days = range(1, 32)
-
+    # ส่งข้อมูลไปยัง template
     context = {
         'students': students,
         'BRANCH_CHOICES': BRANCH_CHOICES,
         'activity_years': activity_years,
         'MONTH_CHOICES': MONTH_CHOICES,
-        'days': days,
+        'days': range(1, 32),
         'year_counts': year_counts,
         'month_counts': month_counts,
+        'show_only_approved': show_only_approved,
+        'current_year': current_year,
+        # เพิ่มค่าที่เลือกเพื่อแสดงใน template
+        'selected_branches': selected_branches,
+        'selected_years': selected_years,
+        'selected_year': selected_year,
+        'selected_month': selected_month,
     }
     
     return render(request, 'student_list.html', context)
@@ -534,3 +605,134 @@ def home(request):
         'announcements': announcements,
     }
     return render(request, 'index.html', context)
+
+@staff_member_required
+def generate_report(request):
+    # ดึงข้อมูลกิจกรรมทั้งหมด
+    activities = Activity.objects.all().order_by('-start_date')
+    
+    context = {
+        'activities': activities,
+    }
+    return render(request, 'generate_report.html', context)
+
+@staff_member_required
+def download_report(request):
+    selected_activity = request.GET.get('activity')
+    
+    # เพิ่มการ import
+    from reportlab.lib.units import inch
+    from reportlab.platypus import Image
+    
+    # Query students (คงเดิม)
+    students_query = CustomUser.objects.filter(user_type='student')
+    if selected_activity and selected_activity != 'all':
+        students_query = students_query.filter(
+            participation__activity_id=selected_activity
+        ).distinct()
+
+    # ตั้งค่า PDF และฟอนต์ (คงเดิม)
+    font_path = os.path.join(settings.BASE_DIR, 'static', 'fonts', 'THSarabunNew.ttf')
+    if not os.path.exists(font_path):
+        raise FileNotFoundError(f"Font file not found at: {font_path}")
+    pdfmetrics.registerFont(TTFont('THSarabun', font_path))
+    
+    # สร้าง PDF
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(A4),
+        rightMargin=30,
+        leftMargin=30,
+        topMargin=50,  # เพิ่มระยะขอบบนสำหรับโลโก้
+        bottomMargin=30
+    )
+
+    # เพิ่มสไตล์
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(
+        name='THSarabun',
+        fontName='THSarabun',
+        fontSize=16,
+        alignment=1,  # จัดกึ่งกลาง
+        leading=20
+    ))
+
+    elements = []
+    
+    # เพิ่มโลโก้
+    logo_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'logo.png')
+    if os.path.exists(logo_path):
+        logo = Image(logo_path)
+        logo.drawHeight = 1.2*inch
+        logo.drawWidth = 1.2*inch
+        elements.append(logo)
+    
+    # เพิ่มหัวข้อ
+    elements.append(Paragraph("เว็บแอพลิเคชั่นสำหรับการบริหารจัดการข้อมูลกิจกรรม", styles['THSarabun']))
+    elements.append(Paragraph("ของสโมสรคณะวิทยาศาสตร์และเทคโนโลยี", styles['THSarabun']))
+    elements.append(Spacer(1, 20))
+
+    # เพิ่มตารางข้อมูลรายงาน
+    report_info = [
+        ['วันที่ออกรายงาน:', datetime.now().strftime('%d/%m/%Y %H:%M')],
+        ['ประเภทรายงาน:', 'รายงานการเข้าร่วมกิจกรรมนักศึกษา'],
+        ['ผู้ออกรายงาน:', request.user.get_full_name()]
+    ]
+    
+    info_style = TableStyle([
+        ('FONT', (0, 0), (-1, -1), 'THSarabun'),
+        ('FONTSIZE', (0, 0), (-1, -1), 14),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.grey),
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('PADDING', (0, 0), (-1, -1), 6),
+    ])
+    
+    info_table = Table(report_info, colWidths=[150, 300])
+    info_table.setStyle(info_style)
+    elements.append(info_table)
+    elements.append(Spacer(1, 20))
+
+    # ส่วนของตารางข้อมูลหลัก (ปรับสีเป็นฟ้า)
+    data = [['ชื่อ-นามสกุล', 'รหัสนักศึกษา', 'สาขา', 'ชั้นปี', 'กิจกรรม', 'วันที่จัด', 'วันที่เข้าร่วม']]
+    
+    for student in students_query:
+        participations = student.participation_set.all()
+        if selected_activity and selected_activity != 'all':
+            participations = participations.filter(activity_id=selected_activity)
+        
+        for participation in participations:
+            data.append([
+                f"{student.first_name} {student.last_name}",
+                student.student_id,
+                student.get_branch_display(),
+                student.year,
+                participation.activity.name,
+                participation.activity.start_date.strftime('%d/%m/%Y'),
+                participation.joined_date.strftime('%d/%m/%Y') if participation.joined_date else '-'
+            ])
+
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('FONT', (0, 0), (-1, -1), 'THSarabun'),
+        ('FONTSIZE', (0, 0), (-1, 0), 14),
+        ('FONTSIZE', (0, 1), (-1, -1), 12),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),  # เปลี่ยนเป็นสีฟ้า
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),  # สีตัวอักษรในส่วนหัว
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('PADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(table)
+
+    # สร้าง PDF (คงเดิม)
+    doc.build(elements)
+    buffer.seek(0)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="student_activities_report_{datetime.now().strftime("%Y%m%d")}.pdf"'
+    response.write(buffer.getvalue())
+    
+    return response

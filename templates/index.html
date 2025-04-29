@@ -68,8 +68,20 @@
         <a href="{% url 'track_participation' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">📊 ติดตามสถานะ</a>
         <a href="{% url 'upload_proof' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">📎 เพิ่มหลักฐาน</a>
         <a href="{% url 'edit_userprofile' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">👤 ข้อมูลส่วนตัว</a>
-        <a href="{% url 'manage_participations' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">⚙️ จัดการการเข้าร่วม</a>
-        <a href="{% url 'student_list' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">👥 รายชื่อนักศึกษาทั้งหมด</a>
+        
+        {% if user.is_staff or user.is_superuser %}
+            <div class="border-t border-gray-200 mt-2 pt-2">
+                <a href="{% url 'manage_participations' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200 text-blue-600 font-medium">
+                    ⚙️ จัดการการเข้าร่วม
+                </a>
+                <a href="{% url 'student_list' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200 text-blue-600 font-medium">
+                    👥 รายชื่อนักศึกษาทั้งหมด
+                </a>
+                <a href="{% url 'generate_report' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200 text-blue-600 font-medium">
+                    📄 ออกรายงานกิจกรรม
+                </a>
+            </div>
+        {% endif %}
       </div>
     </div>
     <div class="base-right-side flex items-center gap-4 mr-6">

@@ -140,6 +140,7 @@ class Participation(models.Model):
         default='pending',
         verbose_name='สถานะการลงทะเบียน'
     )
+    joined_date = models.DateTimeField(auto_now_add=True, verbose_name="วันที่เข้าร่วม")
 
     class Meta:
         verbose_name = 'การเข้าร่วมกิจกรรม'

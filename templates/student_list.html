@@ -7,161 +7,245 @@
   <div class="relative z-20">
     <!-- ฟอร์ม Filter -->
     <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
-      <h2 class="text-xl font-semibold text-gray-700 mb-4">ตัวกรอง</h2>
-      <form method="get" action="{% url 'student_list' %}" class="space-y-4">
-
-        <!-- Filter โดยสาขา (branch) -->
+      <h2 class="text-xl font-semibold text-gray-700 mb-4 filter-title">ตัวกรอง</h2>
+      <!-- ส่วน form filter -->
+      <form method="get" action="{% url 'student_list' %}" class="space-y-4 form-container">
+        <!-- สาขา -->
         <div class="mb-4">
           <label class="block text-gray-600 font-medium mb-2">สาขา</label>
           <div class="space-y-2 max-h-40 overflow-y-auto">
             {% for branch_value, branch_name in BRANCH_CHOICES %}
               <label class="flex items-center">
-                <input type="checkbox" name="branch" value="{{ branch_value }}" class="mr-2" {% if branch_value in request.GET.branch %}checked{% endif %}>
+                <input type="checkbox" 
+                       name="branch" 
+                       value="{{ branch_value }}" 
+                       class="mr-2" 
+                       {% if branch_value in selected_branches %}checked{% endif %}>
                 {{ branch_name }}
               </label>
             {% endfor %}
           </div>
         </div>
 
-        <!-- Filter โดยชั้นปี -->
+        <!-- ชั้นปี -->
         <div class="mb-4">
           <label class="block text-gray-600 font-medium mb-2">ชั้นปี</label>
           <div class="space-y-2">
-            <label class="flex items-center">
-              <input type="checkbox" name="year" value="1" class="mr-2" {% if '1' in request.GET.year %}checked{% endif %}>
-              ชั้นปี 1
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" name="year" value="2" class="mr-2" {% if '2' in request.GET.year %}checked{% endif %}>
-              ชั้นปี 2
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" name="year" value="3" class="mr-2" {% if '3' in request.GET.year %}checked{% endif %}>
-              ชั้นปี 3
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" name="year" value="4" class="mr-2" {% if '4' in request.GET.year %}checked{% endif %}>
-              ชั้นปี 4
-            </label>
+            {% for year in '1234'|make_list %}
+              <label class="flex items-center">
+                <input type="checkbox" 
+                       name="year" 
+                       value="{{ year }}" 
+                       class="mr-2" 
+                       {% if year in selected_years %}checked{% endif %}>
+                ชั้นปี {{ year }}
+              </label>
+            {% endfor %}
           </div>
         </div>
 
-        <!-- Filter โดยกิจกรรม -->
+        <!-- ปีการศึกษา -->
         <div class="mb-4">
-          <label class="block text-gray-600 font-medium mb-2">กิจกรรม</label>
-          <div class="space-y-2">
-            <div class="flex space-x-4">
-              <div>
-                <label for="activity_year" class="block text-gray-600 font-medium mb-1">ปี</label>
-                <select id="activity_year" name="activity_year" class="border-gray-300 rounded-lg">
-                  <option value="">-- เลือกปี --</option>
-                  {% for year in activity_years %}
-                    <option value="{{ year }}" {% if year|stringformat:"s" == request.GET.activity_year %}selected{% endif %}>
-                      {{ year }} ({{ year_counts|get_item:year|default:"0" }})
-                    </option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div>
-                <label for="activity_month" class="block text-gray-600 font-medium mb-1">เดือน</label>
-                <select id="activity_month" name="activity_month" class="border-gray-300 rounded-lg">
-                  <option value="">-- เลือกเดือน --</option>
-                  {% for month_value, month_name in MONTH_CHOICES %}
-                    <option value="{{ month_value }}" {% if month_value|stringformat:"s" == request.GET.activity_month %}selected{% endif %}>
-                      {{ month_name }} ({{ month_counts|get_item:month_value|default:"0" }})
-                    </option>
-                  {% endfor %}
-                </select>
-              </div>
-              <!-- เพิ่มส่วน filter วันที่ -->
-              <div>
-                <label for="activity_day" class="block text-gray-600 font-medium mb-1">วันที่</label>
-                <select id="activity_day" name="activity_day" class="border-gray-300 rounded-lg">
-                  <option value="">-- เลือกวันที่ --</option>
-                  {% for day in days %}
-                    <option value="{{ day }}" {% if day|stringformat:"s" == request.GET.activity_day %}selected{% endif %}>
-                      {{ day }}
-                    </option>
-                  {% endfor %}
-                </select>
-              </div>
-            </div>
-          </div>
+          <label class="block text-gray-600 font-medium mb-2">ปีการศึกษา</label>
+          <select name="activity_year" class="border-gray-300 rounded-lg w-full">
+            <option value="">ทั้งหมด</option>
+            {% for year in activity_years %}
+              <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>
+                {{ year }} (ทั้งหมด: {{ year_counts|get_item:year|get_item:'total' }}, 
+                อนุมัติแล้ว: {{ year_counts|get_item:year|get_item:'approved' }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- เดือน -->
+        <div class="mb-4">
+          <label class="block text-gray-600 font-medium mb-2">เดือน</label>
+          <select name="activity_month" class="border-gray-300 rounded-lg w-full">
+            <option value="">ทั้งหมด</option>
+            {% for month_num, month_name in MONTH_CHOICES %}
+              <option value="{{ month_num }}" {% if selected_month == month_num %}selected{% endif %}>
+                {{ month_name }} (ทั้งหมด: {{ month_counts|get_item:month_num|get_item:'total' }}, 
+                อนุมัติแล้ว: {{ month_counts|get_item:month_num|get_item:'approved' }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- แสดงเฉพาะที่อนุมัติ -->
+        <div class="mb-4">
+          <label class="inline-flex items-center">
+            <input type="checkbox" 
+                   name="show_approved" 
+                   class="form-checkbox" 
+                   {% if show_only_approved %}checked{% endif %}>
+            <span class="ml-2">แสดงเฉพาะกิจกรรมที่อนุมัติแล้ว</span>
+          </label>
         </div>
 
         <!-- ปุ่มกรอง -->
-        <div class="flex space-x-4">
-          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">กรอง</button>
-          <a href="{% url 'student_list' %}" class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">รีเซ็ต</a>
+        <div class="flex space-x-4 justify-center">
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
+            กรอง
+          </button>
+          <a href="{% url 'student_list' %}" class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg">
+            รีเซ็ต
+          </a>
         </div>
       </form>
     </div>
 
     <!-- รายชื่อนักศึกษา -->
-    <div class="bg-white p-6 rounded-lg shadow-lg">
-      <h2 class="text-xl font-semibold text-gray-700 mb-4">รายชื่อนักศึกษา</h2>
-      {% if students %}
-        <table class="w-full text-left">
-          <thead>
-            <tr class="bg-gray-100">
-              <th class="p-3">ชื่อ-นามสกุล</th>
-              <th class="p-3">รหัสนักศึกษา</th>
-              <th class="p-3">สาขา</th>
-              <th class="p-3">ชั้นปี</th>
-              <th class="p-3">กิจกรรมที่เข้าร่วม</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for student in students %}
-              {% with student_participations=student.participation_set.all|dictsort:"activity.start_date" %}
-                {% for participation in student_participations %}
-                  <tr class="border-b hover:bg-gray-50">
-                    {% if forloop.first %}
-                      <td class="p-3" rowspan="{{ student_participations|length }}">
-                        {{ student.first_name }} {{ student.last_name }}
-                      </td>
-                      <td class="p-3" rowspan="{{ student_participations|length }}">
-                        {{ student.student_id }}
-                      </td>
-                      <td class="p-3" rowspan="{{ student_participations|length }}">
-                        {{ student.get_branch_display }}
-                      </td>
-                      <td class="p-3" rowspan="{{ student_participations|length }}">
-                        {{ student.year }}
-                      </td>
-                    {% endif %}
-                    <td class="p-3">
-                      {{ participation.activity.name }}
-                      {% if participation.status != 'approved' %}
-                        <span class="text-yellow-600">(รอการอนุมัติ)</span>
-                      {% endif %}
-                    </td>
-                  </tr>
-                {% empty %}
-                  <tr class="border-b hover:bg-gray-50">
-                    <td class="p-3">{{ student.first_name }} {{ student.last_name }}</td>
-                    <td class="p-3">{{ student.student_id }}</td>
-                    <td class="p-3">{{ student.get_branch_display }}</td>
-                    <td class="p-3">{{ student.year }}</td>
-                    <td class="p-3 text-gray-500">ไม่มีกิจกรรม</td>
-                  </tr>
-                {% endfor %}
-              {% endwith %}
-            {% endfor %}
-          </tbody>
-        </table>
-      {% else %}
-        <p class="text-gray-600">ไม่มีข้อมูลนักศึกษา</p>
-      {% endif %}
+    <div class="relative z-20">
+      <div class="bg-white p-6 rounded-lg shadow-lg">
+        <div class="table-container">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="p-3">ชื่อ-นามสกุล</th>
+                <th class="p-3">รหัสนักศึกษา</th>
+                <th class="p-3">สาขา</th>
+                <th class="p-3">ชั้นปี</th>
+                <th class="p-3">กิจกรรมที่เข้าร่วม</th>
+                <th class="p-3">วันที่เข้าร่วม</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for student in students %}
+                {% with student_participations=student.participation_set.all|dictsort:"activity.start_date" %}
+                  {% if student_participations %}
+                    {% for participation in student_participations %}
+                      <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 truncate">{{ student.first_name }} {{ student.last_name }}</td>
+                        <td class="p-3 truncate">{{ student.student_id }}</td>
+                        <td class="p-3 truncate">{{ student.get_branch_display }}</td>
+                        <td class="p-3 text-center">{{ student.year }}</td>
+                        <td class="p-3 truncate">
+                          {{ participation.activity.name }}
+                          {% if participation.status != 'approved' %}
+                            <span class="text-yellow-600">(รอการอนุมัติ)</span>
+                          {% endif %}
+                        </td>
+                        <td class="p-3 whitespace-nowrap">
+                          {% if participation.joined_date %}
+                            {% with thai_date=participation.joined_date|date:"j" %}
+                              {% with thai_month=participation.joined_date|date:"n"|add:"0" %}
+                                {% with thai_year=participation.joined_date|date:"Y"|add:"543" %}
+                                  {{ thai_date }} 
+                                  {% if thai_month == 1 %}มกราคม
+                                  {% elif thai_month == 2 %}กุมภาพันธ์
+                                  {% elif thai_month == 3 %}มีนาคม
+                                  {% elif thai_month == 4 %}เมษายน
+                                  {% elif thai_month == 5 %}พฤษภาคม
+                                  {% elif thai_month == 6 %}มิถุนายน
+                                  {% elif thai_month == 7 %}กรกฎาคม
+                                  {% elif thai_month == 8 %}สิงหาคม
+                                  {% elif thai_month == 9 %}กันยายน
+                                  {% elif thai_month == 10 %}ตุลาคม
+                                  {% elif thai_month == 11 %}พฤศจิกายน
+                                  {% elif thai_month == 12 %}ธันวาคม
+                                  {% endif %}
+                                  พ.ศ. {{ thai_year }} เวลา {{ participation.joined_date|date:"H:i" }} น.
+                                {% endwith %}
+                              {% endwith %}
+                            {% endwith %}
+                          {% else %}
+                            <span class="text-gray-500">ไม่มีข้อมูล</span>
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  {% else %}
+                    <tr class="border-b hover:bg-gray-50">
+                      <td class="p-3">{{ student.first_name }} {{ student.last_name }}</td>
+                      <td class="p-3">{{ student.student_id }}</td>
+                      <td class="p-3">{{ student.get_branch_display }}</td>
+                      <td class="p-3">{{ student.year }}</td>
+                      <td class="p-3 text-gray-500">ไม่มีกิจกรรม</td>
+                      <td class="p-3 text-gray-500">ไม่มีข้อมูล</td>
+                    </tr>
+                  {% endif %}
+                {% endwith %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 {% endblock %}
 
 {% block extra_css %}
   <style>
-    /* ปรับแต่งเพิ่มเติมสำหรับหน้า student_list */
-    .base-container {
-      max-width: 1200px; /* ปรับให้กว้างขึ้นสำหรับหน้านี้ */
+    /* Container styling */
+    .relative {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    /* Form styling */
+    .form-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Select boxes styling */
+    select {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      display: block;
+    }
+
+    /* Checkbox groups styling */
+    .space-y-2 {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* Button container styling */
+    .flex.space-x-4 {
+      justify-content: center;
+      margin-top: 1rem;
+    }
+
+    /* Table styling */
+    .table-container {
+      overflow-x: auto;
+      margin: 0 auto;
+      max-width: 100%;
+    }
+
+    /* Column widths */
+    th:nth-child(1), td:nth-child(1) { min-width: 200px; } /* ชื่อ-นามสกุล */
+    th:nth-child(2), td:nth-child(2) { min-width: 150px; } /* รหัสนักศึกษา */
+    th:nth-child(3), td:nth-child(3) { min-width: 200px; } /* สาขา */
+    th:nth-child(4), td:nth-child(4) { min-width: 80px; }  /* ชั้นปี */
+    th:nth-child(5), td:nth-child(5) { min-width: 250px; } /* กิจกรรม */
+    th:nth-child(6), td:nth-child(6) { min-width: 200px; } /* วันที่ */
+
+    /* Cell content */
+    .cell-content {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    td:hover .cell-content {
+      position: relative;
+      overflow: visible;
+      z-index: 1;
+    }
+
+    /* Add text-center to specific elements */
+    .text-center-header {
+      text-align: center;
+    }
+
+    .filter-title {
+      text-align: center;
+      margin-bottom: 2rem;
     }
   </style>
 {% endblock %}
