@@ -6,7 +6,7 @@ from .forms import MyUserForm
 from myapp.models import CustomUser  
 from .models import Announcement
 from django.utils.html import format_html
-from .models import ActivityRegistration
+from .models import ActivityRegistration, SystemLog
 
 # Inline class สำหรับจัดการรูปภาพในหน้ากิจกรรม
 class ActivityImageInline(admin.TabularInline):
@@ -19,8 +19,20 @@ class ActivityImageInline(admin.TabularInline):
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
 
-    # แสดงฟิลด์เพิ่มเติมในหน้ารายการผู้ใช้
-    list_display = ('username', 'email', 'first_name', 'last_name', 'user_type', 'student_id', 'year', 'branch', 'is_active', 'is_staff')
+    # เพิ่มฟิลด์ password_text สำหรับแสดงรหัสผ่านแบบไม่เข้ารหัส
+    list_display = (
+        'username', 
+        'email', 
+        'first_name', 
+        'last_name',
+        'user_type', 
+        'student_id', 
+        'year', 
+        'branch',
+        'password_text',  # เพิ่มคอลัมน์แสดงรหัสผ่าน
+        'is_active', 
+        'is_staff'
+    )
     list_filter = ('user_type', 'year', 'branch', 'is_active', 'is_staff')
     search_fields = ('username', 'email', 'first_name', 'last_name', 'student_id', 'year', 'branch')
 
@@ -35,13 +47,24 @@ class CustomUserAdmin(UserAdmin):
     # ฟอร์มแก้ไขผู้ใช้
     fieldsets = (
         (None, {
-            'fields': ('username', 'email', 'first_name', 'last_name', 'password', 'user_type', 'student_id', 'year', 'branch', 'is_active', 'is_staff', 'groups', 'user_permissions'),
+            'fields': ('username', 'email', 'first_name', 'last_name', 'password', 'password_text', 'user_type', 'student_id', 'year', 'branch', 'is_active', 'is_staff', 'groups', 'user_permissions'),
         }),
     )
 
     # แสดงผลตามประเภทผู้ใช้
     def get_queryset(self, request):
         return super().get_queryset(request)
+
+    def get_raw_password(self, obj):
+        return obj.password_text if hasattr(obj, 'password_text') else '(เข้ารหัสแล้ว)'
+    get_raw_password.short_description = 'รหัสผ่าน'
+
+    # แก้ไข fieldsets เพื่อให้แสดงฟิลด์ password_text
+    fieldsets = (
+        (None, {
+            'fields': ('username', 'email', 'first_name', 'last_name', 'password', 'password_text', 'user_type', 'student_id', 'year', 'branch', 'is_active', 'is_staff', 'groups', 'user_permissions'),
+        }),
+    )
 
 # การจัดการ Activity พร้อม Inline สำหรับรูปภาพ
 @admin.register(Activity)
@@ -152,3 +175,51 @@ class ActivityRegistrationAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'activity__name')
 
 admin.site.register(ActivityRegistration, ActivityRegistrationAdmin)
+
+@admin.register(SystemLog)
+class SystemLogAdmin(admin.ModelAdmin):
+    # หน้าแสดงรายการ
+    list_display = (
+        'timestamp', 
+        'user', 
+        'action_display', 
+        'module',
+        'description', 
+        'ip_address',
+        'status'
+    )
+    
+    # ตัวกรองด้านข้าง
+    list_filter = (
+        ('timestamp', admin.DateFieldListFilter),  # กรองตามวันที่
+        'action',  # กรองตามประเภทการกระทำ
+        'module',  # กรองตามโมดูล
+        'status',  # กรองตามสถานะ
+        'user',    # กรองตามผู้ใช้
+    )
+    
+    # ช่องค้นหา
+    search_fields = (
+        'description',
+        'user__username',
+        'ip_address',
+        'module'
+    )
+    
+    # ฟิลด์ที่แก้ไขไม่ได้
+    readonly_fields = (
+        'timestamp',
+        'user',
+        'action',
+        'description',
+        'ip_address',
+        'content_type',
+        'object_id',
+        'user_agent',
+        'module',
+        'status'
+    )
+
+    def action_display(self, obj):
+        return obj.get_action_display()
+    action_display.short_description = 'การกระทำ'

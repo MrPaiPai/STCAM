@@ -5,6 +5,8 @@ import datetime
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 
 
 BRANCH_CHOICES = [
@@ -74,9 +76,29 @@ class CustomUser(AbstractUser):
         blank=True
     )
 
+    password_text = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+        verbose_name='รหัสผ่าน (ไม่เข้ารหัส)'
+    )
+
+    phone_number = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        verbose_name="เบอร์โทรศัพท์"
+    )
+
     class Meta:
         verbose_name = 'ผู้ใช้'
         verbose_name_plural = 'ผู้ใช้ทั้งหมด'
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  # ถ้าเป็นการสร้างผู้ใช้ใหม่
+            self.is_active = False  # ตั้งค่าเริ่มต้นให้บัญชีไม่สามารถใช้งานได้จนกว่าจะได้รับการอนุมัติ
+            self.password_text = self._password  # เก็บรหัสผ่านก่อนการเข้ารหัส
+        super().save(*args, **kwargs)
 
 
 # โมเดลสำหรับ MyUser
@@ -194,6 +216,105 @@ class Activity(models.Model):
         default='all',
         verbose_name='คณะที่จัดกิจกรรม'
     )
+    max_participants = models.IntegerField(
+        default=30, 
+        verbose_name='จำนวนผู้เข้าร่วมสูงสุด'
+    )
+
+    def get_current_participants(self):
+        """นับจำนวนผู้เข้าร่วมปัจจุบัน"""
+        return self.participation_set.filter(status='approved').count()
+
+    def is_full(self):
+        """เช็คว่าเต็มหรือยัง"""
+        return self.get_current_participants() >= self.max_participants
+
+    def get_capacity_color(self):
+        """กำหนดสีตามจำนวนผู้เข้าร่วม"""
+        current = self.get_current_participants()
+        if current >= self.max_participants:
+            return 'bg-red-100'
+        elif current >= (self.max_participants * 0.5):
+            return 'bg-yellow-100'
+        return 'bg-green-100'
+
+    def get_participation_status(self, user):
+        if not user.is_authenticated:
+            return None
+        participation = self.participation_set.filter(student=user).first()
+        if not participation:
+            return None
+        if participation.status == 'pending':
+            return "pending"
+        return "approved" if participation.status == 'approved' else "rejected"
+
+    def get_status_color(self, user):
+        status = self.get_participation_status(user)
+        if status == "pending":
+            return "bg-yellow-50"
+        elif status == "approved":
+            return "bg-green-50"
+        elif status == "rejected":
+            return "bg-red-50"
+        return "bg-white"
+
+    @classmethod
+    def get_unique_years(cls):
+        """ดึงปีที่มีกิจกรรมทั้งหมด (ไม่ซ้ำกัน)"""
+        from django.db.models.functions import ExtractYear
+        return cls.objects.annotate(
+            year=ExtractYear('start_date')
+        ).values_list('year', flat=True).distinct().order_by('-year')
+
+    @classmethod
+    def get_unique_months(cls):
+        """ดึงเดือนที่มีกิจกรรมทั้งหมด (ไม่ซ้ำกัน)"""
+        from django.db.models.functions import ExtractMonth
+        months = cls.objects.annotate(
+            month=ExtractMonth('start_date')
+        ).values_list('month', flat=True).distinct().order_by('month')
+        
+        thai_months = {
+            1: 'มกราคม', 2: 'กุมภาพันธ์', 3: 'มีนาคม',
+            4: 'เมษายน', 5: 'พฤษภาคม', 6: 'มิถุนายน',
+            7: 'กรกฎาคม', 8: 'สิงหาคม', 9: 'กันยายน',
+            10: 'ตุลาคม', 11: 'พฤศจิกายน', 12: 'ธันวาคม'
+        }
+        
+        return [
+            {
+                'number': month,
+                'name': thai_months.get(month, ''),
+                'name_th': thai_months.get(month, '')
+            }
+            for month in months
+        ]
+
+    @staticmethod
+    def get_thai_month_name(month_number):
+        """แปลงเลขเดือนเป็นชื่อเดือนภาษาไทย"""
+        thai_months = {
+            1: 'มกราคม', 2: 'กุมภาพันธ์', 3: 'มีนาคม',
+            4: 'เมษายน', 5: 'พฤษภาคม', 6: 'มิถุนายน',
+            7: 'กรกฎาคม', 8: 'สิงหาคม', 9: 'กันยายน',
+            10: 'ตุลาคม', 11: 'พฤศจิกายน', 12: 'ธันวาคม'
+        }
+        return thai_months.get(month_number, '')
+
+    @classmethod
+    def filter_by_month(cls, month):
+        """กรองกิจกรรมตามเดือน"""
+        return cls.objects.filter(start_date__month=month)
+
+    @classmethod
+    def filter_by_year(cls, year):
+        """กรองกิจกรรมตามปี"""
+        return cls.objects.filter(start_date__year=year)
+
+    @classmethod
+    def filter_by_month_year(cls, month, year):
+        """กรองกิจกรรมตามเดือนและปี"""
+        return cls.objects.filter(start_date__month=month, start_date__year=year)
 
     class Meta:
         verbose_name = 'กิจกรรม'
@@ -214,11 +335,21 @@ class Announcement(models.Model):
 
 class ActivityRegistration(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    activity = models.ForeignKey('Activity', on_delete=models.CASCADE)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     registration_date = models.DateTimeField(auto_now_add=True)
-    proof_image = models.ImageField(upload_to='proofs/', null=True, blank=True)
-    # proof_upload_date = models.DateTimeField(null=True, blank=True)
-    proof_upload_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    proof_image = models.ImageField(upload_to='proof_images/', null=True, blank=True)
+    proof_upload_date = models.DateTimeField(null=True, blank=True)
+    is_approved = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['-registration_date']
+        verbose_name = 'รูปหลักฐานการลงทะเบียนทั้งหมด'
+        verbose_name_plural = 'รูปหลักฐานการลงทะเบียนทั้งหมด'
+        unique_together = ['user', 'activity']  # ย้าย unique_together มาไว้ในที่เดียวกับการตั้งค่าอื่นๆ
+    
+    @property
+    def has_proof(self):
+        return bool(self.proof_image)
 
     def __str__(self):
         return f"{self.user.username} - {self.activity.name}"
@@ -227,3 +358,41 @@ class ActivityRegistration(models.Model):
         ordering = ['-registration_date']
         verbose_name = 'รูปหลักฐานการลงทะเบียนทั้งหมด'
         verbose_name_plural = 'รูปหลักฐานการลงทะเบียนทั้งหมด'
+
+
+class SystemLog(models.Model):
+    # ตัวเลือกประเภทการกระทำ
+    ACTION_CHOICES = [
+        ('CREATE', 'สร้าง'),
+        ('UPDATE', 'แก้ไข'),
+        ('DELETE', 'ลบ'),
+        ('LOGIN', 'เข้าสู่ระบบ'),
+        ('LOGOUT', 'ออกจากระบบ'),
+        ('APPROVE', 'อนุมัติ'),
+        ('REJECT', 'ไม่อนุมัติ'),
+        ('UPLOAD', 'อัพโหลดไฟล์'),
+        ('DOWNLOAD', 'ดาวน์โหลดไฟล์'),
+        ('OTHER', 'อื่นๆ'),
+    ]
+
+    # ฟิลด์พื้นฐาน
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name='วันที่และเวลา')
+    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, verbose_name='ผู้ใช้')
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES, verbose_name='การกระทำ')
+    description = models.TextField(verbose_name='รายละเอียด')
+    
+    # ข้อมูลเพิ่มเติม
+    ip_address = models.GenericIPAddressField(null=True, blank=True, verbose_name='IP Address')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    # ข้อมูลเพิ่มเติมสำหรับการวิเคราะห์
+    user_agent = models.TextField(blank=True, null=True, verbose_name='User Agent')
+    module = models.CharField(max_length=100, blank=True, verbose_name='โมดูล')
+    status = models.CharField(max_length=50, blank=True, verbose_name='สถานะ')
+
+    class Meta:
+        verbose_name = 'บันทึกการใช้งานระบบ'
+        verbose_name_plural = 'บันทึกการใช้งานระบบ'
+        ordering = ['-timestamp']

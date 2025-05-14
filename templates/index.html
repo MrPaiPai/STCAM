@@ -1,4 +1,5 @@
 {% load static %}
+{% load custom_filters %}  
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,28 +18,6 @@
       position: relative;
     }
 
-    /* Animation เส้นวิ่ง */
-    .moving-line {
-      position: absolute;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #4a90e2, transparent);
-      animation: moveLine 6s linear infinite;
-      z-index: 0;
-    }
-
-    .moving-line:nth-child(1) { top: 10%; }
-    .moving-line:nth-child(2) { top: 20%; animation-delay: 1s; }
-    .moving-line:nth-child(3) { top: 30%; animation-delay: 2s; }
-    .moving-line:nth-child(4) { top: 50%; animation-delay: 3s; }
-    .moving-line:nth-child(5) { top: 70%; animation-delay: 4s; }
-    .moving-line:nth-child(6) { top: 90%; animation-delay: 5s; }
-
-    @keyframes moveLine {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-
     /* เนื้อหาให้อยู่เหนือเส้น */
     .content-wrapper, .center-container {
       position: relative;
@@ -47,73 +26,110 @@
 
     /* กำหนดขนาดการ์ดให้คงที่ */
     .activity-card {
-      min-height: 400px; /* ความสูงขั้นต่ำ */
-      max-height: 400px; /* ความสูงสูงสุด */
-      overflow-y: auto; /* ถ้ามีเนื้อหาเยอะให้เลื่อนได้ */
+      height: auto; /* ยกเลิกการกำหนดความสูงแบบตายตัว */
+      overflow-y: visible; /* ยกเลิก scroll */
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
     }
 
     .activity-card img {
-      height: 150px; /* กำหนดความสูงของรูปภาพ */
-      object-fit: cover; /* ป้องกันรูปภาพบิดเบี้ยว */
+      width: 100%;
+      height: 200px; /* กำหนดความสูงรูปภาพแบบตายตัว */
+      object-fit: cover;
+      border-radius: 0.5rem;
+    }
+
+    @keyframes cardPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+      }
+    }
+
+    .activity-active {
+      animation: cardPulse 2s infinite;
+      border: 2px solid #3B82F6;
     }
   </style>
 </head>
 <body class="font-sans">
   <!-- Navbar -->
   <nav class="base-navbar fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 shadow-lg z-50 flex justify-between items-center">
-    <div class="base-menu-container">
-      <button class="base-menu bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400" id="menuButton">เมนู</button>
-      <div class="base-dropdown absolute top-full left-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl hidden" id="dropdown">
-        <a href="{% url 'home' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">🏠 กลับไปหน้าหลัก</a>
-        <a href="{% url 'track_participation' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">📊 ติดตามสถานะ</a>
-        <a href="{% url 'upload_proof' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">📎 เพิ่มหลักฐาน</a>
-        <a href="{% url 'edit_userprofile' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">👤 ข้อมูลส่วนตัว</a>
-        
-        {% if user.is_staff or user.is_superuser %}
-            <div class="border-t border-gray-200 mt-2 pt-2">
-                <a href="{% url 'manage_participations' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200 text-blue-600 font-medium">
-                    ⚙️ จัดการการเข้าร่วม
-                </a>
-                <a href="{% url 'student_list' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200 text-blue-600 font-medium">
-                    👥 รายชื่อนักศึกษาทั้งหมด
-                </a>
-                <a href="{% url 'generate_report' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200 text-blue-600 font-medium">
-                    📄 ออกรายงานกิจกรรม
-                </a>
-            </div>
+    <div class="flex-1">
+        {% if user.is_authenticated %}
+            <div class="base-menu-container">
+                <button class="base-menu bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400" id="menuButton">เมนู</button>
+                <div class="base-dropdown absolute top-full left-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl hidden" id="dropdown">
+                  <!-- เมนูสำหรับผู้ใช้ทั่วไป -->
+                  <div class="px-4 py-2 bg-gray-50 text-sm font-medium text-gray-500">เมนูทั่วไป</div>
+                  <a href="{% url 'home' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">🏠 กลับไปหน้าหลัก</a>
+                  <a href="{% url 'track_participation' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">📊 ติดตามสถานะ</a>
+                  <a href="{% url 'upload_proof' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">📎 เพิ่มหลักฐาน</a>
+                  <a href="{% url 'edit_userprofile' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200">👤 ข้อมูลส่วนตัว</a>
+                  
+                  {% if user.is_staff or user.is_superuser %}
+                      <!-- เมนูจัดการผู้ใช้ -->
+                      <div class="border-t border-gray-200 mt-2">
+                          <div class="px-4 py-2 bg-blue-50 text-sm font-medium text-blue-600">การจัดการผู้ใช้</div>
+                          <a href="{% url 'pending_users' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200 text-blue-600 font-medium">
+                              ✅ อนุมัติผู้ใช้ใหม่
+                              {% if pending_users_count %}
+                                  <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full float-right">
+                                      {{ pending_users_count }}
+                                  </span>
+                              {% endif %}
+                          </a>
+                          <a href="{% url 'student_list' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200 text-blue-600 font-medium">
+                              👥 รายชื่อนักศึกษาทั้งหมด
+                          </a>
+                      </div>
+
+                      <!-- เมนูจัดการกิจกรรม -->
+                      <div class="border-t border-gray-200">
+                          <div class="px-4 py-2 bg-green-50 text-sm font-medium text-green-600">การจัดการกิจกรรม</div>
+                          <a href="{% url 'manage_participations' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200 text-green-600 font-medium">
+                              ⚙️ จัดการการเข้าร่วม
+                          </a>
+                          <a href="{% url 'generate_report' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200 text-green-600 font-medium">
+                              📄 ออกรายงานกิจกรรม
+                          </a>
+                      </div>
+
+                      <!-- เมนูสำหรับ Admin -->
+                      {% if user.is_superuser %}
+                          <div class="border-t border-gray-200">
+                              <div class="px-4 py-2 bg-red-50 text-sm font-medium text-red-600">การจัดการระบบ</div>
+                              <a href="/admin/" class="block px-4 py-2 hover:bg-gray-100 transition duration-200 text-red-600 font-medium">
+                                  👨‍💼 Django Admin
+                              </a>
+                          </div>
+                      {% endif %}
+                  {% endif %}
+                </div>
+              </div>
         {% endif %}
-      </div>
     </div>
-    <div class="base-right-side flex items-center gap-4 mr-6">
-      {% if user.is_authenticated %}
-        <span class="text-white font-medium">ยินดีต้อนรับ, {{ user.username }}</span>
-        <form method="post" action="{% url 'logout' %}" class="inline">
-          {% csrf_token %}
-          <button type="submit" class="base-logout-btn bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">ออกจากระบบ</button>
-        </form>
-      {% else %}
-        <a href="{% url 'login' %}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">เข้าสู่ระบบ</a>
-        <a href="{% url 'register' %}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">สมัครสมาชิก</a>
-      {% endif %}
+
+    <!-- แก้ไขส่วนนี้ - ลบ mr-6 ออก -->
+    <div class="base-right-side flex items-center gap-4">
+        {% if user.is_authenticated %}
+            <span class="text-white font-medium">ยินดีต้อนรับ, {{ user.username }}</span>
+            <form method="post" action="{% url 'logout' %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="base-logout-btn bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">ออกจากระบบ</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">เข้าสู่ระบบ</a>
+            <a href="{% url 'register' %}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">สมัครสมาชิก</a>
+        {% endif %}
     </div>
   </nav>
-
-  <!-- เส้นวิ่ง (Moving Lines) -->
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
-  <div class="moving-line"></div>
 
   <!-- ข้อความแจ้งเตือน -->
   {% if messages %}
@@ -130,7 +146,7 @@
   <!-- หัวข้อหลัก -->
   <div class="center-container text-center py-6">
     <h1 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent drop-shadow-lg">
-      แพลตฟอร์มสำหรับการบริหารจัดการข้อมูลกิจกรรมของสโมสร<br>คณะวิทยาศาสตร์และเทคโนโลยี
+      เว็บเเอปพลิเคชั่นสำหรับการบริหารจัดการข้อมูลกิจกรรมของสโมสร<br>คณะวิทยาศาสตร์และเทคโนโลยี
     </h1>
   </div>
 
@@ -140,27 +156,107 @@
     <div class="activity-section w-full lg:w-2/3 order-1">
       <div class="center-container mb-6">
         <h2 class="text-2xl font-semibold text-gray-700">รายการกิจกรรมทั้งหมด</h2>
-        {% if user.is_authenticated and user.user_type == 'admin' %}
+        {% if user.is_authenticated and user.is_staff or user.is_superuser %}
           <a href="{% url 'add_activity' %}" class="inline-block mt-4">
-            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">เพิ่มกิจกรรมใหม่</button>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200">
+              เพิ่มกิจกรรมใหม่
+            </button>
           </a>
         {% endif %}
       </div>
       
+      <!-- Add Filter Section -->
+      <div class="mb-6">
+        <div class="flex flex-wrap gap-2">
+            <a href="?filter=upcoming" 
+               class="px-4 py-2 rounded-lg {% if current_filter == 'upcoming' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-700{% endif %} hover:bg-blue-500 hover:text-white transition duration-200">
+                กิจกรรมที่กำลังจะมาถึง
+            </a>
+            {% if user.is_authenticated %}
+                <a href="?filter=pending" 
+                   class="px-4 py-2 rounded-lg {% if current_filter == 'pending' %}bg-yellow-600 text-white{% else %}bg-gray-200 text-gray-700{% endif %} hover:bg-yellow-500 hover:text-white transition duration-200">
+                    รอการอนุมัติ
+                </a>
+                <a href="?filter=approved" 
+                   class="px-4 py-2 rounded-lg {% if current_filter == 'approved' %}bg-green-600 text-white{% else %}bg-gray-200 text-gray-700{% endif %} hover:bg-green-500 hover:text-white transition duration-200">
+                    อนุมัติแล้ว
+                </a>
+                <a href="?filter=rejected" 
+                   class="px-4 py-2 rounded-lg {% if current_filter == 'rejected' %}bg-red-600 text-white{% else %}bg-gray-200 text-gray-700{% endif %} hover:bg-red-500 hover:text-white transition duration-200">
+                    ไม่อนุมัติ
+                </a>
+            {% endif %}
+        </div>
+      </div>
+      
       <div class="activity-card-container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for activity in activities %}
-          <div class="activity-card bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-2 p-4">
+          <div class="activity-card 
+            {% if activity.start_date|date:"Y-m-d" <= current_date|date:"Y-m-d" and activity.end_date|date:"Y-m-d" >= current_date|date:"Y-m-d" %}
+                activity-active
+            {% endif %}
+            rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-2 p-4
+            {% if user.is_authenticated %}
+                {% with participation=activity|get_participation:user %}
+                    {% if participation %}
+                      {% if participation.status == 'pending' %}
+                        bg-yellow-50
+                      {% elif participation.status == 'approved' %}
+                        bg-green-50
+                      {% elif participation.status == 'rejected' %}
+                        bg-red-50
+                      {% endif %}
+                    {% else %}
+                      bg-white
+                    {% endif %}
+                {% endwith %}
+            {% else %}
+              bg-white
+            {% endif %}">
             <h3 class="text-xl font-semibold text-gray-800">{{ activity.name }}</h3>
             <p class="text-gray-600 mt-1"><strong>วันที่เริ่ม:</strong> {{ activity.start_date }}</p>
             <p class="text-gray-600 mt-1"><strong>วันที่สิ้นสุด:</strong> {{ activity.end_date }}</p>
             <p class="text-gray-600 mt-1"><strong>คณะ:</strong> {{ activity.get_faculty_display }}</p>
             {% if activity.images.all %}
-              {% for image in activity.images.all %}
-                <img src="{{ image.image.url }}" alt="รูปกิจกรรม" class="mt-2 w-full h-150px object-cover rounded-lg">
-              {% endfor %}
+                {% for image in activity.images.all %}
+                    <img src="{{ image.image.url }}" alt="รูปกิจกรรม" class="mt-2 w-full h-150px object-cover rounded-lg">
+                {% endfor %}
             {% else %}
-              <p class="text-red-500 mt-2">ไม่มีรูปภาพ</p>
+                <p class="text-red-500 mt-2">ไม่มีรูปภาพ</p>
             {% endif %}
+            
+            <!-- แสดงสถานะการลงทะเบียน -->
+            {% if user.is_authenticated %}
+              {% with participation=activity|get_participation:user %}
+                {% if participation %}
+                  <div class="mt-2 p-2 rounded-lg
+                    {% if participation.status == 'pending' %}
+                      bg-yellow-100 text-yellow-800
+                    {% elif participation.status == 'approved' %}
+                      bg-green-100 text-green-800
+                    {% elif participation.status == 'rejected' %}
+                      bg-red-100 text-red-800
+                    {% endif %}">
+                    <p class="text-sm font-medium">
+                      {% if participation.status == 'pending' %}
+                        ลงทะเบียนแล้วรอการอนุมัติ
+                      {% elif participation.status == 'approved' %}
+                        อนุมัติการลงทะเบียนแล้ว
+                      {% elif participation.status == 'rejected' %}
+                        ไม่อนุมัติการลงทะเบียน
+                      {% endif %}
+                    </p>
+                  </div>
+                {% endif %}
+              {% endwith %}
+            {% endif %}
+            
+            <!-- แสดงปุ่มเข้าร่วมเฉพาะเมื่อเข้าสู่ระบบแล้ว
+            {% if user.is_authenticated %}
+                <a href="{% url 'join_activity' activity.id %}" class="mt-4 inline-block bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition duration-200 mr-2">เข้าร่วมกิจกรรม</a>
+            {% endif %} -->
+            
+            <!-- ปุ่มดูรายละเอียดแสดงเสมอ -->
             <a href="{% url 'activity_info' activity.id %}" class="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition duration-200">รายละเอียดกิจกรรม</a>
           </div>
         {% empty %}

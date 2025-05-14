@@ -1,0 +1,115 @@
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนสำหรับเจ้าหน้าที่ - ระบบจัดการกิจกรรม</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .bg-gradient-custom {
+            background: linear-gradient(135deg, #1e40af, #6b7280);
+        }
+        .input-highlight {
+            @apply bg-gray-50 border-2 border-blue-400 rounded-xl p-3 focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition duration-300 text-lg placeholder-gray-400;
+        }
+        .card-custom {
+            @apply bg-white rounded-xl shadow-2xl p-6 transform transition duration-300 hover:shadow-xl hover:scale-105;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-gray-200 font-sans min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-custom text-white py-6 shadow-lg">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <div class="flex flex-col">
+                <h1 class="text-3xl font-bold mb-1">เว็บเเอปพลิเคชั่นสำหรับการบริหารจัดการข้อมูลกิจกรรมของสโมสร</h1>
+                <h2 class="text-2xl font-bold text-gray-200">คณะวิทยาศาสตร์และเทคโนโลยี</h2>
+            </div>
+            <a href="{% url 'home' %}" class="bg-white text-blue-800 px-5 py-2 rounded-full hover:bg-gray-200 transition duration-300 flex items-center">
+                <i class="fas fa-home mr-2"></i> กลับหน้าแรก
+            </a>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-6 max-w-2xl">
+        <div class="card-custom">
+            <h3 class="text-2xl font-bold text-blue-800 mb-6 flex items-center">
+                <i class="fas fa-user-tie mr-2"></i> ลงทะเบียนสำหรับเจ้าหน้าที่
+            </h3>
+
+            <!-- ข้อความแจ้งเตือนเครื่องหมาย * -->
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <p class="text-sm text-yellow-700">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    หมายเหตุ: ช่องที่มีเครื่องหมาย <span class="text-red-500">*</span> จำเป็นต้องกรอก
+                </p>
+            </div>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="block text-gray-700 font-medium mb-2">
+                        ชื่อผู้ใช้ <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.username|add_class:"input-highlight w-full"|attr:"placeholder:ตัวอย่าง: staff_science" }}
+                </div>
+
+                <div class="form-group">
+                    <label class="block text-gray-700 font-medium mb-2">
+                        อีเมล <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.email|add_class:"input-highlight w-full"|attr:"placeholder:ตัวอย่าง: staff@example.com" }}
+                </div>
+
+                <div class="form-group">
+                    <label class="block text-gray-700 font-medium mb-2">
+                        ชื่อจริง <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.first_name|add_class:"input-highlight w-full"|attr:"placeholder:ตัวอย่าง: สมชาย" }}
+                </div>
+
+                <div class="form-group">
+                    <label class="block text-gray-700 font-medium mb-2">
+                        นามสกุล <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.last_name|add_class:"input-highlight w-full"|attr:"placeholder:ตัวอย่าง: รักดี" }}
+                </div>
+
+                <div class="form-group">
+                    <label class="block text-gray-700 font-medium mb-2">
+                        รหัสผ่าน <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.password1|add_class:"input-highlight w-full"|attr:"placeholder:รหัสผ่านอย่างน้อย 8 ตัว ผสมตัวอักษรและตัวเลข" }}
+                    <p class="text-sm text-gray-500 mt-1">รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัว ประกอบด้วยตัวอักษร ตัวเลข และอักขระพิเศษ</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="block text-gray-700 font-medium mb-2">
+                        ยืนยันรหัสผ่าน <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.password2|add_class:"input-highlight w-full"|attr:"placeholder:กรอกรหัสผ่านอีกครั้ง" }}
+                </div>
+
+                <div class="flex justify-end space-x-4">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200">
+                        ลงทะเบียน
+                    </button>
+                </div>
+            </form>
+
+            {% if messages %}
+            <div class="mt-6">
+                {% for message in messages %}
+                <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

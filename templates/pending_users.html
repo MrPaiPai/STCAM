@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}อนุมัติผู้ใช้งานใหม่{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">อนุมัติผู้ใช้งานใหม่</h1>
+
+    {% if pending_users %}
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+                <tr>
+                    <th class="px-6 py-3 bg-gray-50 text-left">Username</th>
+                    <th class="px-6 py-3 bg-gray-50 text-left">Email</th>
+                    <th class="px-6 py-3 bg-gray-50 text-left">สถานะ</th>
+                    <th class="px-6 py-3 bg-gray-50 text-left">การดำเนินการ</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for user in pending_users %}
+                    <tr>
+                        <td class="px-6 py-4">{{ user.username }}</td>
+                        <td class="px-6 py-4">{{ user.email }}</td>
+                        <td class="px-6 py-4">
+                            {% if user.is_active %}
+                                <span class="text-green-600">อนุมัติแล้ว</span>
+                            {% else %}
+                                <span class="text-yellow-600">รอการอนุมัติ</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <form method="post" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                <button type="submit" name="action" value="approve" 
+                                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded mr-2">
+                                    อนุมัติ
+                                </button>
+                                <button type="submit" name="action" value="reject"
+                                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                                    ปฏิเสธ
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="text-center py-8">
+            <p class="text-gray-500">ไม่มีผู้ใช้ที่รอการอนุมัติ</p>
+        </div>
+    {% endif %}
+
+    <!-- Debug section -->
+    {% if user.is_superuser %}
+        <div class="mt-8 p-4 bg-yellow-50 rounded">
+            <h3 class="font-bold mb-2">Debug Info:</h3>
+            <p>จำนวนผู้ใช้ที่รออนุมัติ: {{ pending_users|length }}</p>
+            <p>สถานะผู้ใช้ปัจจุบัน: {{ user.is_superuser|yesno:"Superuser,Staff" }}</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

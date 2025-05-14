@@ -37,6 +37,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'myapp.middleware.SessionTimeoutMiddleware',  # เหลือแค่อันนี้อันเดียว
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -138,9 +139,14 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Session settings
-SESSION_COOKIE_AGE = 3600  # อายุ session เป็น 1 ชั่วโมง
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session หมดอายุเมื่อปิดเบราว์เซอร์
+SESSION_COOKIE_AGE = 1800  # 30 นาที (คิดเป็นวินาที)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session จะหมดอายุเมื่อปิดเบราว์เซอร์
+SESSION_SAVE_EVERY_REQUEST = True  # บันทึก session ทุกครั้งที่มีการเรียกใช้
+SESSION_EXPIRE_SECONDS = 1800  # กำหนด session timeout เป็น 30 นาที (1800 วินาที)
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True  # Reset session timeout ทุกครั้งที่มีการใช้งาน
+SESSION_TIMEOUT_REDIRECT = 'session_expired'  # ชื่อ url ที่จะ redirect ไป
 
+LOGIN_REDIRECT_URL = '/'  
 
 # กำหนดเส้นทางสำหรับเก็บไฟล์แปลภาษา
 LOCALE_PATHS = [

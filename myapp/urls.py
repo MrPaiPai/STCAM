@@ -7,10 +7,10 @@ from .views import join_activity, get_participants, edit_profile, edit_userprofi
 from myapp.views import manage_participation
 
 urlpatterns = [
-    path('', views.home, name='home'),  # หน้าแรก
+    path('', views.index, name='home'),  # ใช้ index เป็นหน้าแรก
     path('register/', views.register, name='register'),  # ลงทะเบียน
-    path('login/', views.login_view, name='login'),  # เข้าสู่ระบบ
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('accounts/login/', views.login_view, name='login'),  # เข้าสู่ระบบ
+    path('accounts/logout/', views.logout_view, name='logout'),
     path('add-activity/', views.add_activity, name='add_activity'),  # เพิ่มกิจกรรม
     path('join-activity/<int:activity_id>/', views.join_activity, name='join_activity'),  # เข้าร่วมกิจกรรม
     path('activities/', views.activity_list, name='activity_list'),  # แสดงรายการกิจกรรมทั้งหมด
@@ -32,6 +32,7 @@ urlpatterns = [
     path('proof-list/', views.user_upload_proof_list, name='user_upload_proof_list'),
     path('delete-proof/<int:reg_id>/', views.delete_proof, name='delete_proof'),
     path('show_all_proofs/', views.show_all_proofs, name='show_all_proofs'),
+    path('manage-proof/<int:activity_id>/<str:action>/', views.manage_proof, name='manage_proof'),
     path('manage-participation/<int:participation_id>/', views.manage_participation, name='manage_participation'),
     path('manage-participation/', views.manage_participation, name='manage_participation'),
     path('manage-participations/', views.manage_participations, name='manage_participations'),
@@ -39,6 +40,10 @@ urlpatterns = [
     path('students/', views.student_list, name='student_list'),
     path('generate-report/', views.generate_report, name='generate_report'),
     path('download-report/', views.download_report, name='download_report'),
+    path('pending-users/', views.pending_users, name='pending_users'),
+    path('staff/register/', views.staff_register, name='staff_register'),
+    path('session_expired/', views.session_expired, name='session_expired'),
+    path('update-proof-status/<int:proof_id>/', views.update_proof_status, name='update_proof_status'),
 ]
 
 # เพิ่มการเสิร์ฟไฟล์ media และ static ในโหมดพัฒนา

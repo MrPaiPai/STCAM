@@ -24,15 +24,22 @@
 <body class="bg-gradient-to-br from-gray-100 to-gray-200 font-sans min-h-screen">
     <!-- Header -->
     <header class="bg-gradient-custom text-white py-6 shadow-lg">
-        <div class="container mx-auto px-6 flex justify-between items-center">
-            <div class="flex items-center space-x-4">
-                <!-- โลโก้ -->
-                <i class="fas fa-graduation-cap text-4xl text-yellow-300"></i>
-                <h1 class="text-3xl font-bold">เเพลตฟอร์มสำหรับการบริหารจัดการข้อมูลกิจกรรมของสโมสร คณะวิทยาศาสตร์และเทคโนโลยี</h1>
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col items-center space-y-2">
+                <!-- โลโก้และชื่อระบบ -->
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-graduation-cap text-4xl text-yellow-300"></i>
+                    <h1 class="text-3xl font-bold">เว็บเเอปพลิเคชั่นสำหรับการบริหารจัดการข้อมูลกิจกรรมของสโมสร</h1>
+                </div>
+                <!-- ชื่อคณะ -->
+                <h2 class="text-2xl font-bold">คณะวิทยาศาสตร์และเทคโนโลยี</h2>
             </div>
-            <a href="{% url 'home' %}" class="bg-white text-blue-800 px-5 py-2 rounded-full hover:bg-gray-200 transition duration-300 flex items-center">
-                <i class="fas fa-home mr-2"></i> กลับหน้าแรก
-            </a>
+            <!-- ปุ่มกลับหน้าแรก -->
+            <div class="absolute top-6 right-6">
+                <a href="{% url 'home' %}" class="bg-white text-blue-800 px-5 py-2 rounded-full hover:bg-gray-200 transition duration-300 flex items-center">
+                    <i class="fas fa-home mr-2"></i> กลับหน้าแรก
+                </a>
+            </div>
         </div>
     </header>
 
@@ -46,7 +53,12 @@
                 </h3>
                 <form method="post" class="space-y-6">
                     {% csrf_token %}
-                    
+
+                    <!-- เพิ่มข้อความแจ้งเตือนเครื่องหมาย * -->
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                        <p class="text-sm text-yellow-700">หมายเหตุ: ช่องที่มีเครื่องหมาย <span class="text-red-500">*</span> จำเป็นต้องกรอก</p>
+                    </div>
+
                     <!-- แสดงข้อผิดพลาด -->
                     {% if form.errors %}
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg" role="alert">
@@ -61,35 +73,58 @@
                     {% endif %}
 
                     <div class="form-group">
-                        <label for="id_username" class="block text-base font-medium text-gray-700">ชื่อผู้ใช้:</label>
-                        {{ form.username|add_class:"input-highlight w-full" }}
+                        <label for="id_username" class="block text-base font-medium text-gray-700">
+                            ชื่อผู้ใช้ <span class="text-red-500">*</span>:
+                        </label>
+                        {{ form.username|add_class:"input-highlight w-full"|attr:"placeholder:รหัสนักศึกษา 13 หลัก เช่น 6511011234567" }}
                     </div>
+
                     <div class="form-group">
-                        <label for="id_first_name" class="block text-base font-medium text-gray-700">ชื่อจริง:</label>
-                        {{ form.first_name|add_class:"input-highlight w-full" }}
+                        <label for="id_first_name" class="block text-base font-medium text-gray-700">
+                            ชื่อจริง <span class="text-red-500">*</span>:
+                        </label>
+                        {{ form.first_name|add_class:"input-highlight w-full"|attr:"placeholder:กรอกชื่อจริง เช่น นาย สมใจ" }}
                     </div>
+
                     <div class="form-group">
-                        <label for="id_last_name" class="block text-base font-medium text-gray-700">นามสกุล:</label>
-                        {{ form.last_name|add_class:"input-highlight w-full" }}
+                        <label for="id_last_name" class="block text-base font-medium text-gray-700">
+                            นามสกุล <span class="text-red-500">*</span>:
+                        </label>
+                        {{ form.last_name|add_class:"input-highlight w-full"|attr:"placeholder:กรอกนามสกุล เช่น ทันที" }}
                     </div>
+
                     <div class="form-group">
-                        <label for="id_student_id" class="block text-base font-medium text-gray-700">รหัสนักศึกษา:</label>
-                        {{ form.student_id|add_class:"input-highlight w-full" }}
+                        <label for="id_student_id" class="block text-base font-medium text-gray-700">
+                            รหัสนักศึกษา <span class="text-red-500">*</span>:
+                        </label>
+                        {{ form.student_id|add_class:"input-highlight w-full"|attr:"placeholder:กรอกรหัสนักศึกษา 13 หลัก" }}
                     </div>
+
                     <div class="form-group">
-                        <label for="id_password1" class="block text-base font-medium text-gray-700">รหัสผ่าน:</label>
-                        {{ form.password1|add_class:"input-highlight w-full" }}
+                        <label for="id_password1" class="block text-base font-medium text-gray-700">
+                            รหัสผ่าน <span class="text-red-500">*</span>:
+                        </label>
+                        {{ form.password1|add_class:"input-highlight w-full"|attr:"placeholder:รหัสผ่านอย่างน้อย 8 ตัว ผสมตัวอักษรและตัวเลข" }}
                     </div>
+
                     <div class="form-group">
-                        <label for="id_password2" class="block text-base font-medium text-gray-700">ยืนยันรหัสผ่าน:</label>
-                        {{ form.password2|add_class:"input-highlight w-full" }}
+                        <label for="id_password2" class="block text-base font-medium text-gray-700">
+                            ยืนยันรหัสผ่าน <span class="text-red-500">*</span>:
+                        </label>
+                        {{ form.password2|add_class:"input-highlight w-full"|attr:"placeholder:กรอกรหัสผ่านอีกครั้ง" }}
                     </div>
+
                     <div class="form-group">
-                        <label for="id_branch" class="block text-base font-medium text-gray-700">สาขา:</label>
+                        <label for="id_branch" class="block text-base font-medium text-gray-700">
+                            สาขา <span class="text-red-500">*</span>:
+                        </label>
                         {{ form.branch|add_class:"input-highlight w-full" }}
                     </div>
+
                     <div class="form-group">
-                        <label for="id_year" class="block text-base font-medium text-gray-700">ชั้นปี:</label>
+                        <label for="id_year" class="block text-base font-medium text-gray-700">
+                            ชั้นปี <span class="text-red-500">*</span>:
+                        </label>
                         {{ form.year|add_class:"input-highlight w-full" }}
                     </div>
                     <button type="submit" class="w-full bg-blue-600 text-white py-3 px-6 rounded-xl hover:bg-blue-700 transition duration-300 transform hover:scale-105 text-lg font-semibold">

@@ -25,3 +25,4 @@ tzdata==2025.1
 django-widget-tweaks==1.5.0
 gunicorn==20.1.0
 reportlab==4.1.0
+django-session-timeout==0.1.0

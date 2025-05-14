@@ -5,54 +5,164 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0"><i class="fas fa-file-upload me-2"></i>รายการหลักฐานที่อัพโหลดแล้ว</h2>
 
-        {% if not is_student %}
-            <a href="{% url 'show_all_proofs' %}" class="btn btn-success btn-sm">
-                <i class="fas fa-eye me-1"></i> แสดงรายการทั้งหมด
-            </a>
+        {% if request.user.is_staff or request.user.is_superuser %}
+            <div class="d-flex gap-2">
+                <a href="{% url 'show_all_proofs' %}" class="btn btn-success btn-sm">
+                    <i class="fas fa-eye me-1"></i> แสดงรายการทั้งหมด
+                </a>
+                <button id="filter-toggle-btn" class="btn btn-primary btn-sm">
+                    <i class="fas fa-filter me-1"></i> ตัวกรอง
+                </button>
+            </div>
         {% endif %}
+    </div>
 
+    <!-- Filter Section - ซ่อนไว้ด้วย JavaScript -->
+    <div id="filter-section" class="filter-container mb-4" style="display: none;">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">กรองข้อมูล</h5>
+                <form id="filter-form" class="row g-3" method="get">
+                    <div class="col-md-3">
+                        <label class="form-label">ชื่อกิจกรรม</label>
+                        <select name="activity" class="form-select form-select-sm">
+                            <option value="">ทั้งหมด</option>
+                            {% for activity in activities %}
+                                <option value="{{ activity.id }}" {% if selected_activity == activity.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ activity.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">เดือน</label>
+                        <select name="month" class="form-select form-select-sm">
+                            <option value="">ทั้งหมด</option>
+                            {% for month in months %}
+                                <option value="{{ month.number }}" {% if selected_month == month.number|stringformat:"s" %}selected{% endif %}>
+                                    {{ month.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">ปี</label>
+                        <select name="year" class="form-select form-select-sm">
+                            <option value="">ทั้งหมด</option>
+                            {% for year_option in years %}
+                                <option value="{{ year_option }}" {% if selected_year == year_option|stringformat:"s" %}selected{% endif %}>
+                                    {{ year_option }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">สถานะ</label>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">ทั้งหมด</option>
+                            <option value="pending" {% if selected_status == "pending" %}selected{% endif %}>รอการอนุมัติ</option>
+                            <option value="approved" {% if selected_status == "approved" %}selected{% endif %}>อนุมัติแล้ว</option>
+                            <option value="rejected" {% if selected_status == "rejected" %}selected{% endif %}>ไม่อนุมัติ</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-12 mt-3">
+                        <button type="submit" class="btn btn-primary btn-sm me-2">
+                            <i class="fas fa-search me-1"></i> ค้นหา
+                        </button>
+                        <button type="button" id="reset-filter" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-redo me-1"></i> รีเซ็ต
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     {% if registrations %}
-    <div class="row">
+    <div class="proof-list">
         {% for reg in registrations %}
-        <div class="col-md-6 col-lg-4 mb-4">
+        <div class="proof-item">
             <div class="proof-card">
-                <div class="activity-name">
-                    {% if reg.activity %}
-                        {{ reg.activity.name }}
-                    {% else %}
-                        กิจกรรมไม่ระบุชื่อ
-                    {% endif %}
-                </div>
-
-                <div class="proof-image-container">
-                    {% if reg.proof_image %}
-                        <img src="{{ reg.proof_image.url }}" alt="หลักฐานการเข้าร่วมกิจกรรม" class="proof-image">
-                    {% else %}
-                        <div class="proof-image-placeholder">
-                            <p class="text-muted text-center">ไม่มีรูปภาพ</p>
+                <div class="row align-items-center">
+                    <!-- รูปภาพ (ขนาดเล็ก) -->
+                    <div class="col-lg-2 col-md-3 col-sm-4">
+                        <div class="proof-image-container">
+                            {% if reg.proof_image %}
+                                <img src="{{ reg.proof_image.url }}" alt="หลักฐาน" class="proof-thumbnail" onclick="openImageModal('{{ reg.proof_image.url }}')">
+                            {% else %}
+                                <div class="proof-image-placeholder">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            {% endif %}
                         </div>
-                    {% endif %}
-                </div>
-
-                <div class="upload-date">
-                    <i class="fas fa-calendar-alt me-1"></i>
-                    อัพโหลดเมื่อ: 
-                    {% if reg.proof_upload_date %}
-                        {{ reg.proof_upload_date|date:"d/m/Y H:i" }}
-                    {% else %}
-                        <span class="text-warning">ไม่ระบุวันที่</span>
-                    {% endif %}
-                </div>
-
-                <div class="action-buttons mt-3">
-                    <form method="POST" action="{% url 'delete_proof' reg.id %}" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm">
-                            <i class="fas fa-trash-alt me-1"></i> ลบหลักฐาน
-                        </button>
-                    </form>
+                    </div>
+                    
+                    <!-- ข้อมูลหลัก -->
+                    <div class="col-lg-7 col-md-6 col-sm-8">
+                        <div class="activity-name">
+                            <strong>กิจกรรม:</strong> {{ reg.activity.name }}
+                        </div>
+                        
+                        <!-- ข้อมูลนักศึกษา -->
+                        <div class="student-info">
+                            <p><strong>นักศึกษา:</strong> {{ reg.user.first_name }} {{ reg.user.last_name }}</p>
+                            <p><strong>รหัสนักศึกษา:</strong> {{ reg.user.student_id }}</p>
+                            {% if reg.user.branch %}
+                                <p><strong>สาขา:</strong> {{ reg.user.get_branch_display }}</p>
+                            {% endif %}
+                            {% if reg.user.year %}
+                                <p><strong>ชั้นปี:</strong> {{ reg.user.year }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="details-info">
+                            <p class="upload-date">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                อัพโหลดเมื่อ: {{ reg.proof_upload_date|date:"d/m/Y H:i" }}
+                            </p>
+                            
+                            <div class="status-badge 
+                                {% if not reg.is_approved %}bg-warning{% else %}bg-success{% endif %}">
+                                
+                                <i class="fas 
+                                    {% if not reg.is_approved %}fa-clock{% else %}fa-check{% endif %} me-1"></i>
+                                
+                                {% if not reg.is_approved %}รอการอนุมัติ{% else %}อนุมัติแล้ว{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ปุ่มการดำเนินการ -->
+                    <div class="col-lg-3 col-md-3 col-sm-12">
+                        <div class="action-buttons">
+                            {% if request.user.is_staff or request.user.is_superuser %}
+                                <!-- ปุ่มสำหรับ Staff/Superuser -->
+                                <div class="d-flex gap-2 mb-2">
+                                    <button onclick="approveProof({{ reg.id }})" class="btn btn-success btn-sm flex-grow-1">
+                                        <i class="fas fa-check me-1"></i> อนุมัติ
+                                    </button>
+                                    <button onclick="rejectProof({{ reg.id }})" class="btn btn-danger btn-sm flex-grow-1">
+                                        <i class="fas fa-times me-1"></i> ไม่อนุมัติ
+                                    </button>
+                                </div>
+                            {% else %}
+                                <!-- ปุ่มสำหรับนักศึกษา -->
+                                <button onclick="handleProof({{ reg.activity.id }}, 'edit')" class="btn btn-warning btn-sm d-block w-100 mb-2">
+                                    <i class="fas fa-edit me-1"></i> แก้ไขหลักฐาน
+                                </button>
+                                <form method="POST" action="{% url 'delete_proof' reg.id %}" class="d-block w-100">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm d-block w-100">
+                                        <i class="fas fa-trash-alt me-1"></i> ลบหลักฐาน
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -66,116 +176,141 @@
 
     <div class="mt-4 text-center">
         <a href="{% url 'upload_proof' %}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i> อัพโหลดหลักฐานเพิ่มเติม
+            <i></i> ย้อนกลับ
         </a>
     </div>
 </div>
 
+<!-- Modal สำหรับแสดงรูปขนาดใหญ่ -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">หลักฐานการเข้าร่วมกิจกรรม</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="" id="modalImage" class="img-fluid" alt="หลักฐานขนาดใหญ่">
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
-    /* ปรับแต่ง container */
     .container {
-        max-width: 1000px;
+        max-width: 1200px;
         background: #ffffff;
         padding: 30px;
         border-radius: 15px;
         box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
         margin-top: 100px;
     }
-
+    
+    .filter-container {
+        transition: all 0.3s ease;
+    }
+    
+    .proof-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .proof-item {
+        width: 100%;
+    }
+    
     .proof-card {
         background: #f8f9fa;
         border: 1px solid #e0e0e0;
         border-radius: 10px;
-        padding: 20px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        min-height: 400px;
+        padding: 15px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-
+    
     .proof-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-
-    .activity-name {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #3498db;
-        margin-bottom: 15px;
-    }
-
+    
     .proof-image-container {
         text-align: center;
-        margin-bottom: 15px;
-        flex-grow: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 100%;
+        margin-bottom: 10px;
     }
-
-    .proof-image {
+    
+    .proof-thumbnail {
         max-width: 100%;
         height: auto;
         border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        max-height: 100px;
+        object-fit: cover;
+        cursor: pointer;
+        transition: transform 0.2s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-
+    
+    .proof-thumbnail:hover {
+        transform: scale(1.05);
+    }
+    
     .proof-image-placeholder {
         width: 100%;
-        height: 200px;
+        height: 100px;
         background: #f1f1f1;
         border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 2rem;
+        color: #ccc;
     }
-
+    
+    .activity-name {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+        color: #2c3e50;
+    }
+    
+    .student-info {
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
+    
+    .student-info p {
+        margin-bottom: 5px;
+    }
+    
+    .details-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: center;
+        margin-top: 10px;
+    }
+    
     .upload-date {
         color: #7f8c8d;
         font-size: 0.9rem;
-        margin-top: 10px;
-        display: flex;
+        margin: 0;
+    }
+    
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 15px;
+        color: white;
+        font-size: 0.85rem;
+        display: inline-flex;
         align-items: center;
     }
-
+    
     .action-buttons {
         display: flex;
-        gap: 10px;
+        flex-direction: column;
+        gap: 5px;
+        justify-content: center;
+        height: 100%;
     }
-
-    .btn-success {
-        background-color: #27ae60;
-        border: none;
-        padding: 8px 15px;
-        transition: background-color 0.3s ease;
-    }
-
-    .btn-success:hover {
-        background-color: #219653;
-    }
-
-    .btn-primary {
-        background-color: #3498db;
-        border: none;
-        padding: 10px 20px;
-        transition: background-color 0.3s ease;
-    }
-
-    .btn-primary:hover {
-        background-color: #2980b9;
-    }
-
-    .btn-danger {
-        padding: 8px 15px;
-        transition: background-color 0.3s ease;
-    }
-
-    .btn-danger:hover {
-        background-color: #c0392b;
-    }
-
+    
     .no-proof-message {
         text-align: center;
         padding: 20px;
@@ -184,32 +319,145 @@
         color: #7f8c8d;
         font-style: italic;
     }
-
+    
     @media (max-width: 768px) {
         .container {
             margin: 120px 15px 15px;
             padding: 15px;
         }
-
-        .proof-card {
-            min-height: 350px;
-            padding: 15px;
-        }
-
-        .proof-image-placeholder {
-            height: 150px;
-        }
-
-        .action-buttons {
+        
+        .details-info {
             flex-direction: column;
+            align-items: flex-start;
             gap: 8px;
         }
-
-        .btn {
-            width: 100%;
-            text-align: center;
+        
+        .action-buttons {
+            margin-top: 15px;
         }
     }
 </style>
+
+<script>
+// Toggle filter section
+document.addEventListener('DOMContentLoaded', function() {
+    const filterToggleBtn = document.getElementById('filter-toggle-btn');
+    const filterSection = document.getElementById('filter-section');
+    const resetFilterBtn = document.getElementById('reset-filter');
+    
+    if (filterToggleBtn) {
+        filterToggleBtn.addEventListener('click', function() {
+            if (filterSection.style.display === 'none') {
+                filterSection.style.display = 'block';
+            } else {
+                filterSection.style.display = 'none';
+            }
+        });
+    }
+    
+    if (resetFilterBtn) {
+        resetFilterBtn.addEventListener('click', function() {
+            window.location.href = window.location.pathname;
+        });
+    }
+    
+    // ตรวจสอบ URL parameters เพื่อแสดง filter section ถ้ามีการกรอง
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.toString() && filterSection) {
+        filterSection.style.display = 'block';
+    }
+});
+
+// เปิด Modal แสดงรูปใหญ่
+function openImageModal(imageUrl) {
+    const modalImage = document.getElementById('modalImage');
+    modalImage.src = imageUrl;
+    
+    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    imageModal.show();
+}
+
+// แก้ไขหลักฐาน
+function handleProof(activityId, action) {
+    if (action === 'edit') {
+        if (confirm('คุณต้องการแก้ไขหลักฐานนี้ใช่หรือไม่?')) {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            
+            fileInput.addEventListener('change', function() {
+                if (!fileInput.files.length) return;
+                
+                const formData = new FormData();
+                formData.append('activity_id', activityId);
+                formData.append('proof_image', fileInput.files[0]);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                
+                fetch("{% url 'upload_proof' %}", {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('อัพโหลดหลักฐานใหม่สำเร็จ');
+                        location.reload();
+                    } else {
+                        alert('เกิดข้อผิดพลาด: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                });
+            });
+            
+            fileInput.click();
+        }
+    }
+}
+
+// ฟังก์ชันสำหรับอนุมัติหลักฐาน
+function approveProof(proofId) {
+    updateProofStatus(proofId, 'approved');
+}
+
+// ฟังก์ชันสำหรับไม่อนุมัติหลักฐาน
+function rejectProof(proofId) {
+    updateProofStatus(proofId, 'rejected');
+}
+
+// ฟังก์ชันสำหรับอัพเดทสถานะหลักฐาน
+function updateProofStatus(proofId, status) {
+    console.log(`กำลังอัพเดทสถานะหลักฐาน ${proofId} เป็น ${status}`);
+    
+    const formData = new FormData();
+    formData.append('status', status);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    
+    fetch(`/update-proof-status/${proofId}/`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log("Server response status:", response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log("Server response data:", data);
+        
+        if (data.success) {
+            alert(`อัพเดทสถานะเป็น "${status === 'approved' ? 'อนุมัติแล้ว' : 'ไม่อนุมัติ'}" สำเร็จ`);
+            location.reload(); // รีโหลดหน้าเพื่อแสดงสถานะใหม่
+        } else {
+            alert('เกิดข้อผิดพลาด: ' + (data.message || 'ไม่สามารถอัพเดทสถานะได้'));
+        }
+    })
+    .catch(error => {
+        console.error('Error updating status:', error);
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+    });
+}
+</script>
 {% endblock %}
 

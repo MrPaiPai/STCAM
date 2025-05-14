@@ -1,250 +1,288 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load widget_tweaks %} 
 
 {% block title %}ตรวจสอบและแก้ไขข้อมูลส่วนตัว{% endblock %}
 
 {% block content %}
-<div class="content-container">
-    <div class="profile-box">
-        <h2><i class="fas fa-user me-2"></i>ข้อมูลส่วนตัว</h2>
+<div class="max-w-4xl mx-auto my-8 px-4">
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <!-- ส่วนข้อมูลส่วนตัว -->
+        <h2 class="text-2xl font-semibold text-gray-800 flex items-center mb-6">
+            <i class="fas fa-user mr-2"></i>ข้อมูลส่วนตัว
+        </h2>
         
-        <div class="profile-info">
-            <div class="info-item">
-                <span class="info-label">ชื่อผู้ใช้:</span>
-                <span class="info-value">{{ user.username }}</span>
+        <!-- เพิ่มส่วนแสดงข้อมูลนักศึกษาด้านบน -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4 border-b pb-2">ข้อมูลส่วนตัว</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex justify-between p-3 border-b border-gray-200">
+                    <span class="font-medium text-gray-700">ชื่อผู้ใช้:</span>
+                    <span class="text-gray-600">{{ user.username }}</span>
+                </div>
+                
+                <!-- เพิ่มส่วนแสดงรหัสนักศึกษา -->
+                <div class="flex justify-between p-3 border-b border-gray-200">
+                    <span class="font-medium text-gray-700">รหัสนักศึกษา:</span>
+                    <span class="text-gray-600">{{ user.student_id|default:"ยังไม่ได้ระบุ" }}</span>
+                </div>
+                
+                <div class="flex justify-between p-3 border-b border-gray-200">
+                    <span class="font-medium text-gray-700">ชื่อ-นามสกุล:</span>
+                    <span class="text-gray-600">{{ user.get_full_name }}</span>
+                </div>
+                
+                <div class="flex justify-between p-3 border-b border-gray-200">
+                    <span class="font-medium text-gray-700">อีเมล:</span>
+                    <span class="text-gray-600">{{ user.email|default:"ยังไม่ได้ระบุ" }}</span>
+                </div>
             </div>
-            <div class="info-item">
-                <span class="info-label">ชื่อจริง:</span>
-                <span class="info-value">{{ user.first_name }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">นามสกุล:</span>
-                <span class="info-value">{{ user.last_name }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">อีเมล:</span>
-                <span class="info-value">{{ user.email }}</span>
+            
+            <!-- เพิ่มปุ่มแก้ไขข้อมูลส่วนตัว -->
+            <div class="mt-4 flex justify-end">
+                <button id="editProfileBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-200">
+                    <i class="fas fa-edit mr-1"></i> แก้ไขข้อมูลส่วนตัว
+                </button>
             </div>
         </div>
-      
-        <h3><i class="fas fa-edit me-2"></i>แก้ไขข้อมูล</h3>
-        <form method="POST" action="{% url 'edit_userprofile' %}" class="edit-form">
+
+        <!-- เพิ่มฟอร์มแก้ไขข้อมูลส่วนตัว (ซ่อนไว้ก่อน) -->
+        <div id="editProfileForm" class="bg-white rounded-lg shadow-lg p-6 mb-6 hidden">
+            <h2 class="text-xl font-semibold mb-4 border-b pb-2">แก้ไขข้อมูลส่วนตัว</h2>
+            
+            <form method="post" action="{% url 'edit_userprofile' %}">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-medium mb-2">ชื่อ:</label>
+                        <input type="text" name="first_name" value="{{ user.first_name }}" 
+                               class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-medium mb-2">นามสกุล:</label>
+                        <input type="text" name="last_name" value="{{ user.last_name }}" 
+                               class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-medium mb-2">อีเมล:</label>
+                        <input type="email" name="email" value="{{ user.email }}" 
+                               class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <!-- เพิ่มฟิลด์แก้ไขรหัสนักศึกษา -->
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-medium mb-2">รหัสนักศึกษา:</label>
+                        <input type="text" name="student_id" value="{{ user.student_id }}" 
+                               class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-2 mt-4">
+                    <button type="button" id="cancelEditBtn" 
+                            class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg transition duration-200">
+                        ยกเลิก
+                    </button>
+                    
+                    <button type="submit" 
+                            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition duration-200">
+                        <i class="fas fa-save mr-1"></i> บันทึกการเปลี่ยนแปลง
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ส่วนแก้ไขข้อมูล -->
+        <h3 class="text-xl font-semibold text-gray-800 flex items-center mb-4">
+            <i class="fas fa-edit mr-2"></i>แก้ไขข้อมูล
+        </h3>
+        <form method="POST" action="{% url 'edit_userprofile' %}" class="space-y-4">
             {% csrf_token %}
-            <div class="form-fields">
-                {{ form.as_p }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for field in form %}
+                <div class="space-y-2">
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ field.label }}
+                    </label>
+                    {{ field|add_class:"w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" }}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <p class="text-red-500 text-sm">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                {% endfor %}
             </div>
-            <button type="submit" class="btn btn-save">บันทึกข้อมูล</button>
+            <div class="flex justify-end mt-6">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition duration-300">
+                    บันทึกข้อมูล
+                </button>
+            </div>
         </form>
     </div>
 
-    <div class="activity-box">
-        <h2><i class="fas fa-calendar-check me-2"></i>กิจกรรมที่เข้าร่วม</h2>
-        <div class="activity-list">
-            {% if activities %}
-                {% for activity in activities %}
-                    <div class="activity-card">
-                        <div class="activity-info">
-                            <span class="activity-label">ชื่อกิจกรรม:</span>
-                            <span class="activity-value">{{ activity.name }}</span>
-                        </div>
-                        <div class="activity-info">
-                            <span class="activity-label">วันที่เริ่ม:</span>
-                            <span class="activity-value">{{ activity.start_date|date:"d/m/Y" }}</span>
-                        </div>
-                        <div class="activity-info">
-                            <span class="activity-label">วันที่สิ้นสุด:</span>
-                            <span class="activity-value">
-                                {% if activity.end_date %}
-                                    {{ activity.end_date|date:"d/m/Y" }}
+    <!-- ส่วนกิจกรรมที่เข้าร่วม -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-semibold text-gray-800 flex items-center mb-6">
+            <i class="fas fa-calendar-check mr-2"></i>กิจกรรมที่เข้าร่วม
+        </h2>
+
+        <!-- เพิ่มส่วน Filter -->
+        <div class="mb-6">
+            <form method="get" class="flex flex-wrap gap-4">
+                <!-- Filter ตามปี -->
+                <div class="w-full md:w-auto">
+                    <select name="year" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- เลือกปี --</option>
+                        {% for year in available_years %}
+                            <option value="{{ year }}" {% if selected_year == year|stringformat:"s" %}selected{% endif %}>
+                                {{ year|add:543 }} {# แปลงเป็นปี พ.ศ. #}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Filter ตามเดือน -->
+                <div class="w-full md:w-auto">
+                    <select name="month" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- เลือกเดือน --</option>
+                        {% for month in available_months %}
+                            <option value="{{ month.number }}" {% if selected_month == month.number|stringformat:"s" %}selected{% endif %}>
+                                {{ month.name_th }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- ปุ่มค้นหา -->
+                <button type="submit" 
+                        class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
+                    <i class="fas fa-search mr-2"></i>ค้นหา
+                </button>
+            </form>
+        </div>
+
+        <!-- เพิ่มปุ่มล้างตัวกรอง หลังปุ่มค้นหา -->
+        {% if selected_year or selected_month %}
+        <a href="{% url 'edit_userprofile' %}" 
+           class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
+            <i class="fas fa-times mr-2"></i>ล้างตัวกรอง
+        </a>
+        {% endif %}
+
+        <!-- ส่วนแสดงผลกิจกรรม -->
+        {% if activities %}
+            <div class="space-y-4">
+                {% for item in activities %}
+                    <div class="bg-gray-50 rounded-lg p-4 hover:shadow-md transition duration-300">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex justify-between">
+                                <span class="font-medium text-gray-700">ชื่อกิจกรรม:</span>
+                                <span class="text-gray-600">{{ item.activity.name }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium text-gray-700">วันที่เริ่ม:</span>
+                                <span class="text-gray-600">{{ item.activity.start_date|date:"d/m/Y" }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="font-medium text-gray-700">วันที่สิ้นสุด:</span>
+                                <span class="text-gray-600">
+                                    {% if item.activity.end_date %}
+                                        {{ item.activity.end_date|date:"d/m/Y" }}
+                                    {% else %}
+                                        ยังไม่กำหนด
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <!-- เพิ่มส่วนแสดงสถานะ -->
+                            <div class="flex justify-between">
+                                <span class="font-medium text-gray-700">สถานะการลงทะเบียน:</span>
+                                <span class="px-2 py-1 rounded-full text-sm 
+                                    {% if item.status == 'pending' %}
+                                        bg-yellow-100 text-yellow-800
+                                    {% elif item.status == 'approved' %}
+                                        bg-green-100 text-green-800
+                                    {% else %}
+                                        bg-red-100 text-red-800
+                                    {% endif %}">
+                                    {% if item.status == 'pending' %}
+                                        รอการอนุมัติ
+                                    {% elif item.status == 'approved' %}
+                                        อนุมัติแล้ว
+                                    {% else %}
+                                        ไม่อนุมัติ
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <!-- เพิ่มสถานะการอัพโหลดหลักฐาน -->
+                            <div class="flex justify-between">
+                                <span class="font-medium text-gray-700">สถานะหลักฐาน:</span>
+                                {% if item.has_proof %}
+                                    <span class="px-2 py-1 rounded-full text-sm bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i> อัพโหลดแล้ว
+                                        {% if item.proof_approved %}
+                                            <span class="ml-1 text-xs">(อนุมัติแล้ว)</span>
+                                        {% else %}
+                                            <span class="ml-1 text-xs">(รอการอนุมัติ)</span>
+                                        {% endif %}
+                                    </span>
                                 {% else %}
-                                    ยังไม่กำหนด
+                                    <span class="px-2 py-1 rounded-full text-sm bg-red-100 text-red-800">
+                                        <i class="fas fa-times-circle mr-1"></i> ยังไม่อัพโหลด
+                                    </span>
                                 {% endif %}
-                            </span>
+                            </div>
+                        </div>
+
+                        <!-- เพิ่มปุ่มไปยังหน้าอัพโหลดหลักฐาน -->
+                        <div class="mt-2 flex justify-end">
+                            {% if item.status == 'approved' %}
+                                {% if not item.has_proof %}
+                                    <a href="{% url 'upload_proof' %}?activity={{ item.activity.id }}" 
+                                       class="px-3 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors">
+                                        <i class="fas fa-upload mr-1"></i> อัพโหลดหลักฐาน
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'upload_proof' %}?activity={{ item.activity.id }}" 
+                                       class="px-3 py-1 bg-yellow-500 text-white text-sm rounded-md hover:bg-yellow-600 transition-colors">
+                                        <i class="fas fa-edit mr-1"></i> แก้ไขหลักฐาน
+                                    </a>
+                                {% endif %}
+                            {% endif %}
                         </div>
                     </div>
                 {% endfor %}
-            {% else %}
-                <p class="no-activity">คุณยังไม่ได้เข้าร่วมกิจกรรมใด ๆ</p>
-            {% endif %}
-        </div>
+            </div>
+        {% else %}
+            <p class="text-gray-500 italic text-center p-4 bg-gray-50 rounded-lg">
+                ไม่พบกิจกรรมที่เข้าร่วม
+            </p>
+        {% endif %}
     </div>
 </div>
 
-<style>
-    /* รีเซ็ตและปรับแต่งพื้นฐาน */
-    .content-container {
-        max-width: 900px;
-        margin: 100px auto 30px;
-        background: #ffffff;
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+<!-- เพิ่ม JavaScript สำหรับสลับแสดง/ซ่อนฟอร์ม -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const editProfileForm = document.getElementById('editProfileForm');
+    
+    if (editProfileBtn && cancelEditBtn && editProfileForm) {
+        editProfileBtn.addEventListener('click', function() {
+            editProfileForm.classList.remove('hidden');
+        });
+        
+        cancelEditBtn.addEventListener('click', function() {
+            editProfileForm.classList.add('hidden');
+        });
     }
-
-    h2, h3 {
-        color: #2c3e50;
-        font-weight: 600;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-    }
-
-    /* กล่องข้อมูลส่วนตัว */
-    .profile-box {
-        margin-bottom: 40px;
-    }
-
-    .profile-info {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-    }
-
-    .info-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px 0;
-        border-bottom: 1px solid #e0e0e0;
-    }
-
-    .info-item:last-child {
-        border-bottom: none;
-    }
-
-    .info-label {
-        font-weight: 500;
-        color: #34495e;
-        flex: 1;
-    }
-
-    .info-value {
-        color: #555;
-        flex: 2;
-        text-align: left;
-    }
-
-    /* ฟอร์มแก้ไขข้อมูล */
-    .edit-form {
-        background: #ffffff;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .form-fields p {
-        margin-bottom: 15px;
-    }
-
-    .form-fields label {
-        display: block;
-        font-weight: 500;
-        color: #34495e;
-        margin-bottom: 5px;
-    }
-
-    .form-fields input,
-    .form-fields select {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        font-size: 16px;
-        transition: border-color 0.3s ease;
-    }
-
-    .form-fields input:focus,
-    .form-fields select:focus {
-        border-color: #3498db;
-        outline: none;
-    }
-
-    .btn-save {
-        background-color: #3498db;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        font-size: 16px;
-    }
-
-    .btn-save:hover {
-        background-color: #2980b9;
-    }
-
-    /* กล่องกิจกรรม */
-    .activity-box {
-        margin-bottom: 30px;
-    }
-
-    .activity-list {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .activity-card {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .activity-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .activity-info {
-        display: flex;
-        justify-content: space-between;
-        padding: 5px 0;
-    }
-
-    .activity-label {
-        font-weight: 500;
-        color: #34495e;
-        flex: 1;
-    }
-
-    .activity-value {
-        color: #555;
-        flex: 2;
-        text-align: left;
-    }
-
-    .no-activity {
-        color: #7f8c8d;
-        font-style: italic;
-        text-align: center;
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 10px;
-    }
-
-    /* การตอบสนองสำหรับหน้าจอเล็ก */
-    @media (max-width: 768px) {
-        .content-container {
-            margin: 120px 15px 15px;
-            padding: 15px;
-        }
-
-        .info-item,
-        .activity-info {
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .info-label,
-        .activity-label,
-        .info-value,
-        .activity-value {
-            text-align: left;
-            flex: none;
-        }
-    }
-</style>
+});
+</script>
 {% endblock %}
