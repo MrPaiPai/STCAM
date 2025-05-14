@@ -85,9 +85,9 @@
                                   </span>
                               {% endif %}
                           </a>
-                          <a href="{% url 'student_list' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200 text-blue-600 font-medium">
+                          <!-- <a href="{% url 'student_list' %}" class="block px-4 py-2 hover:bg-gray-100 transition duration-200 text-blue-600 font-medium">
                               👥 รายชื่อนักศึกษาทั้งหมด
-                          </a>
+                          </a> -->
                       </div>
 
                       <!-- เมนูจัดการกิจกรรม -->
@@ -217,6 +217,20 @@
             <p class="text-gray-600 mt-1"><strong>วันที่เริ่ม:</strong> {{ activity.start_date }}</p>
             <p class="text-gray-600 mt-1"><strong>วันที่สิ้นสุด:</strong> {{ activity.end_date }}</p>
             <p class="text-gray-600 mt-1"><strong>คณะ:</strong> {{ activity.get_faculty_display }}</p>
+            
+            <!-- เพิ่มข้อมูลจำนวนผู้เข้าร่วม -->
+            <p class="text-gray-600 mt-1">
+              <strong>ผู้เข้าร่วม:</strong> 
+              {% if activity.max_participants == 0 %}
+                <span class="text-green-600">{{ activity.get_current_participants }} คน (ไม่จำกัด)</span>
+              {% else %}
+                <span class="{% if activity.is_full %}text-red-600 font-medium{% elif activity.get_current_participants >= activity.max_participants|divisibleby:2 %}text-yellow-600{% else %}text-green-600{% endif %}">
+                  {{ activity.get_current_participants }} / {{ activity.max_participants }} คน
+                  {% if activity.is_full %}<span class="text-xs bg-red-100 px-1 py-0.5 rounded ml-1">เต็ม</span>{% endif %}
+                </span>
+              {% endif %}
+            </p>
+
             {% if activity.images.all %}
                 {% for image in activity.images.all %}
                     <img src="{{ image.image.url }}" alt="รูปกิจกรรม" class="mt-2 w-full h-150px object-cover rounded-lg">

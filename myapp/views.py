@@ -112,6 +112,7 @@ def index(request):
     current_datetime = timezone.now()
     announcements = Announcement.objects.order_by('-created_at')
     
+    # ดึงข้อมูลกิจกรรม...
     if filter_type == 'upcoming':
         activities = Activity.objects.filter(
             end_date__gte=current_datetime.date()
@@ -123,6 +124,12 @@ def index(request):
         ).distinct()
     else:
         activities = Activity.objects.all().order_by('-start_date')
+
+    # เพิ่มข้อมูลจำนวนผู้เข้าร่วมสำหรับแต่ละกิจกรรม
+    for activity in activities:
+        activity.current_participants = activity.get_current_participants()
+        activity.is_activity_full = activity.is_full()
+        activity.capacity_color = activity.get_capacity_color()
 
     context = {
         'activities': activities,
@@ -138,7 +145,8 @@ def activity_info(request, activity_id):
     participation = None
     status = None
     status_color = ''
-
+    
+    # ตรวจสอบสถานะการลงทะเบียน
     if request.user.is_authenticated:
         participation = Participation.objects.filter(
             activity=activity,
@@ -155,12 +163,22 @@ def activity_info(request, activity_id):
             elif participation.status == 'rejected':
                 status = "ไม่อนุมัติการลงทะเบียน"
                 status_color = "bg-red-50"
-
+    
+    # ข้อมูลจำนวนผู้เข้าร่วม
+    current_participants = activity.get_current_participants()
+    
+    # เงื่อนไขการแสดงปุ่มแก้ไขกิจกรรม
+    can_edit = request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)
+    
     return render(request, 'activity_info.html', {
         'activity': activity,
         'participation': participation,
         'status': status,
-        'status_color': status_color
+        'status_color': status_color,
+        'current_participants': current_participants,
+        'can_edit': can_edit,
+        'is_full': activity.is_full(),
+        'max_participants': activity.max_participants
     })
 
 activity_detail = activity_info  # alias สำหรับความเข้ากันได้กับ URLs เดิม
@@ -169,6 +187,15 @@ activity_detail = activity_info  # alias สำหรับความเข้
 def join_activity(request, activity_id):
     if request.method == 'POST':
         activity = get_object_or_404(Activity, id=activity_id)
+        
+        # ตรวจสอบว่ากิจกรรมเต็มหรือไม่
+        if activity.is_full():
+            return JsonResponse({
+                'status': 'error',
+                'message': 'ขออภัย กิจกรรมนี้มีผู้เข้าร่วมเต็มจำนวนแล้ว'
+            })
+            
+        # ตรวจสอบว่าเคยลงทะเบียนแล้วหรือไม่
         participation, created = Participation.objects.get_or_create(
             activity=activity,
             student=request.user
@@ -721,18 +748,17 @@ def my_activities(request):
 @login_required
 @staff_member_required  # เพิ่มตรงนี้เพื่อจำกัดให้เฉพาะ staff และ admin เท่านั้น
 def user_upload_proof_list(request):
-    """แสดงรายการหลักฐานที่ผู้ใช้อัพโหลดแล้ว"""
-    # ฟังก์ชันจะทำงานเฉพาะเมื่อผู้ใช้เป็น staff หรือ admin เท่านั้น
+    """แสดงรายการหลักฐานที่ผู้ใช้อัพโหลดแล้วสำหรับ staff/admin"""
+    # สำหรับ staff/admin ให้แสดงหลักฐานของทุกคน
     activity_id = request.GET.get('activity')
     date_filter = request.GET.get('upload_date')
     month = request.GET.get('month')
     year = request.GET.get('year')
-
-    # ดึงข้อมูลการลงทะเบียนที่มีการอัพโหลดรูปภาพ
+    
+    # ดึงข้อมูลการลงทะเบียนที่มีการอัพโหลดรูปภาพ (ของทุกคน)
     registrations = ActivityRegistration.objects.filter(
-        user=request.user,
         proof_image__isnull=False  # เฉพาะที่มีการอัพโหลดรูปแล้ว
-    ).select_related('activity')
+    ).select_related('user', 'activity')  # เพิ่ม 'user' ด้วย
     
     # Debug prints
     print(f"DEBUG: Found {registrations.count()} registrations with proofs")
@@ -747,19 +773,34 @@ def user_upload_proof_list(request):
     if year:
         registrations = registrations.filter(proof_upload_date__year=year)
 
-    # สร้าง registrations_data ใหม่
+    # สร้าง registrations_data ใหม่พร้อมข้อมูลนักศึกษา
     registrations_data = []
     for reg in registrations:
         # มั่นใจว่า status ถูกกำหนดจาก is_approved
         status = 'approved' if reg.is_approved else 'pending'
+        
+        try:
+            # ตรวจสอบว่า proof_image ไฟล์ยังมีอยู่จริง
+            if reg.proof_image and reg.proof_image.storage.exists(reg.proof_image.name):
+                proof_image_url = reg.proof_image.url
+            else:
+                proof_image_url = None
+        except Exception as e:
+            print(f"Error accessing proof image for registration {reg.id}: {str(e)}")
+            proof_image_url = None
+            
         registrations_data.append({
             'id': reg.id,
             'activity': reg.activity,
-            'proof_image': reg.proof_image,
+            'user': reg.user,  # เพิ่มข้อมูลผู้ใช้
+            'student_id': reg.user.student_id if hasattr(reg.user, 'student_id') else '-',
+            'branch': reg.user.get_branch_display() if hasattr(reg.user, 'get_branch_display') else '-',
+            'year': reg.user.year if hasattr(reg.user, 'year') else '-',
+            'proof_image': proof_image_url,  # ใช้ URL ที่ตรวจสอบแล้ว
             'proof_upload_date': reg.proof_upload_date,
             'is_approved': reg.is_approved,
             'status': status,
-            'has_proof': True  # ใช่แน่นอน เพราะกรองมาแล้ว
+            'has_proof': True if proof_image_url else False  # ตรวจสอบว่ามีหลักฐานจริงหรือไม่
         })
 
     # ดึงกิจกรรมทั้งหมดสำหรับ filter
@@ -770,6 +811,11 @@ def user_upload_proof_list(request):
         proof_upload_date__isnull=True
     ).dates('proof_upload_date', 'day')
 
+    # เตรียมข้อมูล years และ months สำหรับ filter
+    years = registrations.exclude(
+        proof_upload_date__isnull=True
+    ).dates('proof_upload_date', 'year')
+    
     context = {
         'registrations': registrations_data,
         'activities': activities,
@@ -778,6 +824,7 @@ def user_upload_proof_list(request):
         'selected_date': date_filter,
         'selected_month': month,
         'selected_year': year,
+        'years': [y.year for y in years],  # แปลงเป็นปีปกติ
         'months': [
             {'number': i, 'name': month} for i, month in enumerate([
                 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 
@@ -790,8 +837,8 @@ def user_upload_proof_list(request):
     return render(request, 'user_upload_proof_list.html', context)
 
 @login_required
-def delete_proof(request, reg_id):
-    """ลบหลักฐานการเข้าร่วมกิจกรรม"""
+def delete_my_proof(request, reg_id):
+    """ลบหลักฐานการเข้าร่วมกิจกรรม (สำหรับนักศึกษาลบของตัวเอง)"""
     if request.method == 'POST':
         try:
             # ใช้ activity_id แทน reg_id
@@ -835,14 +882,82 @@ def delete_proof(request, reg_id):
         'message': 'Method not allowed'
     }, status=405)
 
+# ส่วนฟังก์ชัน delete_proof อันที่สอง (สำหรับ staff/admin) ให้คงไว้ตามเดิม
+@login_required
+@user_passes_test(lambda u: u.is_staff or u.is_superuser)
+def delete_proof(request, proof_id):
+    """ลบหลักฐาน (สำหรับ staff/admin)"""
+    if request.method == 'POST':
+        try:
+            proof = ActivityRegistration.objects.get(id=proof_id)
+            
+            # ลบไฟล์รูปภาพ
+            if proof.proof_image:
+                if proof.proof_image.storage.exists(proof.proof_image.name):
+                    proof.proof_image.delete()  # ลบไฟล์จาก storage
+            
+            # ลบ record
+            proof.proof_image = None
+            proof.proof_upload_date = None
+            proof.is_approved = False
+            proof.save()
+            
+            return JsonResponse({'success': True})
+        except ActivityRegistration.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'ไม่พบหลักฐาน'})
+        except Exception as e:
+            print(f"Error deleting proof: {str(e)}")
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+
 @login_required
 @user_passes_test(is_admin)
 def show_all_proofs(request):
-    """แสดงหลักฐานทั้งหมดสำหรับผู้ดูแลระบบ"""
+    """แสดงหลักฐานทั้งหมดสำหรับผู้ดูแลระบบพร้อมตัวกรอง"""
+    # เตรียมตัวแปรสำหรับ filter
+    activity_id = request.GET.get('activity')
+    student_id = request.GET.get('student_id')
+    year = request.GET.get('year')
+    status = request.GET.get('status')
+    
+    # ดึงข้อมูลหลักฐานทั้งหมด
     proofs = ActivityRegistration.objects.filter(
         proof_image__isnull=False
     ).select_related('user', 'activity')
-    return render(request, 'show_all_proofs.html', {'proofs': proofs})
+    
+    # ใช้ filters
+    if activity_id:
+        proofs = proofs.filter(activity_id=activity_id)
+    if student_id:
+        proofs = proofs.filter(user__student_id__contains=student_id)
+    if year:
+        proofs = proofs.filter(user__year=year)  # ตรวจสอบว่า MyUser มี field 'year'
+    if status:
+        if status == 'approved':
+            proofs = proofs.filter(is_approved=True)
+        elif status == 'pending':
+            proofs = proofs.filter(is_approved=False)
+    
+    # ดึงข้อมูลสำหรับ dropdowns
+    activities = Activity.objects.all()
+    # ไม่ใช้ branch เพราะ CustomUser อาจไม่มีฟิลด์นี้
+    # branches = MyUser.objects.values_list('branch', flat=True).distinct()
+    years = MyUser.objects.values_list('year', flat=True).distinct()
+    
+    context = {
+        'proofs': proofs,
+        'activities': activities,
+        # 'branches': branches,  # ไม่ใช้ branch
+        'years': years,
+        'selected_activity': activity_id,
+        'selected_student_id': student_id,
+        # 'selected_branch': branch,  # ไม่ใช้ branch
+        'selected_year': year,
+        'selected_status': status
+    }
+    
+    return render(request, 'show_all_proofs.html', context)
 
 @login_required
 @user_passes_test(is_admin)
@@ -900,8 +1015,40 @@ def manage_participations(request):
 @user_passes_test(is_admin)
 def student_list(request):
     """แสดงรายชื่อนักศึกษาทั้งหมด"""
-    students = MyUser.objects.filter(user_type='student')
-    return render(request, 'student_list.html', {'students': students})
+    students = MyUser.objects.filter(role='student')
+    
+    print(f"DEBUG: Found {students.count()} students")
+    
+    # ถ้ามีการกรองเพิ่มเติมใน student_list.html ให้ใส่โค้ดตรงนี้
+    selected_branches = request.GET.getlist('branch')
+    selected_years = request.GET.getlist('year')
+    
+    if selected_branches:
+        print(f"DEBUG: Filtering by branches: {selected_branches}")
+        students = students.filter(branch__in=selected_branches)
+    if selected_years:
+        print(f"DEBUG: Filtering by years: {selected_years}")
+        students = students.filter(year__in=selected_years)
+    
+    print(f"DEBUG: After filtering, found {students.count()} students")
+    
+    # สร้าง BRANCH_CHOICES แบบคงที่
+    BRANCH_CHOICES = [
+        ('it', 'เทคโนโลยีสารสนเทศ'),
+        ('cs', 'วิทยาการคอมพิวเตอร์'),
+        ('dse', 'วิทยาการข้อมูลและนวัตกรรมซอฟต์แวร์'),
+        # เพิ่มสาขาอื่นๆ ตามที่มีในระบบของคุณ
+    ]
+    
+    # เตรียมข้อมูลสำหรับส่งไปยัง template
+    context = {
+        'students': students,
+        'selected_branches': selected_branches,
+        'selected_years': selected_years,
+        'BRANCH_CHOICES': BRANCH_CHOICES
+    }
+    
+    return render(request, 'student_list.html', context)
 
 @login_required
 @user_passes_test(is_admin)
@@ -1164,10 +1311,10 @@ def download_report(request):
 @user_passes_test(is_admin)
 def pending_users(request):
     """แสดงรายการผู้ใช้ที่รอการอนุมัติ"""
-    # Query เฉพาะ user ที่เป็นนักศึกษาและยังไม่ได้รับการอนุมัติ
+    # แก้จาก user_type เป็น role
     pending = CustomUser.objects.filter(
         is_active=False,
-        user_type='student'  # เปลี่ยนจาก role เป็น user_type
+        role='student'  # เปลี่ยนจาก user_type เป็น role
     ).order_by('-date_joined')
     
     # Debug prints
@@ -1284,3 +1431,107 @@ def update_proof_status(request, proof_id):
         'success': False, 
         'message': 'Method not allowed'
     }, status=405)
+
+@login_required
+@user_passes_test(is_admin)
+def edit_activity(request, activity_id):
+    """แก้ไขข้อมูลกิจกรรม"""
+    activity = get_object_or_404(Activity, id=activity_id)
+    
+    # ใช้ ImageFormSet เหมือนที่ใช้ในการสร้าง
+    ImageFormSet = inlineformset_factory(
+        Activity,
+        ActivityImage,
+        fields=('image',),
+        extra=1,
+        can_delete=True
+    )
+    
+    if request.method == 'POST':
+        activity_form = ActivityForm(request.POST, instance=activity)
+        formset = ImageFormSet(request.POST, request.FILES, instance=activity)
+        
+        if activity_form.is_valid() and formset.is_valid():
+            # บันทึกกิจกรรม
+            activity = activity_form.save()
+            
+            # บันทึกรูปภาพ
+            formset.save()
+            
+            messages.success(request, 'แก้ไขกิจกรรมเรียบร้อยแล้ว')
+            return redirect('activity_info', activity_id=activity.id)
+        else:
+            print("ฟอร์มไม่ถูกต้อง:", activity_form.errors, formset.errors)
+    else:
+        activity_form = ActivityForm(instance=activity)
+        formset = ImageFormSet(instance=activity)
+    
+    # ส่งฟอร์มไปยังเทมเพลต
+    context = {
+        'activity_form': activity_form,
+        'formset': formset,
+        'activity': activity,
+        'is_edit': True
+    }
+    
+    return render(request, 'add_activity.html', context)
+
+@login_required
+@user_passes_test(lambda u: u.is_staff or u.is_superuser)
+def delete_proof(request, proof_id):
+    """ลบหลักฐาน (สำหรับ staff/admin)"""
+    if request.method == 'POST':
+        try:
+            proof = ActivityRegistration.objects.get(id=proof_id)
+            
+            # ลบไฟล์รูปภาพ
+            if proof.proof_image:
+                if proof.proof_image.storage.exists(proof.proof_image.name):
+                    proof.proof_image.delete()  # ลบไฟล์จาก storage
+            
+            # ลบ record
+            proof.proof_image = None
+            proof.proof_upload_date = None
+            proof.is_approved = False
+            proof.save()
+            
+            return JsonResponse({'success': True})
+        except ActivityRegistration.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'ไม่พบหลักฐาน'})
+        except Exception as e:
+            print(f"Error deleting proof: {str(e)}")
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)
+
+@login_required
+@user_passes_test(lambda u: u.is_staff or u.is_superuser)
+def update_multiple_proofs(request):
+    """อัพเดทสถานะหลายรายการ"""
+    if request.method == 'POST':
+        try:
+            proof_ids = json.loads(request.POST.get('proof_ids', '[]'))
+            status = request.POST.get('status')
+            
+            if not proof_ids or status not in ['approved', 'rejected']:
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'ข้อมูลไม่ถูกต้อง'
+                })
+            
+            # อัพเดทสถานะทุกรายการ
+            is_approved = (status == 'approved')
+            
+            updated_count = ActivityRegistration.objects.filter(
+                id__in=proof_ids
+            ).update(is_approved=is_approved)
+            
+            return JsonResponse({
+                'success': True,
+                'count': updated_count
+            })
+        except Exception as e:
+            print(f"Error updating multiple proofs: {str(e)}")
+            return JsonResponse({'success': False, 'message': str(e)})
+    
+    return JsonResponse({'success': False, 'message': 'Method not allowed'}, status=405)

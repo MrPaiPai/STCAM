@@ -44,22 +44,45 @@
         <!-- ฟอร์มอัปโหลดรูปภาพ -->
         <div class="space-y-4" id="image-upload-section">
             <h2 class="text-lg font-semibold text-blue-700">อัปโหลดรูปภาพ</h2>
+            
+            <!-- เพิ่มส่วนนี้ในส่วนของ formset สำหรับรูปภาพ -->
+            <h3 class="text-lg font-medium text-gray-900 mb-4">รูปภาพกิจกรรม</h3>
             {{ formset.management_form }}
-            <div id="image-forms">
-                {% for form in formset %}
-                    <div class="image-form flex items-center space-x-4 mb-2">
-                        {{ form.image|add_class:"w-full p-2 border border-blue-300 rounded-md" }}
-                        {% if form.image.errors %}
-                            <p class="text-red-500 text-sm">{{ form.image.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
-            <button type="button" id="add-image" class="text-blue-600 hover:text-blue-800 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                </svg>
-                เพิ่มรูปภาพ
+
+            <!-- แสดงรูปภาพที่มีอยู่แล้วและตัวเลือกการลบ -->
+            {% for form in formset.forms %}
+                <div class="mb-4 p-4 border rounded-lg">
+                    {% if form.instance.pk %} <!-- ถ้าเป็นรูปภาพที่มีอยู่แล้ว -->
+                        <div class="flex items-center mb-2">
+                            <img src="{{ form.instance.image.url }}" class="w-24 h-24 object-cover rounded" alt="Activity Image">
+                            <div class="ml-4 flex-grow">
+                                {{ form.image }} <!-- ช่องอัปโหลดรูปใหม่ -->
+                                <p class="text-sm text-gray-500">อัปโหลดรูปใหม่เพื่อแทนที่รูปปัจจุบัน</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            {{ form.DELETE }} <!-- checkbox สำหรับการลบ -->
+                            <label for="{{ form.DELETE.id_for_label }}" class="ml-2 text-sm text-red-600">
+                                ลบรูปนี้
+                            </label>
+                            {{ form.id }} <!-- จำเป็นต้องมีเพื่อให้ Django รู้ว่าจะลบรูปไหน -->
+                        </div>
+                    {% else %} <!-- รูปภาพใหม่ -->
+                        <div>
+                            {{ form.image }}
+                            <p class="text-sm text-gray-500 mt-1">เลือกรูปภาพเพื่อเพิ่มเข้าไปในกิจกรรม</p>
+                        </div>
+                    {% endif %}
+                    
+                    {% for error in form.errors %}
+                        <p class="text-red-500 text-sm">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <!-- เพิ่มปุ่มเพิ่มรูปภาพเพิ่มเติม -->
+            <button type="button" id="add-more-images" class="mt-2 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                + เพิ่มรูปภาพ
             </button>
         </div>
         
@@ -109,6 +132,36 @@
         
         // Debug
         console.log('Script loaded in add_activity.html');
+    });
+    
+    // เพิ่ม JavaScript เพื่อเพิ่มฟอร์มสำหรับรูปภาพใหม่
+    document.addEventListener('DOMContentLoaded', function() {
+        const addMoreBtn = document.getElementById('add-more-images');
+        if (addMoreBtn) {
+            addMoreBtn.addEventListener('click', function() {
+                const totalForms = document.querySelector('#id_images-TOTAL_FORMS');
+                const currentForms = parseInt(totalForms.value);
+                const formCopyTarget = document.querySelector('#id_images-' + (currentForms - 1)).parentNode.parentNode;
+                
+                const newForm = formCopyTarget.cloneNode(true);
+                const inputs = newForm.querySelectorAll('input');
+                
+                for (let input of inputs) {
+                    if (input.id) {
+                        input.id = input.id.replace('-' + (currentForms - 1) + '-', '-' + currentForms + '-');
+                    }
+                    if (input.name) {
+                        input.name = input.name.replace('-' + (currentForms - 1) + '-', '-' + currentForms + '-');
+                    }
+                    if (input.type !== 'hidden') {
+                        input.value = '';
+                    }
+                }
+                
+                formCopyTarget.parentNode.appendChild(newForm);
+                totalForms.value = currentForms + 1;
+            });
+        }
     });
 </script>
 {% endblock %}

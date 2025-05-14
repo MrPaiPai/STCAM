@@ -30,7 +30,8 @@ urlpatterns = [
     path('update-participation-status/<int:participation_id>/', views.update_participation_status, name='update_participation_status'),
     path('upload-proof/', views.upload_proof, name='upload_proof'),
     path('proof-list/', views.user_upload_proof_list, name='user_upload_proof_list'),
-    path('delete-proof/<int:reg_id>/', views.delete_proof, name='delete_proof'),
+    path('delete-my-proof/<int:reg_id>/', views.delete_my_proof, name='delete_my_proof'),
+    path('delete-proof/<int:proof_id>/', views.delete_proof, name='delete_proof'),
     path('show_all_proofs/', views.show_all_proofs, name='show_all_proofs'),
     path('manage-proof/<int:activity_id>/<str:action>/', views.manage_proof, name='manage_proof'),
     path('manage-participation/<int:participation_id>/', views.manage_participation, name='manage_participation'),
@@ -44,6 +45,8 @@ urlpatterns = [
     path('staff/register/', views.staff_register, name='staff_register'),
     path('session_expired/', views.session_expired, name='session_expired'),
     path('update-proof-status/<int:proof_id>/', views.update_proof_status, name='update_proof_status'),
+    path('activity/<int:activity_id>/edit/', views.edit_activity, name='edit_activity'),  # เพิ่มเส้นทางนี้สำหรับแก้ไขกิจกรรม
+    path('update-multiple-proofs/', views.update_multiple_proofs, name='update_multiple_proofs'),
 ]
 
 # เพิ่มการเสิร์ฟไฟล์ media และ static ในโหมดพัฒนา

@@ -266,32 +266,23 @@ function confirmDeleteProofClick(activityId) {
 <!-- แก้ไขฟังก์ชัน deleteProof -->
 <script>
 function deleteProof(activityId) {
-  console.log("เริ่มฟังก์ชัน deleteProof:", activityId);
-  
-  // สร้าง FormData แทนการส่ง JSON
-  const formData = new FormData();
-  formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-  
-  fetch("{% url 'delete_proof' 0 %}".replace('0', activityId), {
-    method: 'POST',
-    body: formData, // ใช้ FormData แทน JSON
-    credentials: 'same-origin'
+  // ใช้ delete-my-proof สำหรับการลบหลักฐานของตนเอง
+  fetch(`/delete-my-proof/${activityId}/`, {
+      method: 'POST',
+      headers: {
+          'X-CSRFToken': csrftoken,
+          'Content-Type': 'application/json'
+      }
   })
-  .then(response => {
-    console.log("ได้รับการตอบกลับจาก server:", response.status);
-    if (!response.ok) {
-      throw new Error('Server responded with status: ' + response.status);
-    }
-    return response.json();
-  })
+  .then(response => response.json())
   .then(data => {
-    console.log("ข้อมูลการลบจาก server:", data);
-    if (data.status === 'success') {
-      alert('ลบหลักฐานสำเร็จ');
-      location.reload();
-    } else {
-      alert('เกิดข้อผิดพลาด: ' + (data.message || 'ไม่สามารถลบได้'));
-    }
+      console.log("ข้อมูลการลบจาก server:", data);
+      if (data.status === 'success') {
+        alert('ลบหลักฐานสำเร็จ');
+        location.reload();
+      } else {
+        alert('เกิดข้อผิดพลาด: ' + (data.message || 'ไม่สามารถลบได้'));
+      }
   })
   .catch(error => {
     console.error('Error deleting proof:', error);
@@ -686,32 +677,23 @@ function closeDeleteModal() {
 
 // ลบหลักฐาน
 function deleteProof(activityId) {
-  console.log("เริ่มฟังก์ชัน deleteProof:", activityId);
-  
-  // สร้าง FormData แทนการส่ง JSON
-  const formData = new FormData();
-  formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-  
-  fetch("{% url 'delete_proof' 0 %}".replace('0', activityId), {
-    method: 'POST',
-    body: formData, // ใช้ FormData แทน JSON
-    credentials: 'same-origin'
+  // ใช้ delete-my-proof สำหรับการลบหลักฐานของตนเอง
+  fetch(`/delete-my-proof/${activityId}/`, {
+      method: 'POST',
+      headers: {
+          'X-CSRFToken': csrftoken,
+          'Content-Type': 'application/json'
+      }
   })
-  .then(response => {
-    console.log("ได้รับการตอบกลับจาก server:", response.status);
-    if (!response.ok) {
-      throw new Error('Server responded with status: ' + response.status);
-    }
-    return response.json();
-  })
+  .then(response => response.json())
   .then(data => {
-    console.log("ข้อมูลการลบจาก server:", data);
-    if (data.status === 'success') {
-      alert('ลบหลักฐานสำเร็จ');
-      location.reload();
-    } else {
-      alert('เกิดข้อผิดพลาด: ' + (data.message || 'ไม่สามารถลบได้'));
-    }
+      console.log("ข้อมูลการลบจาก server:", data);
+      if (data.status === 'success') {
+        alert('ลบหลักฐานสำเร็จ');
+        location.reload();
+      } else {
+        alert('เกิดข้อผิดพลาด: ' + (data.message || 'ไม่สามารถลบได้'));
+      }
   })
   .catch(error => {
     console.error('Error deleting proof:', error);

@@ -82,340 +82,244 @@
         </div>
     </div>
 
-    {% if registrations %}
-    <div class="proof-list">
-        {% for reg in registrations %}
-        <div class="proof-item">
-            <div class="proof-card">
-                <div class="row align-items-center">
-                    <!-- รูปภาพ (ขนาดเล็ก) -->
-                    <div class="col-lg-2 col-md-3 col-sm-4">
-                        <div class="proof-image-container">
-                            {% if reg.proof_image %}
-                                <img src="{{ reg.proof_image.url }}" alt="หลักฐาน" class="proof-thumbnail" onclick="openImageModal('{{ reg.proof_image.url }}')">
-                            {% else %}
-                                <div class="proof-image-placeholder">
-                                    <i class="fas fa-image"></i>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- ข้อมูลหลัก -->
-                    <div class="col-lg-7 col-md-6 col-sm-8">
-                        <div class="activity-name">
-                            <strong>กิจกรรม:</strong> {{ reg.activity.name }}
-                        </div>
-                        
-                        <!-- ข้อมูลนักศึกษา -->
-                        <div class="student-info">
-                            <p><strong>นักศึกษา:</strong> {{ reg.user.first_name }} {{ reg.user.last_name }}</p>
-                            <p><strong>รหัสนักศึกษา:</strong> {{ reg.user.student_id }}</p>
-                            {% if reg.user.branch %}
-                                <p><strong>สาขา:</strong> {{ reg.user.get_branch_display }}</p>
-                            {% endif %}
-                            {% if reg.user.year %}
-                                <p><strong>ชั้นปี:</strong> {{ reg.user.year }}</p>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="details-info">
-                            <p class="upload-date">
-                                <i class="fas fa-calendar-alt me-1"></i>
-                                อัพโหลดเมื่อ: {{ reg.proof_upload_date|date:"d/m/Y H:i" }}
-                            </p>
-                            
-                            <div class="status-badge 
-                                {% if not reg.is_approved %}bg-warning{% else %}bg-success{% endif %}">
-                                
-                                <i class="fas 
-                                    {% if not reg.is_approved %}fa-clock{% else %}fa-check{% endif %} me-1"></i>
-                                
-                                {% if not reg.is_approved %}รอการอนุมัติ{% else %}อนุมัติแล้ว{% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- ปุ่มการดำเนินการ -->
-                    <div class="col-lg-3 col-md-3 col-sm-12">
-                        <div class="action-buttons">
-                            {% if request.user.is_staff or request.user.is_superuser %}
-                                <!-- ปุ่มสำหรับ Staff/Superuser -->
-                                <div class="d-flex gap-2 mb-2">
-                                    <button onclick="approveProof({{ reg.id }})" class="btn btn-success btn-sm flex-grow-1">
-                                        <i class="fas fa-check me-1"></i> อนุมัติ
-                                    </button>
-                                    <button onclick="rejectProof({{ reg.id }})" class="btn btn-danger btn-sm flex-grow-1">
-                                        <i class="fas fa-times me-1"></i> ไม่อนุมัติ
-                                    </button>
-                                </div>
-                            {% else %}
-                                <!-- ปุ่มสำหรับนักศึกษา -->
-                                <button onclick="handleProof({{ reg.activity.id }}, 'edit')" class="btn btn-warning btn-sm d-block w-100 mb-2">
-                                    <i class="fas fa-edit me-1"></i> แก้ไขหลักฐาน
-                                </button>
-                                <form method="POST" action="{% url 'delete_proof' reg.id %}" class="d-block w-100">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger btn-sm d-block w-100">
-                                        <i class="fas fa-trash-alt me-1"></i> ลบหลักฐาน
-                                    </button>
-                                </form>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- เพิ่มปุ่มจัดการหลายรายการ -->
+    <div class="mb-3">
+        <div class="form-check d-inline-block me-3">
+            <input class="form-check-input" type="checkbox" id="selectAll">
+            <label class="form-check-label" for="selectAll">เลือกทั้งหมด</label>
         </div>
-        {% endfor %}
+        <button id="approveSelectedBtn" class="btn btn-success btn-sm me-2" disabled>
+            <i class="fas fa-check me-1"></i> อนุมัติที่เลือก
+        </button>
+        <button id="rejectSelectedBtn" class="btn btn-danger btn-sm me-2" disabled>
+            <i class="fas fa-times me-1"></i> ไม่อนุมัติที่เลือก
+        </button>
     </div>
-    {% else %}
-    <div class="no-proof-message">
-        <p><i class="fas fa-exclamation-circle me-2"></i>ไม่พบข้อมูลการอัพโหลดหลักฐาน</p>
+
+    <!-- เพิ่มข้อมูลนักศึกษาในตาราง -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th><input type="checkbox" id="masterCheckbox"></th>
+                    <th>ชื่อ-นามสกุล</th>
+                    <th>รหัสนักศึกษา</th>
+                    <th>ชั้นปี</th>
+                    <th>สาขา</th>
+                    <th>กิจกรรม</th>
+                    <th>วันที่อัปโหลด</th>
+                    <th>หลักฐาน</th>
+                    <th>สถานะ</th>
+                    <th>การจัดการ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reg in registrations %}
+                <tr id="reg-row-{{ reg.id }}">
+                    <td><input type="checkbox" class="proof-checkbox" data-id="{{ reg.id }}"></td>
+                    <td>{{ reg.user.get_full_name }}</td>
+                    <td>{{ reg.student_id }}</td>
+                    <td>{{ reg.year }}</td>
+                    <td>{{ reg.branch }}</td>
+                    <td>{{ reg.activity.name }}</td>
+                    <td>{{ reg.proof_upload_date|date:"d/m/Y H:i" }}</td>
+                    <!-- แก้ไขส่วนแสดงรูปภาพในตาราง -->
+                    <td>
+                        {% if reg.proof_image %}
+                            <a href="javascript:void(0);" class="view-proof-btn" data-image="{{ reg.proof_image.url }}" data-activity-name="{{ reg.activity.name }}">
+                                <img src="{{ reg.proof_image.url }}" alt="หลักฐาน" class="proof-thumbnail">
+                            </a>
+                        {% else %}
+                            <span class="text-danger">ไม่มีรูปภาพ</span>
+                        {% endif %}
+                    </td>
+                    <td class="status-cell-{{ reg.id }}">
+                        {% if reg.is_approved %}
+                            <span class="badge bg-success">อนุมัติแล้ว</span>
+                        {% else %}
+                            <span class="badge bg-warning">รอการอนุมัติ</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            {% if not reg.is_approved %}
+                            <button class="btn btn-sm btn-success approve-btn" data-id="{{ reg.id }}">
+                                <i class="fas fa-check"></i> อนุมัติ
+                            </button>
+                            {% endif %}
+                            
+                            {% if reg.is_approved %}
+                            <button class="btn btn-sm btn-danger reject-btn" data-id="{{ reg.id }}">
+                                <i class="fas fa-times"></i> ไม่อนุมัติ
+                            </button>
+                            {% endif %}
+                            
+                            <!-- แก้ไขปุ่มลบในตาราง ให้มีการเรียกฟังก์ชัน deleteProofDirectly แทน -->
+                            <button class="btn btn-sm btn-danger" onclick="deleteProofDirectly({{ reg.id }})" title="ลบหลักฐาน">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center">ไม่พบข้อมูลหลักฐาน</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    {% endif %}
 
     <div class="mt-4 text-center">
         <a href="{% url 'upload_proof' %}" class="btn btn-primary">
-            <i></i> ย้อนกลับ
+            <i class="fas fa-arrow-left me-1"></i> ย้อนกลับ
         </a>
     </div>
 </div>
 
-<!-- Modal สำหรับแสดงรูปขนาดใหญ่ -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<!-- Modal แบบปรับปรุงเพื่อแสดงรูปขนาดใหญ่ -->
+<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center p-4">
+    <div class="modal-content-wrapper">
+        <button onclick="closeImageModal()" class="close-modal-btn">&times;</button>
+        <h3 id="modalTitle"></h3>
+        <img id="modalImage" src="" alt="รูปภาพหลักฐาน">
+    </div>
+</div>
+
+<!-- Modal สำหรับยืนยันการลบ -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="imageModalLabel">หลักฐานการเข้าร่วมกิจกรรม</h5>
+                <h5 class="modal-title">ยืนยันการลบ</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body text-center">
-                <img src="" id="modalImage" class="img-fluid" alt="หลักฐานขนาดใหญ่">
+            <div class="modal-body">
+                <p>คุณต้องการลบหลักฐานนี้ใช่หรือไม่?</p>
+                <p class="text-danger"><small>การกระทำนี้ไม่สามารถย้อนกลับได้</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close" id="cancelDeleteBtn">ยกเลิก</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">ลบ</button>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    .container {
-        max-width: 1200px;
-        background: #ffffff;
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        margin-top: 100px;
+    /* CSS ที่มีอยู่เดิม */
+    
+    /* เพิ่ม CSS สำหรับ Modal รูปภาพแบบเต็มจอ */
+    .fixed {
+        position: fixed;
     }
     
-    .filter-container {
-        transition: all 0.3s ease;
+    .inset-0 {
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
     }
     
-    .proof-list {
+    .bg-black {
+        background-color: #000;
+    }
+    
+    .bg-opacity-75 {
+        background-color: rgba(0, 0, 0, 0.75);
+    }
+    
+    .hidden {
+        display: none;
+    }
+    
+    .z-50 {
+        z-index: 9999; /* ควรเป็นค่าที่สูงพอที่จะแสดงทับองค์ประกอบอื่น */
+    }
+    
+    .flex {
         display: flex;
-        flex-direction: column;
-        gap: 15px;
     }
     
-    .proof-item {
-        width: 100%;
-    }
-    
-    .proof-card {
-        background: #f8f9fa;
-        border: 1px solid #e0e0e0;
-        border-radius: 10px;
-        padding: 15px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    
-    .proof-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    
-    .proof-image-container {
-        text-align: center;
-        width: 100%;
-        margin-bottom: 10px;
-    }
-    
-    .proof-thumbnail {
-        max-width: 100%;
-        height: auto;
-        border-radius: 8px;
-        max-height: 100px;
-        object-fit: cover;
-        cursor: pointer;
-        transition: transform 0.2s;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    
-    .proof-thumbnail:hover {
-        transform: scale(1.05);
-    }
-    
-    .proof-image-placeholder {
-        width: 100%;
-        height: 100px;
-        background: #f1f1f1;
-        border-radius: 8px;
-        display: flex;
+    .items-center {
         align-items: center;
+    }
+    
+    .justify-center {
         justify-content: center;
-        font-size: 2rem;
-        color: #ccc;
     }
     
-    .activity-name {
-        font-size: 1.1rem;
-        margin-bottom: 10px;
-        color: #2c3e50;
-    }
-    
-    .student-info {
-        font-size: 0.9rem;
-        margin-bottom: 10px;
-    }
-    
-    .student-info p {
-        margin-bottom: 5px;
-    }
-    
-    .details-info {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        align-items: center;
-        margin-top: 10px;
-    }
-    
-    .upload-date {
-        color: #7f8c8d;
-        font-size: 0.9rem;
-        margin: 0;
-    }
-    
-    .status-badge {
-        padding: 4px 10px;
-        border-radius: 15px;
-        color: white;
-        font-size: 0.85rem;
-        display: inline-flex;
-        align-items: center;
-    }
-    
-    .action-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        justify-content: center;
+    .h-full {
         height: 100%;
     }
     
-    .no-proof-message {
-        text-align: center;
+    .p-4 {
+        padding: 1rem;
+    }
+    /* เพิ่ม CSS สำหรับ Modal และรูปภาพภายใน Modal หากยังไม่มี */
+    #imageModal {
+        position: fixed; /* ปรับปรุงการแสดงผล Modal */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        /* display: none; ถูกควบคุมโดย JavaScript */
+    }
+    #imageModal .modal-content-wrapper { /* เพิ่ม wrapper สำหรับจัดกลางและกำหนดขนาด */
+        background-color: white;
         padding: 20px;
-        background: #f8f9fa;
-        border-radius: 10px;
-        color: #7f8c8d;
-        font-style: italic;
+        border-radius: 8px;
+        max-width: 90%;
+        max-height: 90vh; /* จำกัดความสูงของ modal content */
+        display: flex;
+        flex-direction: column;
+        position: relative; /* สำหรับปุ่มปิด */
     }
-    
-    @media (max-width: 768px) {
-        .container {
-            margin: 120px 15px 15px;
-            padding: 15px;
-        }
-        
-        .details-info {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-        }
-        
-        .action-buttons {
-            margin-top: 15px;
-        }
+    #modalImage {
+        max-width: 100%;
+        max-height: calc(90vh - 100px); /* ปรับความสูงของรูปภาพให้พอดีกับ title และ padding */
+        object-fit: contain; /* ให้รูปภาพแสดงเต็มขนาดโดยไม่ถูกตัด */
+        margin-top: 10px;
     }
+    .close-modal-btn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #333;
+    }
+    #modalTitle {
+        text-align: center;
+        font-size: 1.25rem;
+        margin-bottom: 10px;
+    }
+    /* ... existing code ... */
 </style>
 
 <script>
-// Toggle filter section
-document.addEventListener('DOMContentLoaded', function() {
-    const filterToggleBtn = document.getElementById('filter-toggle-btn');
-    const filterSection = document.getElementById('filter-section');
-    const resetFilterBtn = document.getElementById('reset-filter');
-    
-    if (filterToggleBtn) {
-        filterToggleBtn.addEventListener('click', function() {
-            if (filterSection.style.display === 'none') {
-                filterSection.style.display = 'block';
-            } else {
-                filterSection.style.display = 'none';
+// นำฟังก์ชัน openImageModal และ closeImageModal ออกจาก DOMContentLoaded และให้อยู่ใน scope ระดับบนสุด
+// เพิ่มฟังก์ชันนี้ด้านบนสุดของ <script> เพื่อดึง CSRF token และประกาศฟังก์ชัน Modal
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
-        });
-    }
-    
-    if (resetFilterBtn) {
-        resetFilterBtn.addEventListener('click', function() {
-            window.location.href = window.location.pathname;
-        });
-    }
-    
-    // ตรวจสอบ URL parameters เพื่อแสดง filter section ถ้ามีการกรอง
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.toString() && filterSection) {
-        filterSection.style.display = 'block';
-    }
-});
-
-// เปิด Modal แสดงรูปใหญ่
-function openImageModal(imageUrl) {
-    const modalImage = document.getElementById('modalImage');
-    modalImage.src = imageUrl;
-    
-    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
-    imageModal.show();
-}
-
-// แก้ไขหลักฐาน
-function handleProof(activityId, action) {
-    if (action === 'edit') {
-        if (confirm('คุณต้องการแก้ไขหลักฐานนี้ใช่หรือไม่?')) {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = 'image/*';
-            
-            fileInput.addEventListener('change', function() {
-                if (!fileInput.files.length) return;
-                
-                const formData = new FormData();
-                formData.append('activity_id', activityId);
-                formData.append('proof_image', fileInput.files[0]);
-                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-                
-                fetch("{% url 'upload_proof' %}", {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('อัพโหลดหลักฐานใหม่สำเร็จ');
-                        location.reload();
-                    } else {
-                        alert('เกิดข้อผิดพลาด: ' + data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
-                });
-            });
-            
-            fileInput.click();
         }
     }
+    return cookieValue;
 }
+
+// กำหนดค่า CSRF token
+const csrftoken = getCookie('csrftoken');
 
 // ฟังก์ชันสำหรับอนุมัติหลักฐาน
 function approveProof(proofId) {
@@ -429,35 +333,419 @@ function rejectProof(proofId) {
 
 // ฟังก์ชันสำหรับอัพเดทสถานะหลักฐาน
 function updateProofStatus(proofId, status) {
-    console.log(`กำลังอัพเดทสถานะหลักฐาน ${proofId} เป็น ${status}`);
+    // แสดงสถานะกำลังดำเนินการ
+    const statusCell = document.querySelector(`.status-cell-${proofId}`);
+    if (statusCell) {
+        statusCell.innerHTML = '<span class="badge bg-info">กำลังดำเนินการ...</span>';
+    }
     
     const formData = new FormData();
     formData.append('status', status);
-    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    formData.append('csrfmiddlewaretoken', csrftoken);
     
     fetch(`/update-proof-status/${proofId}/`, {
         method: 'POST',
         body: formData
     })
-    .then(response => {
-        console.log("Server response status:", response.status);
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        console.log("Server response data:", data);
-        
         if (data.success) {
-            alert(`อัพเดทสถานะเป็น "${status === 'approved' ? 'อนุมัติแล้ว' : 'ไม่อนุมัติ'}" สำเร็จ`);
-            location.reload(); // รีโหลดหน้าเพื่อแสดงสถานะใหม่
-        } else {
-            alert('เกิดข้อผิดพลาด: ' + (data.message || 'ไม่สามารถอัพเดทสถานะได้'));
+            // อัพเดทสถานะในตาราง
+            if (statusCell) {
+                const badgeClass = status === 'approved' ? 'bg-success' : 'bg-danger';
+                const statusText = status === 'approved' ? 'อนุมัติแล้ว' : 'ไม่อนุมัติ';
+                statusCell.innerHTML = `<span class="badge ${badgeClass}">${statusText}</span>`;
+            }
         }
-    })
-    .catch(error => {
-        console.error('Error updating status:', error);
-        alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
     });
 }
+
+// ย้ายฟังก์ชันมาด้านนอก DOMContentLoaded เพื่อให้เรียกใช้จากที่ไหนก็ได้
+function openImageModal(imageUrl, title) {
+  console.log("ฟังก์ชัน openImageModal ถูกเรียกด้วย -> imageUrl:", imageUrl, "title:", title);
+
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('modalTitle');
+
+    if (!modal || !modalImage || !modalTitle) {
+        console.error("ไม่พบองค์ประกอบของ Modal (imageModal, modalImage, modalTitle)");
+        alert("เกิดข้อผิดพลาดในการแสดงรูปภาพ: ไม่พบส่วนประกอบ Modal");
+        return;
+    }
+
+    // ตรวจสอบ imageUrl เบื้องต้น
+    if (!imageUrl || typeof imageUrl !== 'string' || !(imageUrl.includes('/media/') || imageUrl.startsWith('http'))) {
+        console.error("URL รูปภาพไม่ถูกต้อง หรือไม่ได้เป็นสตริงที่คาดหวัง:", imageUrl);
+        alert("URL รูปภาพไม่ถูกต้อง: " + imageUrl + "\nกรุณาตรวจสอบว่าไฟล์รูปภาพอัปโหลดสำเร็จและ URL ถูกต้อง");
+        // คุณอาจต้องการแสดงรูปภาพ placeholder ใน modal แทนที่จะไม่ทำอะไรเลย
+        // modalImage.src = '/static/images/your-placeholder-if-url-is-bad.png';
+        // modalTitle.textContent = "ไม่สามารถโหลดรูปภาพได้";
+        // modal.classList.remove('hidden'); // แสดง modal แม้ว่ารูปจะเสีย
+        // modal.style.display = 'flex';
+        // document.body.style.overflow = 'hidden';
+        return;
+    }
+
+    modalImage.src = imageUrl;
+    modalTitle.textContent = title || 'หลักฐานกิจกรรม'; // ถ้า title เป็น null หรือ undefined ให้ใช้ 'หลักฐานกิจกรรม'
+
+    modal.classList.remove('hidden'); // ลบคลาส hidden เพื่อแสดง Modal
+    modal.style.display = 'flex';     // ใช้ flex เพื่อจัดกลาง (ตาม CSS ที่คุณมี)
+    document.body.style.overflow = 'hidden'; // ป้องกันการเลื่อนหน้าเว็บด้านหลัง
+}
+
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    if (modal) {
+        modal.classList.add('hidden'); // เพิ่มคลาส hidden เพื่อซ่อน Modal
+        modal.style.display = 'none';  // ตั้งค่า display เป็น none
+        document.body.style.overflow = 'auto'; // คืนค่าการเลื่อนหน้าเว็บ
+    }
+}
+
+// ฟังก์ชัน deleteProofDirectly ไว้ด้านบนของ DOMContentLoaded
+function deleteProofDirectly(proofId) {
+    // ใช้ FormData
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', csrftoken);
+    
+    // แสดงสถานะกำลังดำเนินการ
+    const rowToDelete = document.getElementById(`reg-row-${proofId}`);
+    if (rowToDelete) {
+        // เพิ่มคลาสสำหรับเปลี่ยนสีพื้นหลัง
+        rowToDelete.classList.add('table-danger');
+        
+        // ค่อยๆ หายไป
+        setTimeout(() => {
+            rowToDelete.classList.add('fade-out');
+        }, 50);
+        
+        // รอให้การหายไปเสร็จสิ้นก่อนที่จะลบแถว
+        setTimeout(() => {
+            rowToDelete.remove();
+        }, 300);
+    }
+    
+    // ส่งคำขอลบไปยังเซิร์ฟเวอร์
+    fetch(`/delete-proof/${proofId}/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const filterToggleBtn = document.getElementById('filter-toggle-btn');
+    const filterSection = document.getElementById('filter-section');
+    const resetFilterBtn = document.getElementById('reset-filter');
+    const masterCheckbox = document.getElementById('masterCheckbox');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const approveSelectedBtn = document.getElementById('approveSelectedBtn');
+    const rejectSelectedBtn = document.getElementById('rejectSelectedBtn');
+    
+    // ตัวแปรสำหรับจัดการการลบ
+    let proofIdToDelete = null;
+    const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    
+    // เพิ่ม event listener สำหรับปุ่มดูรูปภาพ
+    document.querySelectorAll('.view-proof-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const imageUrl = this.getAttribute('data-image');
+            const activityName = this.getAttribute('data-activity-name');
+            console.log("คลิกที่รูปภาพ:", imageUrl, activityName);
+            openImageModal(imageUrl, activityName);
+        });
+    });
+    
+    // เพิ่ม event listener สำหรับปุ่มอนุมัติ/ไม่อนุมัติ
+    document.querySelectorAll('.approve-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const proofId = this.getAttribute('data-id');
+            approveProof(proofId);
+        });
+    });
+    
+    document.querySelectorAll('.reject-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const proofId = this.getAttribute('data-id');
+            rejectProof(proofId);
+        });
+    });
+    
+    // ยืนยันการลบ
+    confirmDeleteBtn.addEventListener('click', function() {
+        if (proofIdToDelete) {
+            // ปิด Modal ก่อน
+            const modalElement = document.getElementById('deleteConfirmModal');
+            bootstrap.Modal.getInstance(modalElement).hide();
+            
+            // เคลียร์ modal backdrop ทันที
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
+            
+            // ใช้ FormData
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', csrftoken);
+            
+            // แสดงสถานะกำลังดำเนินการ
+            const rowToDelete = document.getElementById(`reg-row-${proofIdToDelete}`);
+            if (rowToDelete) {
+                // เพิ่มคลาสสำหรับเปลี่ยนสีพื้นหลัง
+                rowToDelete.classList.add('table-danger');
+                
+                // ค่อยๆ หายไป
+                setTimeout(() => {
+                    rowToDelete.classList.add('fade-out');
+                }, 50);
+                
+                // รอให้การหายไปเสร็จสิ้นก่อนที่จะลบแถว
+                setTimeout(() => {
+                    rowToDelete.remove();
+                }, 300);
+            }
+            
+            // ส่งคำขอลบไปยังเซิร์ฟเวอร์
+            fetch(`/delete-proof/${proofIdToDelete}/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // ลบแถวที่ถูกลบออกจากตาราง
+                    const row = document.getElementById(`reg-row-${proofIdToDelete}`);
+                    if (row) {
+                        row.remove();
+                    }
+                } else {
+                    // แสดงข้อผิดพลาด
+                    alert(data.error || 'เกิดข้อผิดพลาดในการลบหลักฐาน');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการลบหลักฐาน');
+            });
+        }
+    });
+    
+    // ตัวกรอง
+    filterToggleBtn.addEventListener('click', function() {
+        const isVisible = filterSection.style.display === 'block';
+        filterSection.style.display = isVisible ? 'none' : 'block';
+        filterToggleBtn.innerHTML = isVisible ? '<i class="fas fa-filter me-1"></i> ตัวกรอง' : '<i class="fas fa-filter me-1"></i> ซ่อนตัวกรอง';
+    });
+    
+    // รีเซ็ตฟิลเตอร์
+    resetFilterBtn.addEventListener('click', function() {
+        document.getElementById('filter-form').reset();
+        // ลบการเลือกใน select2
+        $('#filter-form select').val(null).trigger('change');
+    });
+    
+    // เลือกทั้งหมด
+    selectAllCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        document.querySelectorAll('.proof-checkbox').forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+        
+        // เปิด/ปิด ปุ่มอนุมัติ/ไม่อนุมัติที่เลือก
+        approveSelectedBtn.disabled = !isChecked;
+        rejectSelectedBtn.disabled = !isChecked;
+    });
+    
+    // เปลี่ยนแปลงสถานะการอนุมัติ
+    document.querySelectorAll('.status-toggle').forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const proofId = this.getAttribute('data-id');
+            const isApproved = this.checked;
+            
+            // ใช้ FormData
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', csrftoken);
+            formData.append('approved', isApproved ? '1' : '0');
+            
+            fetch(`/toggle-approve/${proofId}/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // อัปเดตสถานะในตาราง
+                    const statusCell = document.querySelector(`.status-cell-${proofId}`);
+                    if (statusCell) {
+                        statusCell.innerHTML = isApproved ? '<span class="badge bg-success">อนุมัติแล้ว</span>' : '<span class="badge bg-warning">รอการอนุมัติ</span>';
+                    }
+                } else {
+                    // แสดงข้อผิดพลาด
+                    alert(data.error || 'เกิดข้อผิดพลาดในการปรับปรุงสถานะ');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการปรับปรุงสถานะ');
+            });
+        });
+    });
+    
+    // อนุมัติที่เลือก
+    approveSelectedBtn.addEventListener('click', function() {
+        const selectedIds = Array.from(document.querySelectorAll('.proof-checkbox:checked')).map(checkbox => checkbox.getAttribute('data-id'));
+        
+        if (selectedIds.length === 0) {
+            alert("กรุณาเลือกรายการที่ต้องการอนุมัติ");
+            return;
+        }
+        
+        console.log("อนุมัติ IDs:", selectedIds);
+        
+        // ใช้ FormData
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', csrftoken);
+        formData.append('status', 'approved');
+        selectedIds.forEach(id => formData.append('ids[]', id));
+        
+        // ส่งข้อมูลไปยังเส้นทางที่มีอยู่แล้ว
+        fetch('/update-multiple-proofs/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // อัปเดตสถานะในตาราง
+                selectedIds.forEach(id => {
+                const statusCell = document.querySelector(`.status-cell-${id}`);
+                if (statusCell) {
+                    statusCell.innerHTML = '<span class="badge bg-success">อนุมัติแล้ว</span>';
+                }
+            });
+            
+            // รีเซ็ตการเลือก
+            document.querySelectorAll('.proof-checkbox:checked').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            selectAllCheckbox.checked = false;
+            
+            // ปิดปุ่มอนุมัติที่เลือก
+            approveSelectedBtn.disabled = true;
+            rejectSelectedBtn.disabled = true;
+            
+            alert('อนุมัติรายการที่เลือกเรียบร้อยแล้ว');
+            } else {
+                // แสดงข้อผิดพลาด
+                alert(data.message || 'เกิดข้อผิดพลาดในการอนุมัติที่เลือก');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+        });
+    });
+    
+    // ไม่อนุมัติที่เลือก
+    rejectSelectedBtn.addEventListener('click', function() {
+        const selectedIds = Array.from(document.querySelectorAll('.proof-checkbox:checked')).map(checkbox => checkbox.getAttribute('data-id'));
+        
+        if (selectedIds.length === 0) {
+            alert("กรุณาเลือกรายการที่ต้องการไม่อนุมัติ");
+            return;
+        }
+        
+        console.log("ไม่อนุมัติ IDs:", selectedIds);
+        
+        // ใช้ FormData
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', csrftoken);
+        formData.append('status', 'rejected');
+        selectedIds.forEach(id => formData.append('ids[]', id));
+        
+        // ส่งข้อมูลไปยังเส้นทางที่มีอยู่แล้ว
+        fetch('/update-multiple-proofs/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then (data => {
+            if (data.success) {
+                // อัปเดตสถานะในตาราง
+                selectedIds.forEach(id => {
+                    const statusCell = document.querySelector(`.status-cell-${id}`);
+                    if (statusCell) {
+                        statusCell.innerHTML = '<span class="badge bg-danger">ไม่อนุมัติ</span>';
+                    }
+                });
+                
+                // รีเซ็ตการเลือก
+                document.querySelectorAll('.proof-checkbox:checked').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                selectAllCheckbox.checked = false;
+                
+                // ปิดปุ่มอนุมัติที่เลือก
+                approveSelectedBtn.disabled = true;
+                rejectSelectedBtn.disabled = true;
+                
+                alert('ไม่อนุมัติรายการที่เลือกเรียบร้อยแล้ว');
+            } else {
+                // แสดงข้อผิดพลาด
+                alert(data.message || 'เกิดข้อผิดพลาดในการไม่อนุมัติที่เลือก');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+        });
+    });
+    
+    // เพิ่ม event listener สำหรับ checkbox เพื่อเปิด/ปิดปุ่มอนุมัติ
+    document.querySelectorAll('.proof-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateActionButtons);
+    });
+
+    // ฟังก์ชันอัปเดตสถานะปุ่มอนุมัติ/ไม่อนุมัติ
+    function updateActionButtons() {
+        const anyChecked = document.querySelectorAll('.proof-checkbox:checked').length > 0;
+        approveSelectedBtn.disabled = !anyChecked;
+        rejectSelectedBtn.disabled = !anyChecked;
+    }
+});
 </script>
+
 {% endblock %}
 

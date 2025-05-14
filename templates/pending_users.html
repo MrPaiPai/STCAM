@@ -6,6 +6,18 @@
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-2xl font-bold mb-6">อนุมัติผู้ใช้งานใหม่</h1>
 
+    <!-- เพิ่มส่วน Alert Popup ที่จะซ่อนไว้ก่อน -->
+    <div id="alertPopup" class="hidden fixed top-20 left-1/2 transform -translate-x-1/2 z-50 p-4 rounded-lg border shadow-lg max-w-md w-full">
+        <div class="flex items-center space-x-3">
+            <div class="flex-shrink-0">
+                <i id="alertIcon" class="fas fa-check-circle text-green-500 text-xl"></i>
+            </div>
+            <div>
+                <p id="alertMessage" class="font-medium">การดำเนินการสำเร็จ</p>
+            </div>
+        </div>
+    </div>
+
     {% if pending_users %}
         <table class="min-w-full divide-y divide-gray-200">
             <thead>
@@ -18,7 +30,7 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 {% for user in pending_users %}
-                    <tr>
+                    <tr id="user-row-{{ user.id }}">
                         <td class="px-6 py-4">{{ user.username }}</td>
                         <td class="px-6 py-4">{{ user.email }}</td>
                         <td class="px-6 py-4">
@@ -29,15 +41,15 @@
                             {% endif %}
                         </td>
                         <td class="px-6 py-4">
-                            <form method="post" class="inline">
+                            <form method="post" class="inline approval-form" data-username="{{ user.username }}">
                                 {% csrf_token %}
                                 <input type="hidden" name="user_id" value="{{ user.id }}">
                                 <button type="submit" name="action" value="approve" 
-                                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded mr-2">
+                                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded mr-2 approve-btn">
                                     อนุมัติ
                                 </button>
                                 <button type="submit" name="action" value="reject"
-                                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded reject-btn">
                                     ปฏิเสธ
                                 </button>
                             </form>
@@ -61,4 +73,100 @@
         </div>
     {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // เลือก forms ทั้งหมดที่มี class เป็น approval-form
+    const forms = document.querySelectorAll('.approval-form');
+    const alertPopup = document.getElementById('alertPopup');
+    const alertIcon = document.getElementById('alertIcon');
+    const alertMessage = document.getElementById('alertMessage');
+
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const username = this.getAttribute('data-username');
+            const isApprove = this.querySelector('button[type="submit"]:focus').value === 'approve';
+            const userId = formData.get('user_id');
+            const rowElement = document.getElementById(`user-row-${userId}`);
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // ลบแถวออกจากตาราง (Animation)
+                    rowElement.style.transition = 'all 0.5s';
+                    rowElement.style.opacity = '0';
+                    
+                    // แสดง Popup แจ้งเตือน
+                    if (isApprove) {
+                        alertPopup.classList.remove('bg-red-100', 'border-red-500');
+                        alertPopup.classList.add('bg-green-100', 'border-green-500');
+                        alertIcon.classList.remove('fa-times-circle', 'text-red-500');
+                        alertIcon.classList.add('fa-check-circle', 'text-green-500');
+                        alertMessage.textContent = `อนุมัติผู้ใช้ ${username} เรียบร้อยแล้ว`;
+                    } else {
+                        alertPopup.classList.remove('bg-green-100', 'border-green-500');
+                        alertPopup.classList.add('bg-red-100', 'border-red-500');
+                        alertIcon.classList.remove('fa-check-circle', 'text-green-500');
+                        alertIcon.classList.add('fa-times-circle', 'text-red-500');
+                        alertMessage.textContent = `ปฏิเสธผู้ใช้ ${username} เรียบร้อยแล้ว`;
+                    }
+                    
+                    alertPopup.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        // ซ่อน popup หลังจาก 3 วินาที
+                        alertPopup.classList.add('hidden');
+                        // ลบแถวออกจาก DOM
+                        setTimeout(() => {
+                            rowElement.remove();
+                            // ถ้าไม่มีแถวเหลืออยู่ในตาราง แสดงข้อความว่าไม่มีผู้ใช้ที่รออนุมัติ
+                            if (document.querySelectorAll('tbody tr').length === 0) {
+                                const table = document.querySelector('table');
+                                const noUsersDiv = document.createElement('div');
+                                noUsersDiv.className = 'text-center py-8';
+                                noUsersDiv.innerHTML = '<p class="text-gray-500">ไม่มีผู้ใช้ที่รอการอนุมัติ</p>';
+                                table.parentNode.replaceChild(noUsersDiv, table);
+                            }
+                        }, 500);
+                    }, 3000);
+                } else {
+                    // แสดง error
+                    alertPopup.classList.remove('bg-green-100', 'border-green-500');
+                    alertPopup.classList.add('bg-red-100', 'border-red-500');
+                    alertIcon.classList.remove('fa-check-circle', 'text-green-500');
+                    alertIcon.classList.add('fa-exclamation-circle', 'text-red-500');
+                    alertMessage.textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
+                    alertPopup.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        alertPopup.classList.add('hidden');
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alertPopup.classList.remove('bg-green-100', 'border-green-500');
+                alertPopup.classList.add('bg-red-100', 'border-red-500');
+                alertIcon.classList.remove('fa-check-circle', 'text-green-500');
+                alertIcon.classList.add('fa-exclamation-circle', 'text-red-500');
+                alertMessage.textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
+                alertPopup.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    alertPopup.classList.add('hidden');
+                }, 3000);
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

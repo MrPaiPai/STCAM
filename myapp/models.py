@@ -217,8 +217,9 @@ class Activity(models.Model):
         verbose_name='คณะที่จัดกิจกรรม'
     )
     max_participants = models.IntegerField(
-        default=30, 
-        verbose_name='จำนวนผู้เข้าร่วมสูงสุด'
+        default=0,  # เปลี่ยนจาก 30 เป็น 0 ซึ่งหมายถึงไม่จำกัด
+        verbose_name='จำนวนผู้เข้าร่วมสูงสุด',
+        help_text='กำหนดเป็น 0 หากไม่ต้องการจำกัดจำนวนผู้เข้าร่วม'
     )
 
     def get_current_participants(self):
@@ -227,6 +228,8 @@ class Activity(models.Model):
 
     def is_full(self):
         """เช็คว่าเต็มหรือยัง"""
+        if self.max_participants == 0:  # ถ้าเป็น 0 แสดงว่าไม่จำกัด
+            return False
         return self.get_current_participants() >= self.max_participants
 
     def get_capacity_color(self):

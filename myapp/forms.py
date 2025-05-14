@@ -57,11 +57,13 @@ class AdminRegisterForm(forms.ModelForm):
 class ActivityForm(forms.ModelForm):
     class Meta:
         model = Activity
-        fields = ['name', 'description', 'start_date', 'end_date', 'faculty']  # เพิ่ม faculty
+        # แก้ไขฟิลด์ให้ตรงกับที่มีในโมเดล Activity จริงๆ
+        fields = ['name', 'description', 'start_date', 'end_date', 'faculty', 'max_participants']
         widgets = {
             'start_date': AdminDateWidget(),
             'end_date': AdminDateWidget(),
-            'faculty': forms.Select(attrs={'class': 'form-control'}),  # เพิ่ม Dropdown สำหรับ faculty
+            'faculty': forms.Select(attrs={'class': 'form-control'}),
+            'max_participants': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'placeholder': 'กำหนด 0 หากไม่จำกัดจำนวน'}),
         }
         labels = {
             'name': 'ชื่อกิจกรรม',
@@ -69,16 +71,33 @@ class ActivityForm(forms.ModelForm):
             'start_date': 'วันที่เริ่ม',
             'end_date': 'วันที่สิ้นสุด',
             'faculty': 'คณะที่จัดกิจกรรม',
+            'max_participants': 'จำนวนผู้เข้าร่วมสูงสุด',
         }
+    
+    # เพิ่มเมธอดนี้เพื่อกำหนดว่าฟิลด์ใดไม่จำเป็นต้องกรอกในโหมดแก้ไข
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # ถ้าเป็นการแก้ไขข้อมูลที่มีอยู่แล้ว (instance มีค่า)
+        if self.instance.pk:
+            # ทำให้ฟิลด์เหล่านี้ไม่จำเป็น
+            self.fields['description'].required = False
 
 # ฟอร์มสำหรับอัปโหลดรูปภาพกิจกรรม
 class ActivityImageForm(forms.ModelForm):
     class Meta:
         model = ActivityImage
         fields = ['image']
-        labels = {
-            'image': 'รูปภาพ',
+        widgets = {
+            'image': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'})
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # ทำให้ฟิลด์รูปภาพไม่จำเป็นในกรณีของการแก้ไข
+        # เพื่อป้องกันปัญหา "This field is required"
+        if self.instance and self.instance.pk:
+            self.fields['image'].required = False
 
 class MyUserForm(forms.ModelForm):
     class Meta:
