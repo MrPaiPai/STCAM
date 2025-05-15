@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_protect  # เอา csrf_exempt �
 from django.http import JsonResponse, HttpResponse  # เพิ่ม HttpResponse ตรงนี้
 from django.contrib import messages
 from django.utils import timezone
+import pytz  # เพิ่มการ import pytz สำหรับการจัดการ timezone
 from django.urls import reverse
 from django.forms import modelformset_factory
 from django.forms.models import inlineformset_factory  # เพิ่มบรรทัดนี้
@@ -1157,14 +1158,21 @@ def download_report(request):
         styles.add(ParagraphStyle(
             name='ThaiNormal',
             fontName='THSarabun',
-            fontSize=16,
+            fontSize=16,  # อาจจะลดขนาดหัวข้อรองลงเล็กน้อยถ้าจำเป็น
             alignment=1,  # center
             spaceAfter=6
+        ))
+        # เพิ่ม ParagraphStyle สำหรับเนื้อหาในตาราง (ถ้าต้องการใช้ Paragraph ในเซลล์)
+        styles.add(ParagraphStyle(
+            name='TableCellText',
+            fontName='THSarabun',
+            fontSize=12,  # ขนาดฟอนต์สำหรับเซลล์ในตาราง
+            leading=14  # ระยะห่างระหว่างบรรทัด
         ))
         
         # สร้าง story (content)
         story = []
-        
+
         # เพิ่มโลโก้
         logo_path = 'E:/Pai E/เรียนมหาลัย/project จบ/Project_STCAM/static/image/cropped-sdu-logo-th-h1024.png'
         if os.path.exists(logo_path):
@@ -1174,83 +1182,112 @@ def download_report(request):
             im.hAlign = 'CENTER'
             story.append(im)
             story.append(Spacer(1, 12))
-        
-        # เพิ่มหัวข้อ
+
+        # แปลงเวลาเป็น Asia/Bangkok ก่อนแสดงผล
+        current_time_utc = timezone.now()
+        bangkok_timezone = pytz.timezone('Asia/Bangkok')
+        current_time_bangkok = current_time_utc.astimezone(bangkok_timezone)
+        story.append(Paragraph(f"วันที่ออกรายงาน: {current_time_bangkok.strftime('%d/%m/%Y %H:%M')}", styles["ThaiNormal"]))
         story.append(Paragraph("รายงานการเข้าร่วมกิจกรรมนักศึกษา", styles["ThaiHeading"]))
-        story.append(Paragraph(f"วันที่ออกรายงาน: {timezone.now().strftime('%d/%m/%Y %H:%M')}", styles["ThaiNormal"]))
-        
+
         if activity_id != 'all':
             story.append(Paragraph(f"กิจกรรม: {activity.name}", styles["ThaiNormal"]))
             story.append(Paragraph(f"วันที่จัดกิจกรรม: {activity.start_date.strftime('%d/%m/%Y')}", styles["ThaiNormal"]))
         else:
             story.append(Paragraph("กิจกรรมทั้งหมด", styles["ThaiNormal"]))
-        
-        story.append(Spacer(1, 12))
-        
+
         # สร้างตาราง - ปรับขนาดคอลัมน์ให้พอดีกับหน้ากระดาษ
         if activity_id == 'all':
-            # คอลัมน์สำหรับรายงานกิจกรรมทั้งหมด - ปรับขนาดให้พอดีหน้า
-            data = [['ลำดับ', 'ชื่อ-นามสกุล', 'รหัสนักศึกษา', 'คณะ/สาขา', 'ชั้นปี', 'กิจกรรม', 'วันที่กิจกรรม', 'สถานะลงทะเบียน', 'สถานะหลักฐาน']]
-            
-            # จัดสรรความกว้างคอลัมน์ตามสัดส่วน
+            data = [
+                [
+                    Paragraph('ลำดับ', styles['ThaiNormal']),  # ตัวอย่างการใช้ Paragraph สำหรับหัวตาราง
+                    Paragraph('ชื่อ-นามสกุล', styles['ThaiNormal']),
+                    Paragraph('รหัสนักศึกษา', styles['ThaiNormal']),
+                    Paragraph('คณะ/สาขา', styles['ThaiNormal']),
+                    Paragraph('ชั้นปี', styles['ThaiNormal']),
+                    Paragraph('กิจกรรม', styles['ThaiNormal']),
+                    Paragraph('วันที่กิจกรรม', styles['ThaiNormal']),
+                    Paragraph('สถานะลงทะเบียน', styles['ThaiNormal']),
+                    Paragraph('สถานะหลักฐาน', styles['ThaiNormal']),
+                ]
+            ]
+            # จัดสรรความกว้างคอลัมน์ตามสัดส่วน (ปรับสัดส่วนตรงนี้)
             col_widths = [
                 available_width * 0.05,  # ลำดับ
-                available_width * 0.15,  # ชื่อ-นามสกุล
+                available_width * 0.20,  # ชื่อ-นามสกุล (เพิ่มความกว้าง)
                 available_width * 0.10,  # รหัสนักศึกษา
                 available_width * 0.10,  # คณะ/สาขา
                 available_width * 0.05,  # ชั้นปี
-                available_width * 0.15,  # กิจกรรม
+                available_width * 0.20,  # กิจกรรม (เพิ่มความกว้าง)
                 available_width * 0.10,  # วันที่กิจกรรม
-                available_width * 0.15,  # สถานะลงทะเบียน
-                available_width * 0.15   # สถานะหลักฐาน
+                available_width * 0.10,  # สถานะลงทะเบียน
+                available_width * 0.10   # สถานะหลักฐาน (เพิ่มความกว้าง)
             ]
-            
             for i, p in enumerate(participation_data, 1):
                 student = p['student']
-                data.append([
-                    i,
-                    student.get_full_name(),
-                    student.student_id or "-",
-                    getattr(student, 'branch', '-'),
-                    getattr(student, 'year', '-'),
-                    p['activity'].name,
-                    p['activity'].start_date.strftime('%d/%m/%Y'),
-                    p['register_status'],
-                    p['proof_status']
-                ])
-                
+                row_data = [
+                    Paragraph(str(i), styles['TableCellText']),
+                    Paragraph(student.get_full_name() or "-", styles['TableCellText']),
+                    Paragraph(student.student_id or "-", styles['TableCellText']),
+                    Paragraph(str(getattr(student, 'branch', '-') or '-'), styles['TableCellText']),
+                    Paragraph(str(getattr(student, 'year', '-') or '-'), styles['TableCellText']),
+                    Paragraph(p['activity'].name if p['activity'] and hasattr(p['activity'], 'name') else "-", styles['TableCellText']),
+                    Paragraph(
+                        p['activity'].start_date.strftime('%d/%m/%Y') 
+                        if p['activity'] and hasattr(p['activity'], 'start_date') and p['activity'].start_date 
+                        else "-", 
+                        styles['TableCellText']
+                    ),
+                    Paragraph(p['register_status'] or "-", styles['TableCellText']),
+                    Paragraph(p['proof_status'] or "-", styles['TableCellText']),
+                ]
+                data.append(row_data)
         else:
             # คอลัมน์สำหรับรายงานกิจกรรมเดียว - ปรับขนาดให้พอดีหน้า
-            data = [['ลำดับ', 'ชื่อ-นามสกุล', 'รหัสนักศึกษา', 'คณะ/สาขา', 'ชั้นปี', 'วันที่กิจกรรม', 'สถานะลงทะเบียน', 'สถานะหลักฐาน']]
-            
-            # จัดสรรความกว้างคอลัมน์ตามสัดส่วน
+            data = [
+                [
+                    Paragraph('ลำดับ', styles['ThaiNormal']),
+                    Paragraph('ชื่อ-นามสกุล', styles['ThaiNormal']),
+                    Paragraph('รหัสนักศึกษา', styles['ThaiNormal']),
+                    Paragraph('คณะ/สาขา', styles['ThaiNormal']),
+                    Paragraph('ชั้นปี', styles['ThaiNormal']),
+                    Paragraph('วันที่กิจกรรม', styles['ThaiNormal']),
+                    Paragraph('สถานะลงทะเบียน', styles['ThaiNormal']),
+                    Paragraph('สถานะหลักฐาน', styles['ThaiNormal'])
+                ]
+            ]
+            # จัดสรรความกว้างคอลัมน์ตามสัดส่วน (ปรับสัดส่วนตรงนี้)
             col_widths = [
                 available_width * 0.05,  # ลำดับ
-                available_width * 0.18,  # ชื่อ-นามสกุล
+                available_width * 0.22,  # ชื่อ-นามสกุล (เพิ่มความกว้าง)
                 available_width * 0.12,  # รหัสนักศึกษา
                 available_width * 0.12,  # คณะ/สาขา
-                available_width * 0.08,  # ชั้นปี
-                available_width * 0.15,  # วันที่กิจกรรม
+                available_width * 0.07,  # ชั้นปี
+                available_width * 0.12,  # วันที่กิจกรรม
                 available_width * 0.15,  # สถานะลงทะเบียน
                 available_width * 0.15   # สถานะหลักฐาน
             ]
-            
             for i, p in enumerate(participation_data, 1):
                 student = p['student']
-                data.append([
-                    i,
-                    student.get_full_name(),
-                    student.student_id or "-",
-                    getattr(student, 'branch', '-'),
-                    getattr(student, 'year', '-'),
-                    p['activity'].start_date.strftime('%d/%m/%Y'),
-                    p['register_status'],
-                    p['proof_status']
-                ])
-        
+                row_data = [
+                    Paragraph(str(i), styles['TableCellText']),
+                    Paragraph(student.get_full_name() or "-", styles['TableCellText']),
+                    Paragraph(student.student_id or "-", styles['TableCellText']),
+                    Paragraph(str(getattr(student, 'branch', '-') or '-'), styles['TableCellText']),
+                    Paragraph(str(getattr(student, 'year', '-') or '-'), styles['TableCellText']),
+                    Paragraph(
+                        p['activity'].start_date.strftime('%d/%m/%Y') 
+                        if p['activity'] and hasattr(p['activity'], 'start_date') and p['activity'].start_date 
+                        else "-", 
+                        styles['TableCellText']
+                    ),
+                    Paragraph(p['register_status'] or "-", styles['TableCellText']),
+                    Paragraph(p['proof_status'] or "-", styles['TableCellText'])
+                ]
+                data.append(row_data)
         # สร้าง Table พร้อมกำหนดความกว้างคอลัมน์
         table = Table(data, repeatRows=1, colWidths=col_widths)
-        
+
         # ฟังก์ชันกำหนดสีตามสถานะ
         def get_status_color(status):
             if 'อนุมัติแล้ว' in status:
@@ -1262,18 +1299,27 @@ def download_report(request):
 
         # กำหนด style พื้นฐาน - ปรับขนาดฟอนต์ให้เล็กลงเพื่อให้พอดีกับตาราง
         table_style = [
-            ('FONT', (0, 0), (-1, 0), 'THSarabun', 14),  # หัวตาราง
-            ('FONT', (0, 1), (-1, -1), 'THSarabun', 13), # เนื้อหา
+            ('FONT', (0, 0), (-1, 0), 'THSarabun', 14),      # หัวตาราง (อาจจะใช้ ParagraphStyle แทน)
             ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # การจัดกลางอาจจะไม่เหมาะกับข้อความยาวๆ ลองเปลี่ยนเป็น 'LEFT' สำหรับบางคอลัมน์
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
             ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
-            # แก้ไขความสูงของแถว
-            ('ROWHEIGHT', (0, 0), (-1, -1), 0.4*cm),
+            ('ROWHEIGHT', (0, 0), (-1, -1), 0.5*cm),  # อาจจะต้องเพิ่มความสูงของแถวถ้าข้อความมีการตัดบรรทัด
         ]
-        
+
+        # ปรับการจัดตำแหน่งสำหรับคอลัมน์ที่มีข้อความยาว
+        # ตัวอย่าง: จัดชิดซ้ายสำหรับคอลัมน์ชื่อ-นามสกุล และ กิจกรรม
+        if activity_id == 'all':
+            name_col_index = 1
+            activity_col_index = 5
+            table_style.append(('ALIGN', (name_col_index, 1), (name_col_index, -1), 'LEFT'))
+            table_style.append(('ALIGN', (activity_col_index, 1), (activity_col_index, -1), 'LEFT'))
+        else:
+            name_col_index = 1
+            table_style.append(('ALIGN', (name_col_index, 1), (name_col_index, -1), 'LEFT'))
+
         # กำหนดสีพื้นหลังสถานะสำหรับแต่ละแถว
         for i, row in enumerate(data[1:], 1):
             # กำหนดสีพื้นหลังสำหรับสถานะลงทะเบียนและสถานะหลักฐาน
@@ -1283,26 +1329,42 @@ def download_report(request):
             else:
                 reg_status_col = 6  # คอลัมน์สถานะลงทะเบียน
                 proof_status_col = 7  # คอลัมน์สถานะหลักฐาน
-            
-            table_style.append(('BACKGROUND', (reg_status_col, i), (reg_status_col, i), get_status_color(row[reg_status_col])))
-            table_style.append(('BACKGROUND', (proof_status_col, i), (proof_status_col, i), get_status_color(row[proof_status_col])))
-        
+
+            # ป้องกันการเกิด NoneType error โดยตรวจสอบค่าอย่างรอบคอบ
+            if row[reg_status_col] is not None and hasattr(row[reg_status_col], 'getPlainText'):
+                reg_status_text = row[reg_status_col].getPlainText()
+            else:
+                reg_status_text = ''
+                
+            if row[proof_status_col] is not None and hasattr(row[proof_status_col], 'getPlainText'):
+                proof_status_text = row[proof_status_col].getPlainText()
+            else:
+                proof_status_text = ''
+
+            table_style.append(('BACKGROUND', (reg_status_col, i), (reg_status_col, i), get_status_color(reg_status_text)))
+            table_style.append(('BACKGROUND', (proof_status_col, i), (proof_status_col, i), get_status_color(proof_status_text)))
+
         table.setStyle(TableStyle(table_style))
-        
+
         # จัดการการขึ้นหน้าใหม่อัตโนมัติ โดยการตั้งค่า splitByRow=True
         table._splittingEnabled = 1  # เปิดใช้งานการแบ่งตาราง
         table._splitByRow = 1        # แบ่งตารางตามแถว
-        
+
         story.append(table)
-        
-        # สร้าง PDF
-        doc.build(story)
+
+        try:
+            doc.build(story)
+        except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            print(f"Error details: {error_details}")
+            return HttpResponse(f"เกิดข้อผิดพลาดในการสร้าง PDF: {str(e)}<br>รายละเอียด: {error_details}")
         
         return response
         
     except ImportError as e:
         print(f"ImportError: {str(e)}")
-        return HttpResponse("ไม่สามารถสร้าง PDF ได้ กรุณาติดตั้ง ReportLab ก่อน: pip install reportlab")
+        return HttpResponse("ไม่สามารถสร้าง PDF ได้ กรุณาติดตั้ง ReportLab ก่อน: pip install reportlab")        
     except Exception as e:
         print(f"Error generating PDF: {str(e)}")
         return HttpResponse(f"เกิดข้อผิดพลาดในการสร้าง PDF: {str(e)}")
@@ -1311,20 +1373,21 @@ def download_report(request):
 @user_passes_test(is_admin)
 def pending_users(request):
     """แสดงรายการผู้ใช้ที่รอการอนุมัติ"""
-    # แก้จาก user_type เป็น role
     pending = CustomUser.objects.filter(
         is_active=False,
-        role='student'  # เปลี่ยนจาก user_type เป็น role
+        user_type='student' 
     ).order_by('-date_joined')
     
     # Debug prints
     print(f"DEBUG: Found {pending.count()} pending users")
     for user in pending:
         print(f"DEBUG: User found - {user.username} (active={user.is_active}, type={user.user_type})")
-
+    
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
         action = request.POST.get('action')
+        
+        print(f"DEBUG: user_id={user_id}, action={action}")
         
         if user_id and action:
             try:
@@ -1333,12 +1396,14 @@ def pending_users(request):
                     user.is_active = True
                     user.save()
                     messages.success(request, f'อนุมัติผู้ใช้ {user.username} เรียบร้อยแล้ว')
+                    return JsonResponse({'status': 'success', 'message': f'อนุมัติผู้ใช้ {user.username} เรียบร้อยแล้ว'})
                 elif action == 'reject':
                     user.delete()
                     messages.success(request, f'ปฏิเสธผู้ใช้ {user.username} เรียบร้อยแล้ว')
+                    return JsonResponse({'status': 'success', 'message': f'ปฏิเสธผู้ใช้ {user.username} เรียบร้อยแล้ว'})
             except CustomUser.DoesNotExist:
                 messages.error(request, 'ไม่พบข้อมูลผู้ใช้')
-
+    
     context = {
         'pending_users': pending,
         'is_superuser': request.user.is_superuser,
@@ -1394,7 +1459,7 @@ def update_proof_status(request, proof_id):
                     'success': False, 
                     'message': 'สถานะไม่ถูกต้อง'
                 })
-                
+            
             # หา ActivityRegistration ด้วย ID
             registration = ActivityRegistration.objects.get(id=proof_id)
             
@@ -1414,7 +1479,6 @@ def update_proof_status(request, proof_id):
                 'message': f'อัพเดทสถานะเป็น "{status}" สำเร็จ',
                 'is_approved': registration.is_approved
             })
-            
         except ActivityRegistration.DoesNotExist:
             return JsonResponse({
                 'success': False, 
