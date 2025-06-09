@@ -1,0 +1,375 @@
+# Code Citations
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'ม
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'),
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุม
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพัน
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'),
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีน
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เ
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5,
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พ
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภา
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, '
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุ
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'ก
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎ
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'),
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิง
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม'), (9,
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม'), (9, 'กัน
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม'), (9, 'กันยายน'),
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม'), (9, 'กันยายน'),
+        (10
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม'), (9, 'กันยายน'),
+        (10, '
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม'), (9, 'กันยายน'),
+        (10, 'ตุลา
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม'), (9, 'กันยายน'),
+        (10, 'ตุลาคม'), (
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม'), (9, 'กันยายน'),
+        (10, 'ตุลาคม'), (11, '
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม'), (9, 'กันยายน'),
+        (10, 'ตุลาคม'), (11, 'พฤศ
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม'), (9, 'กันยายน'),
+        (10, 'ตุลาคม'), (11, 'พฤศจิกาย
+```
+
+
+## License: unknown
+https://github.com/Pameyy/demo-thesis/blob/675313ed2a52431530cd0b31214926d13c764158/test.sql
+
+```
+(1, 'มกราคม'), (2, 'กุมภาพันธ์'), (3, 'มีนาคม'),
+        (4, 'เมษายน'), (5, 'พฤษภาคม'), (6, 'มิถุนายน'),
+        (7, 'กรกฎาคม'), (8, 'สิงหาคม'), (9, 'กันยายน'),
+        (10, 'ตุลาคม'), (11, 'พฤศจิกายน'), (12
+```
+
